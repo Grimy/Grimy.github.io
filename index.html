@@ -10,83 +10,85 @@
 		text-align: center;
 	}
 </style>
+<table><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><caption></caption></table>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<table>
-	<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-	<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-	<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-	<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-	<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-	<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-	<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-</table>
 <script>
 	// Game data
 	// Each byte is life life life life owner piece piece piece
 	// byte >> 4 is the actual life total
 	// byte & 8 is 0 for P1, 8 for P2
 	// byte & 7 is the piece type
-	var J1 = 0, J2 = 8;
-	var ALICORN = 0, EARTH = 1, PEGASUS = 2, UNICORN = 3, FOAL = 4;
+	var ALICORN = 160, EARTH = 81, PEGASUS = 50, UNICORN = 35, FOAL = 36;
 	var EMPTY = 0, TREE = 1;
 	var ATTACK = [2, 2, 1, 3, 1];
 	var LIFE = [10, 5, 3, 2, 2];
 	var SPEED = [2, 1, 3, 2, 2];
+	var POWER = [1, 1, 0, 3, 0];
 
 	var selected = Number.NaN;
-	var powering = 0;
+	var powering = Number.NaN;
+	var power = 0;
 	var fleeing = 0;
 	var turn = 0;
 
 	var board = Uint8Array.from([
-		UNICORN, PEGASUS, EARTH, ALICORN, EARTH, PEGASUS, UNICORN,
-		FOAL, FOAL, FOAL, FOAL, FOAL, FOAL, FOAL,
-		0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0,
-		FOAL, FOAL, FOAL, FOAL, FOAL, FOAL, FOAL,
-		UNICORN, PEGASUS, EARTH, ALICORN, EARTH, PEGASUS, UNICORN,
+		UNICORN | 8, PEGASUS | 8, EARTH | 8, ALICORN | 8, EARTH | 8, PEGASUS | 8, UNICORN | 8,
+		FOAL | 8,    FOAL | 8,    FOAL | 8,  FOAL | 8,    FOAL | 8,  FOAL | 8,    FOAL | 8,
+		EMPTY,       EMPTY,       EMPTY,     EMPTY,       EMPTY,     EMPTY,       EMPTY,
+		EMPTY,       EMPTY,       EMPTY,     EMPTY,       EMPTY,     EMPTY,       EMPTY,
+		EMPTY,       EMPTY,       EMPTY,     EMPTY,       EMPTY,     EMPTY,       EMPTY,
+		FOAL,        FOAL,        FOAL,      FOAL,        FOAL,      FOAL,        FOAL,
+		UNICORN,     PEGASUS,     EARTH,     ALICORN,     EARTH,     PEGASUS,     UNICORN,
 	]);
-
-	for (var i = 0; i < 14; ++i)
-		board[i] |= LIFE[board[i]] << 4 | J2;
-
-	for (var i = 35; i < 49; ++i)
-		board[i] |= LIFE[board[i]] << 4 | J1;
 
 	// Game rules
 	function pick(i) {
 		piece = board[i];
-		if (board[i] >> 4 && (piece & 8) == turn && !fleeing)
+		if (board[i] >> 4 && (piece & 8) == turn && !fleeing && !power)
 			return selected = i;
 		if (!canMove(selected, i))
 			return;
-		board[i]        = fleeing || board[selected];
-		board[selected] = fleeing && board[selected];
-		turn ^= 8 * !fleeing;
-		piece -= ATTACK[board[i] & 7] << 4;
-		fleeing = piece >= 16 ? piece : 0;
-		powering = board[i];
-		selected = fleeing ? i : Number.NaN;
+		if ((power & 1) && !fleeing) {
+			if (--power)
+				powering = selected = i;
+			else
+				board[i] = board[selected] & 7 ? TREE : FOAL | turn;
+		} else {
+			board[i]        = fleeing || board[selected];
+			board[selected] = fleeing && board[selected];
+			if (piece == TREE)
+				board[i] = (board[i] & 15) | (LIFE[board[i] & 7] << 4)
+			piece -= ATTACK[board[i] & 7] << 4;
+			if (!fleeing) {
+				power = power == 2 ? 0 : POWER[board[i] & 7];
+				powering = i;
+			}
+		}
+		fleeing = piece >= 16 && power != 2 ? piece : 0;
+		turn = fleeing ? fleeing & 8 : ((board[powering] & 8) ^ (power ? 0 : 8));
+		selected = fleeing ? i : power ? powering : Number.NaN;
 	}
 
 	function canMove(from, to) {
-		// Can’t eat own pieces
-		if (board[to] >> 4 && (board[to] & 8) == turn)
+		// Filter out invalid targets
+		if (!fleeing && power == 1 && board[to] != EMPTY)
+			return false;
+		if ((board[to] >> 4 && (board[to] & 8) == turn) ^ (!fleeing && power == 3))
 			return false;
 		var dx = to % 7 - from % 7;
 		var dy = ~~(to / 7) - ~~(from / 7);
 		var dist = Math.abs(dx) + Math.abs(dy);
-		var speed = fleeing ? 1 : SPEED[board[from] & 7];
+		var speed = fleeing ? 1 : power || SPEED[board[from] & 7];
 
 		return dist && dist <= speed && (speed == 3 || dist != 2 ||
 			(dx && dy ? !board[from + dx] || !board[from + 7 * dy] : !board[from + to >> 1]));
 	}
 
 	// Style data
+	$('tr').append($('<td></td><td></td><td></td><td></td><td></td><td></td><td></td>'));
 	var tds = $('td');
-	var colors = ['red', 'blue'];
-	var texts = ['A', 'E', 'P', 'U', 'F'];
+	var colors = ['red', 'blue', 'green'];
+	var texts = ['A', 'E', 'P', 'U', 'F', '', '', '', ' ', 'T'];
 
 	function display(i) {
 		var piece = board[i];
@@ -98,8 +100,10 @@
 			this.textContent = texts[piece & 7] + (damage || '');
 			this.style.color = colors[(piece & 8) >> 3];
 		} else {
-			this.textContent = ' ';
+			this.textContent = texts[piece | 8];
+			this.style.color = colors[2];
 		}
+		$('caption').text('Player ' + (turn ? 2 : 1) + ', ' + (fleeing ? 'flee!' : power ? 'use your power!' : 'make a move!'))
 	}
 	
 	tds.on('click', function() {
