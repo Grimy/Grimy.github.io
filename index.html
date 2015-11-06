@@ -59,7 +59,9 @@
 
 	// Game rules
 	function pick(i) {
-		if (fleeing > 0) {
+		if (i == selected) {
+			// Do nothing
+		} else if (fleeing > 0) {
 			summons[fleeing & 15] -= power;
 			fleeing = set(i, fleeing);
 		} else if (selected != selected || power == 3) {
@@ -89,6 +91,8 @@
 	}
 
 	function canMove(from, to) {
+		if (from == to)
+			return true;
 		// Can’t summon on an existing piece
 		if (~~power == 1 && board[to] != EMPTY)
 			return false;
