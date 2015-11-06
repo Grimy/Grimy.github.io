@@ -72,9 +72,9 @@
 			powering = i;
 		}
 		if (fleeing == TREE || board[i] == TREE) {
+			summons[TREE & 15] += board[i] != EMPTY && fleeing != EMPTY;
 			board[i] += fleeing;
 			board[i] = (board[i] & 15) | (LIFE[board[i] & 7] << 4)
-			summons[TREE & 15] += board[i] != TREE;
 			fleeing = 0;
 		} else if (fleeing > 0) { // Fight!
 			fleeing -= ATTACK[board[i] & 7] << 4;
