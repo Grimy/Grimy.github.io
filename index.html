@@ -2,21 +2,11 @@
 <title>Battles of Equestria</title>
 <meta charset=utf-8>
 <style>
-	table {
-		border: 5px outset #222;
-		border-spacing: 0;
-	}
-	img {
-		display: block;
-		margin: auto;
-	}
-	td > span {
-		position: absolute;
-		bottom: 0px;
-	}
+	table { border: 5px outset #222; border-spacing: 0; }
+	img { display: block; margin: auto; }
 	.j2 > img {
-		-webkit-filter: hue-rotate(130deg) contrast(140%);
-		filter: hue-rotate(130deg) contrast(140%);
+		-webkit-filter: invert(95%);
+		filter: invert(95%);
 		transform: rotate(180deg);
 	}
 	th, td {
@@ -24,32 +14,33 @@
 		height: 64px;
 		box-sizing: border-box;
 		vertical-align: middle;
-		border: 2px inset #d80;
-		background: #eee;
+		border: 1px inset #222;
+		font: bold 32px georgia;
 		position: relative;
 	}
-	th { font: bold 32px georgia; color: #d80; }
-	td { font: bold 10px georgia; color: #d80; }
-	tr:nth-child(even) > :nth-child(odd), tr:nth-child(odd) > :nth-child(even) {
-		background: #222;
+	td > span {
+		font-size: 10px;
+		color: #e00;
+		position: absolute;
+		bottom: 1px;
+		left: 3px;
 	}
-	.target {
-		cursor: pointer;
-		box-shadow: inset 0 0 6px 3px #2e0;
-	}
-	.selected {
-		box-shadow: inset 0 0 4px 4px #d80;
-	}
+	tr:nth-child(even) > :nth-child(even) { background: #eee; color: #222; }
+	tr:nth-child(even) > :nth-child(odd)  { background: #222; color: #eee; }
+	tr:nth-child(odd)  > :nth-child(even) { background: #222; color: #eee; }
+	tr:nth-child(odd)  > :nth-child(odd)  { background: #eee; color: #222; }
+	.target { cursor: pointer; box-shadow: inset 0 0 3px 3px #2e0; }
 </style>
 <table>
 	<caption></caption>
 	<tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
 	<tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr>
 </table>
-<p>This is Battles of Equestria version 0.1.3. See the <a href='https://github.com/Grimy/Grimy.github.io/commits/master'>changelog</a> for details.</p>
-<p>Game design and balance: <a href='https://www.facebook.com/CheckMateBronieGames'>Aragox</a></p>
-<p>Graphics: <a href='http://tardifice.deviantart.com/'>Tardifice</a></p>
-<p>Coding: <a href='https://github.com/Grimy'>Grimy</a></p>
+<p>This is Battles of Equestria version 0.1.4
+(<a href=https://github.com/Grimy/Grimy.github.io/commits/master>changelog</a>)</p>
+<p>Game design and balance: <a href=https://www.facebook.com/CheckMateBronieGames>Aragox</a></p>
+<p>Graphics: <a href=http://tardifice.deviantart.com/>Tardifice</a></p>
+<p>Coding: <a href=https://github.com/Grimy>Grimy</a></p>
 <p></p>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
@@ -79,10 +70,6 @@
 		board[i] = piece | 8;
 		board[48 - i] = piece;
 	}})();
-
-	function alicorn(i) {
-		return (board[i] & 7) == 1;
-	}
 
 	function set(i, piece) {
 		var old = board[i];
@@ -115,7 +102,7 @@
 		}
 		power = fleeing > 0 || power ? 0 : POWER[board[powering] & 7];
 		if (power == 1) {
-			fleeing = alicorn(powering) ? FOAL | (board[powering] & 8) : TREE;
+			fleeing = (board[powering] & 7) == 1 ? FOAL | (board[powering] & 8) : TREE;
 			if (!summons[fleeing & 15])
 				power = fleeing = 0;
 		}
@@ -137,7 +124,8 @@
 		if (power == 3 && !(friend || board[to] == TREE))
 			return false;
 		// Can’t eat apple trees with alicorns
-		if ((alicorn(from) || (fleeing & 7 == 1)) && board[to] == TREE || board[from] == TREE && alicorn(to))
+		if (((fleeing || board[from]) & 7) == 1 && board[to] == TREE
+				|| board[from] == TREE && (board[to] & 7) == 1)
 			return false;
 
 		var dx = to % 7 - from % 7;
@@ -150,32 +138,31 @@
 	}
 
 	// Style data
-	$('tr').slice(1).append($('<th></th><td></td><td></td><td></td><td></td><td></td><td></td><td></td>'));
-	$('th').text(function(i) { return " 1234567ABCDEFG".charAt(i); });
-	var tds = $('td');
+	$('tr').slice(1).append($('<th></th>' + '<td></td>'.repeat(7)));
+	$('th').text(i => " 1234567ABCDEFG".charAt(i));
 
 	function display(i) {
-		if (fleeing < 0 && (fleeing & 7) == 1)
-			return $('caption').text('Player ' + (fleeing & 8 ? 1 : 2) + ' won!');
-		var piece = board[i];
-		$('th')[0].textContent = turn ? "\u263E" : "\u263C";
-		$(this).toggleClass('target', canMove(selected, i));
-		$(this).toggleClass('selected', selected == i);
-		$(this).toggleClass('j2', (piece & 8) != 0);
-		if (piece & 7) {
+		$('caption').text('Player ' + (turn ? 2 : 1) + ', ' +
+			(power ? 'use your power!' : fleeing > 0 ? 'flee!' : 'make a move!'))
+		$('th').eq(0).text(turn ? "\u263E" : "\u263C");
+		$('td').html(i => {
+			var piece = board[i];
+			if ((piece & 7) == 0)
+				return piece == EMPTY ? '' : '<img src=sprite' + piece + '.png />';
 			var life = 1 + (piece >> 4);
-			var hearts = life > 5 ? "\u2665" + 'x' + life : "\u2665".repeat(life) + "\u2661".repeat(LIFE[piece & 7] + 1 - life);
-			this.innerHTML = '<img src=sprite' + (piece & 7) + '.png /><span>' + hearts + '</span>';
-		} else {
-			this.innerHTML = piece != EMPTY ? '<img src=sprite' + piece + '.png />' : '';
-		}
-		$('caption').text('Player ' + (turn ? 2 : 1) + ', ' + (power ? 'use your power!' : fleeing > 0 ? 'flee!' : 'make a move!'))
+			var hearts = life > 5 ? "\u2665" + 'x' + life : "\u2665".repeat(life);
+			return '<img src=sprite' + (piece & 7) + '.png /><span>' + hearts + '</span>';
+		}).attr('class', i => {
+			return 'target '.repeat(canMove(selected, i)) +
+			'selected '.repeat(selected == i) +
+			'j2'.repeat((board[i] & 8) != 0);
+		});
 	}
 	
 	$('table').on('click', 'td.target', function() {
-		pick(tds.index(this));
-		tds.each(display);
+		pick($('td').index(this));
+		display();
 	});
 
-	tds.each(display);
+	display();
 </script>
