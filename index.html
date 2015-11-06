@@ -2,9 +2,17 @@
 <title>Battles of Equestria</title>
 <meta charset=utf-8>
 <style>
+	table {
+		border: 5px outset #222;
+		border-spacing: 0;
+	}
 	img {
 		display: block;
 		margin: auto;
+	}
+	td > span {
+		position: absolute;
+		bottom: 0px;
 	}
 	.j2 > img {
 		-webkit-filter: hue-rotate(130deg) contrast(140%);
@@ -16,29 +24,29 @@
 		height: 64px;
 		box-sizing: border-box;
 		vertical-align: middle;
-		text-align: center;
-		border: 3px outset #DD0;
-		font: bold 32px georgia;
-		color: #009633;
-		background: #FAFAFA;
+		border: 2px inset #d80;
+		background: #eee;
+		position: relative;
 	}
+	th { font: bold 32px georgia; color: #d80; }
+	td { font: bold 10px georgia; color: #d80; }
 	tr:nth-child(even) > :nth-child(odd), tr:nth-child(odd) > :nth-child(even) {
-		background: #151515;
+		background: #222;
 	}
 	.target {
 		cursor: pointer;
-		box-shadow: inset 0 0 5px 3px #1ed600;
+		box-shadow: inset 0 0 6px 3px #2e0;
 	}
 	.selected {
-		box-shadow: inset 0 0 5px 3px #00cbe2;
+		box-shadow: inset 0 0 4px 4px #d80;
 	}
 </style>
-<table cellspacing=0>
+<table>
 	<caption></caption>
 	<tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
 	<tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr>
 </table>
-<p>This is Battles of Equestria version 0.1.2. See the <a href='https://github.com/Grimy/Grimy.github.io/commits/master'>changelog</a> for details.</p>
+<p>This is Battles of Equestria version 0.1.3. See the <a href='https://github.com/Grimy/Grimy.github.io/commits/master'>changelog</a> for details.</p>
 <p>Game design and balance: <a href='https://www.facebook.com/CheckMateBronieGames'>Aragox</a></p>
 <p>Graphics: <a href='http://tardifice.deviantart.com/'>Tardifice</a></p>
 <p>Coding: <a href='https://github.com/Grimy'>Grimy</a></p>
@@ -155,8 +163,9 @@
 		$(this).toggleClass('selected', selected == i);
 		$(this).toggleClass('j2', (piece & 8) != 0);
 		if (piece & 7) {
-			var damage = LIFE[piece & 7] - (piece >> 4);
-			this.innerHTML = '<img src=sprite' + (piece & 7) + '.png />';
+			var life = 1 + (piece >> 4);
+			var hearts = life > 5 ? "\u2665" + 'x' + life : "\u2665".repeat(life) + "\u2661".repeat(LIFE[piece & 7] + 1 - life);
+			this.innerHTML = '<img src=sprite' + (piece & 7) + '.png /><span>' + hearts + '</span>';
 		} else {
 			this.innerHTML = piece != EMPTY ? '<img src=sprite' + piece + '.png />' : '';
 		}
