@@ -25,12 +25,11 @@
 	// byte >> 4 is the actual life total
 	// byte & 8 is 0 for P1, 8 for P2
 	// byte & 7 is the piece type
-	var ALICORN = 1, EARTH = 2, PEGASUS = 3, UNICORN = 4, FOAL = 5;
 	var EMPTY = 0, TREE = 16, FOAL = 21;
-	var ATTACK = [0, 2,  2, 1, 3, 1];
-	var LIFE =   [0, 10, 5, 3, 2, 2];
-	var SPEED =  [0, 2,  1, 3, 2, 2];
-	var POWER =  [0, 1.5,  1, 0, 3, 0];
+	var ATTACK = [0, 2, 2, 1, 3, 1];
+	var LIFE =   [0, 9, 4, 2, 1, 1];
+	var SPEED =  [0, 2, 1, 3, 2, 2];
+	var POWER =  [0, 1, 1, 0, 3, 0];
 
 	var selected = Number.NaN;
 	var powering = Number.NaN;
@@ -41,9 +40,13 @@
 	var board = new Uint8Array(49);
 	for (var i = 0; i < 14; i++) {
 		piece = [4, 3, 2, 1, 2, 3, 4][i] || 5;
-		piece += LIFE[piece] - 1 << 4;
+		piece += LIFE[piece] << 4;
 		board[i] = piece | 8;
 		board[48 - i] = piece;
+	}
+
+	function alicorn(i) {
+		return (board[i] & 7) == 1;
 	}
 
 	// Game rules
@@ -54,16 +57,18 @@
 		} else if (selected != selected || power == 3) {
 			power = power == 3 ? 2 : 0;
 			return powering = selected = i;
-		} else if (~~power == 1) { // Summoning
-			board[i] = power == 1 ? TREE : FOAL | turn;
+		} else if (power == 1) { // Summoning
+			board[i] = alicorn(powering) ? FOAL | turn : TREE;
 		} else { // Normal movement
 			board[i] = board[selected];
 			board[selected] = 0;
 			powering = i;
 		}
 		if (piece != EMPTY) { // Fight!
-			if (piece == TREE)
+			if (piece == TREE || board[i] == TREE) {
+				board[i] += piece;
 				board[i] = (board[i] & 15) | (LIFE[board[i] & 7] << 4)
+			}
 			piece -= ATTACK[board[i] & 7] << 4;
 		}
 		fleeing = piece > 0 && power != 3 && piece;
@@ -73,11 +78,20 @@
 	}
 
 	function canMove(from, to) {
-		// Filter out invalid targets
+		// Can’t summon on an existing piece
 		if (~~power == 1 && board[to] != EMPTY)
 			return false;
-		if (((board[to] & 7) && (board[to] & 8) == turn) ^ power == 3)
+		// Can’t move on a friend
+		var friend = (board[to] & 7) && (board[to] & 8) == turn;
+		if (power != 3 && board[from] != TREE && friend)
 			return from != from;
+		// Can’t levitate enemies
+		if (power == 3 && !(friend || board[to] == TREE))
+			return false;
+		// Can’t eat apple trees with alicorns
+		if ((alicorn(from) || (fleeing & 7 == 1)) && board[to] == TREE || board[from] == TREE && alicorn(to))
+			return false;
+
 		var dx = to % 7 - from % 7;
 		var dy = ~~(to / 7) - ~~(from / 7);
 		var dist = Math.abs(dx) + Math.abs(dy);
@@ -98,7 +112,7 @@
 		$(this).toggleClass('target', canMove(selected, i));
 		$(this).toggleClass('selected', selected == i);
 		if (piece & 7) {
-			var damage = LIFE[piece & 7] - 1 - (piece >> 4);
+			var damage = LIFE[piece & 7] - (piece >> 4);
 			this.textContent = texts[piece & 7] + (damage || '');
 			this.style.color = colors[(piece & 8) >> 3];
 		} else {
