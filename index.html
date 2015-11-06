@@ -123,6 +123,8 @@
 	var texts = ['', 'A', 'E', 'P', 'U', 'F', '', '', ' ', 'T'];
 
 	function display(i) {
+		if (fleeing < 0 && (fleeing & 7) == 1)
+			return $('caption').text('Player ' + (fleeing & 8 ? 1 : 2) + ' won!');
 		var piece = board[i];
 		$(this).toggleClass('target', canMove(selected, i));
 		$(this).toggleClass('selected', selected == i);
