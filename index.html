@@ -2,12 +2,22 @@
 <title>Battles of Equestria</title>
 <meta charset=utf-8>
 <style>
+	img {
+		display: block;
+		margin: auto;
+	}
+	.j2 > img {
+		filter: hue-rotate(130deg) contrast(140%);
+		transform: rotate(180deg);
+	}
 	th, td {
-		width: 50px;
-		height: 50px;
+		width: 64px;
+		height: 64px;
+		box-sizing: border-box;
+		vertical-align: middle;
+		text-align: center;
 		border: 3px outset #DD0;
 		font: bold 32px georgia;
-		text-align: center;
 		color: #009633;
 		background: #FAFAFA;
 	}
@@ -27,7 +37,11 @@
 	<tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
 	<tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr>
 </table>
-This is Battles of Equestria version 0.1.0. See the <a href='https://github.com/Grimy/Grimy.github.io/commits/master'>changelog</a> for details.
+<p>This is Battles of Equestria version 0.1.1. See the <a href='https://github.com/Grimy/Grimy.github.io/commits/master'>changelog</a> for details.</p>
+<p>Game design and balance: Aragox</p>
+<p>Graphics: Tardifice</p>
+<p>Coding: Grimy</p>
+<p></p>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
 	"use strict";
@@ -130,7 +144,6 @@ This is Battles of Equestria version 0.1.0. See the <a href='https://github.com/
 	$('tr').slice(1).append($('<th></th><td></td><td></td><td></td><td></td><td></td><td></td><td></td>'));
 	$('th').text(function(i) { return " 1234567ABCDEFG".charAt(i); });
 	var tds = $('td');
-	var colors = ['#ff171b', '#0082ea', '#009633'];
 
 	function display(i) {
 		if (fleeing < 0 && (fleeing & 7) == 1)
@@ -139,13 +152,12 @@ This is Battles of Equestria version 0.1.0. See the <a href='https://github.com/
 		$('th')[0].textContent = turn ? "\u263E" : "\u263C";
 		$(this).toggleClass('target', canMove(selected, i));
 		$(this).toggleClass('selected', selected == i);
+		$(this).toggleClass('j2', (piece & 8) != 0);
 		if (piece & 7) {
 			var damage = LIFE[piece & 7] - (piece >> 4);
-			this.textContent = " \u265BU\u2983\u07E1\u2605".charAt(piece & 7) + (damage || '');
-			this.style.color = colors[(piece & 8) >> 3];
+			this.innerHTML = '<img src=sprite' + (piece & 7) + '.png />';
 		} else {
-			this.textContent = " T".charAt(piece >> 4);
-			this.style.color = colors[2];
+			this.innerHTML = piece != EMPTY ? '<img src=sprite' + piece + '.png />' : '';
 		}
 		$('caption').text('Player ' + (turn ? 2 : 1) + ', ' + (power ? 'use your power!' : fleeing > 0 ? 'flee!' : 'make a move!'))
 	}
