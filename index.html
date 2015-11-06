@@ -1,23 +1,33 @@
 <!DOCTYPE html>
+<title>Battles of Equestria</title>
 <meta charset=utf-8>
 <style>
-	td {
+	th, td {
 		width: 50px;
 		height: 50px;
-		border: 1px solid black;
-		font-size: 32px;
+		border: 3px outset #DD0;
+		font: bold 32px georgia;
 		text-align: center;
-		background: white;
+		color: #009633;
+		background: #FAFAFA;
+	}
+	tr:nth-child(even) > :nth-child(odd), tr:nth-child(odd) > :nth-child(even) {
+		background: #151515;
 	}
 	.target {
 		cursor: pointer;
-		background: lightgreen;
+		box-shadow: inset 0 0 5px 3px #1ed600;
 	}
 	.selected {
-		background: lightblue;
+		box-shadow: inset 0 0 5px 3px #00cbe2;
 	}
 </style>
-<table><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><caption></caption></table>
+<table cellspacing=0>
+	<caption></caption>
+	<tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
+	<tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr>
+</table>
+This is Battles of Equestria version 0.1.0. See the <a href='https://github.com/Grimy/Grimy.github.io/commits/master'>changelog</a> for details.
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
 	"use strict";
@@ -117,23 +127,24 @@
 	}
 
 	// Style data
-	$('tr').append($('<td></td><td></td><td></td><td></td><td></td><td></td><td></td>'));
+	$('tr').slice(1).append($('<th></th><td></td><td></td><td></td><td></td><td></td><td></td><td></td>'));
+	$('th').text(function(i) { return " 1234567ABCDEFG".charAt(i); });
 	var tds = $('td');
-	var colors = ['red', 'blue', 'green'];
-	var texts = ['', 'A', 'E', 'P', 'U', 'F', '', '', ' ', 'T'];
+	var colors = ['#ff171b', '#0082ea', '#009633'];
 
 	function display(i) {
 		if (fleeing < 0 && (fleeing & 7) == 1)
 			return $('caption').text('Player ' + (fleeing & 8 ? 1 : 2) + ' won!');
 		var piece = board[i];
+		$('th')[0].textContent = turn ? "\u263E" : "\u263C";
 		$(this).toggleClass('target', canMove(selected, i));
 		$(this).toggleClass('selected', selected == i);
 		if (piece & 7) {
 			var damage = LIFE[piece & 7] - (piece >> 4);
-			this.textContent = texts[piece & 7] + (damage || '');
+			this.textContent = " \u265BU\u2983\u07E1\u2605".charAt(piece & 7) + (damage || '');
 			this.style.color = colors[(piece & 8) >> 3];
 		} else {
-			this.textContent = texts[(piece >> 4) | 8];
+			this.textContent = " T".charAt(piece >> 4);
 			this.style.color = colors[2];
 		}
 		$('caption').text('Player ' + (turn ? 2 : 1) + ', ' + (power ? 'use your power!' : fleeing > 0 ? 'flee!' : 'make a move!'))
