@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Battles of Equestria</title>
+<link rel="icon" type="image/png" href='favicon.ico?v=2'>
 <meta charset=utf-8>
 <style>
 	table { border: 5px outset #222; border-spacing: 0; }
@@ -19,6 +20,7 @@
 	tr:nth-child(odd)  > :nth-child(odd)  { background: #eee; color: #222; }
 
 	.target { cursor: pointer; box-shadow: inset 0 0 3px 3px #3b1; }
+	.selected { cursor: pointer; box-shadow: inset 0 0 3px 3px #d33; }
 	svg {
 		display: block;
 		width: 90%;
@@ -47,7 +49,7 @@
 	<tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
 	<tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr><tr></tr>
 </table>
-<p>This is Battles of Equestria version 0.1.5
+<p>This is Battles of Equestria version 0.1.6
 (<a href=https://github.com/Grimy/Grimy.github.io/commits/master>changelog</a>)</p>
 <p>Game design and balance: <a href=https://www.facebook.com/CheckMateBronieGames>Aragox</a></p>
 <p>Graphics: <a href=http://tardifice.deviantart.com/>Tardifice</a></p>
@@ -90,10 +92,10 @@
 
 	// Game rules
 	function pick(i) {
+		summons[fleeing & 15] -= power == 1;
 		if (i == selected) {
 			// Do nothing
 		} else if (fleeing > 0) {
-			summons[fleeing & 15] -= power;
 			fleeing = set(i, fleeing);
 		} else if (selected != selected || power == 3) {
 			power = power == 3 ? 2 : 0;
@@ -125,7 +127,7 @@
 		if (from == to)
 			return true;
 		// Can’t summon on an existing piece
-		if (~~power == 1 && board[to] != EMPTY)
+		if (power == 1 && board[to] != EMPTY)
 			return false;
 		// Can’t move on a friend
 		var friend = (board[to] & 7) && (board[to] & 8) == turn;
@@ -175,8 +177,19 @@
 			sprite.children().css(from).animate({left: 0, top: 0}, 200);
 		}
 		src = selected == selected ? sprite.offset() : undefined;
+
+		// if (turn)
+			// setTimeout(ia, 0);
 	}
 	
+	function ia() {
+		while (turn) {
+			do { var i = Math.floor(Math.random() * 49); } while (!canMove(selected, i));
+			pick(i);
+			display(i);
+		}
+	}
+
 	$('table').on('click', 'td.target', function() {
 		var i = $('td').index(this);
 		pick(i);
