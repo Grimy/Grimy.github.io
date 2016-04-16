@@ -69,8 +69,8 @@ h1, button { width: 100%; }
     <label for=note>Pitch</label>
     <input id=note type=range min=-12 max=12 value=0 step=1>
     <output for=note></output>
-    <hr><input type=radio name=waveform value=sine checked>Sine wave</input>
-    <hr><input type=radio name=waveform value=triangle>Triangle</input>
+    <hr><input type=radio name=waveform value=sine>Sine wave</input>
+    <hr><input type=radio name=waveform value=triangle checked>Triangle</input>
     <hr><input type=radio name=waveform value=square>Square</input>
     <hr><input type=radio name=waveform value=sawtooth>Sawtooth</input>
     <hr><input type=radio name=waveform value=white>White noise</input>
@@ -81,7 +81,7 @@ h1, button { width: 100%; }
 <script>
 
 function $(id) { return document.getElementById(id) }
-var params = [[.1, 1], [.25, .75], [.5, 0]];
+var params = [[.05, 1], [.25, .75], [.4, 0]];
 
 (function() {
     function updateBpm() {
@@ -104,7 +104,7 @@ var params = [[.1, 1], [.25, .75], [.5, 0]];
     g.font = '16px Serif';
     g.strokeStyle = 'black';
     g.fillStyle = 'cyan';
-    g.lineWidth = 1 / SCALE;
+    g.lineWidth = 4 / SCALE;
     g.lineCap = g.lineJoin = 'round';
 
     function axisLabel(text, value) {
@@ -125,21 +125,23 @@ var params = [[.1, 1], [.25, .75], [.5, 0]];
         g.save();
         g.translate(PAD, PAD + SCALE);
         g.scale(SCALE, -SCALE);
+
+        g.beginPath();
+        g.moveTo(0, 0);
+        var x = 0;
+        for (var i = 0; i < 3; ++i) {
+            g.quadraticCurveTo((x + params[i][0]) / 2, params[i][1], params[i][0], params[i][1]);
+            x = params[i][0];
+        }
+        g.lineTo(1, 0);
+        g.stroke();
+
+        g.lineWidth = 1 / SCALE;
         g.beginPath();
         g.moveTo(1, 0);
         g.lineTo(0, 0);
         g.lineTo(0, 1);
         g.stroke();
-
-        g.lineWidth = 4 / SCALE;
-        g.beginPath();
-        g.moveTo(0, 0);
-        for (var i = 0; i < 3; ++i)
-            g.lineTo(params[i][0], params[i][1]);
-        g.lineTo(1, 0);
-        g.stroke();
-
-        g.lineWidth = 1 / SCALE;
         for (var i = 0; i < 3; ++i) {
             g.beginPath();
             g.arc(params[i][0], params[i][1], 11 / SCALE, 0, 2 * Math.PI, false);
@@ -201,7 +203,7 @@ var params = [[.1, 1], [.25, .75], [.5, 0]];
     };
     function frequency(tones) { return 440 * Math.pow(2, tones / 12) }
     function normalize(x, from, to) { return (x - from) / (to - from) }
-    function ease(x) { return 1 - (1 - x) * (1 - x) }
+    function ease(x) { return (2 - x) * x }
     function f(x, from, to) { return ease(normalize(x, from, to)) }
 
     // Returns the number of trailing zeroes in the binary representation of v
