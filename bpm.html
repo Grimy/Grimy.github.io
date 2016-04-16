@@ -1,0 +1,247 @@
+<meta charset=UTF-8>
+<style>
+fieldset {
+    padding: 20px;
+    margin: 10px;
+    box-sizing: border-box;
+    width: 400px;
+    height: 400px;
+    display: inline-block;
+    border: 2px inset #999;
+}
+label { padding-left: 5px; display: inline-block; }
+hr { visibility: hidden; height: 0; margin: 4px 0; }
+input[type=range] { position: relative; top: 4px; }
+.clickable { cursor: pointer; }
+main {
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+}
+output { width: 6em; }
+h1, button { width: 100%; }
+</style>
+<form>
+<main>
+<h1>NecroNome</h1>
+<fieldset>
+    <legend>BPM</legend>
+    Select a level:
+    <hr>
+    <input type=radio name=level value=115>1‑1</input>
+    <input type=radio name=level value=130>1‑2</input>
+    <input type=radio name=level value=140>1‑3</input>
+    <input type=radio name=level value=125>Coral Riff</input>
+    <hr>
+    <input type=radio name=level value=130>2‑1</input>
+    <input type=radio name=level value=140>2‑2</input>
+    <input type=radio name=level value=150 checked>2‑3</input>
+    <input type=radio name=level value=120 id=conga>King Conga</input>
+    <hr>
+    <input type=radio name=level value=135>3‑1</input>
+    <input type=radio name=level value=145>3‑2</input>
+    <input type=radio name=level value=155>3‑3</input>
+    <input type=radio name=level value=123>Deep Blues</input>
+    <hr>
+    <input type=radio name=level value=130>4‑1</input>
+    <input type=radio name=level value=145>4‑2</input>
+    <input type=radio name=level value=160>4‑3</input>
+    <input type=radio name=level value=175>Death Metal</input>
+    <hr>
+    <input type=checkbox id=bolt checked>Bolt / Coda</input>
+    <input type=checkbox id=rhythm>Shrine of Rhythm</input>
+    <hr>
+    <label for=bpm>Or set the BPM manually:</label>
+    <hr>
+    <input type=number name=bpm id=bpm min=45 max=999 value=300 step=1>
+</fieldset>
+<fieldset>
+    <legend>Envelope</legend>
+    <canvas class=clickable width=340 height=340>
+        <path fill=none stroke=black stroke-width='.01' id=path />
+    </canvas>
+</fieldset>
+<fieldset>
+    <legend>Pitch</legend>
+    <label for=note>Scale</label>
+    <input id=note type=range min=-12 max=12 value=0 step=1 oninput='note_input(this)'>
+    <output for=note>A (la)</output>
+    <hr><input type=radio name=waveform value=sine checked>Sine wave</input>
+    <hr><input type=radio name=waveform value=triangle>Triangle</input>
+    <hr><input type=radio name=waveform value=square>Square</input>
+    <hr><input type=radio name=waveform value=sawtooth>Sawtooth</input>
+    <hr><input type=radio name=waveform value=white>White noise</input>
+</fieldset>
+<button type=button onclick='toggle()'>Play/Pause</button>
+</main>
+<form>
+<script>
+
+var canvas = document.getElementsByTagName('canvas')[0];
+var g = canvas.getContext('2d');
+var SCALE = 300;
+var PAD = 20;
+
+g.font = '16px Serif';
+g.strokeStyle = 'black';
+g.fillStyle = 'cyan';
+g.lineWidth = 1 / SCALE;
+g.lineCap = g.lineJoin = 'round';
+
+function distance(x1, y1, x2, y2) {
+    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+}
+
+var grabbing = -1;
+var params = [[.1, 1], [.25, .75], [.5, 0]];
+paint();
+
+function mouseHandler(ev) {
+    var x = Math.min(1, Math.max(0, (ev.offsetX - PAD) / SCALE));
+    var y = Math.min(1, Math.max(0, (ev.offsetY - PAD - SCALE) / -SCALE));
+    canvas.className = '';
+    params[grabbing] = [x, y];
+    for (var i = 0; i < 3; ++i) {
+        if (distance(x, y, params[i][0], params[i][1]) < 0.002) {
+            canvas.className = 'clickable';
+            if (ev.type == 'mousedown')
+                grabbing = i;
+        }
+    }
+    paint(x, y);
+}
+
+canvas.addEventListener('mousedown', mouseHandler);
+canvas.addEventListener('mousemove', mouseHandler);
+canvas.addEventListener('mouseup',  function(ev) { grabbing = -1; });
+canvas.addEventListener('mouseout', function(ev) { grabbing = -1; });
+
+function updateBpm() {
+    console.log('blah');
+    var elems = document.getElementsByTagName('form')[0].elements;
+    elems['bpm'].value = elems['level'].value * (1 + elems['bolt'].checked);
+}
+
+var radios = document.getElementsByName('level');
+for (var i = 0; i < radios.length; ++i)
+    radios[i].onclick = updateBpm;
+document.getElementById('bolt').onclick = updateBpm;
+
+function note_input(ev) {
+    ev.nextElementSibling.value = [
+        'A (la)', 'A# (la#)', 'B (si)', 'C (do)', 'C# (do#)', 'D (ré)',
+        'D# (ré#)', 'E (mi)', 'F (fa)', 'F# (fa#)', 'G (sol)', 'G# (sol#)'
+    ][(Number.parseInt(ev.value) + 24) % 12];
+}
+
+function axisLabel(text, value) {
+    if (value === undefined)
+        return text;
+    return text + ' (' + Math.floor(value * 100) + '%)'
+}
+
+function paint(x, y) {
+    g.clearRect(0, 0, SCALE + 2*PAD, SCALE + 2*PAD);
+    g.save();
+    g.fillStyle = '#333';
+    g.fillText(axisLabel('TIME', x), PAD, SCALE + PAD + 16);
+    g.rotate(-Math.PI / 2);
+    g.fillText(axisLabel('AMPLITUDE', y), -(SCALE + PAD), 16);
+    g.restore();
+
+    g.save();
+    g.translate(PAD, PAD + SCALE);
+    g.scale(SCALE, -SCALE);
+    g.beginPath();
+    g.moveTo(1, 0);
+    g.lineTo(0, 0);
+    g.lineTo(0, 1);
+    g.stroke();
+
+    g.lineWidth = 4 / SCALE;
+    g.beginPath();
+    g.moveTo(0, 0);
+    for (var i = 0; i < 3; ++i)
+        g.lineTo(params[i][0], params[i][1]);
+    g.lineTo(1, 0);
+    g.stroke();
+
+    g.lineWidth = 1 / SCALE;
+    for (var i = 0; i < 3; ++i) {
+        g.beginPath();
+        g.arc(params[i][0], params[i][1], 11 / SCALE, 0, 2 * Math.PI, false);
+        g.fill();
+        g.stroke();
+    }
+    g.restore();
+}
+
+var scale = [0, 2, 3, 5, 7, 8, 10, 12];
+// var scale = [0, 2, 4, 5, 7, 9, 10, 12];
+var ctx = new AudioContext();
+var beat = 0;
+var next;
+var source;
+var playing = false;
+
+var waveform = {
+    sine:     function(x) { return Math.sin(2 * Math.PI * x) },
+    triangle: function(x) { return Math.abs(2 - 4 * x) - 1 },
+    square:   function(x) { return x < .5 ? 1 : -1 },
+    sawtooth: function(x) { return 2 * x - 1 },
+    white:    function(x) { return 2 * Math.random() - 1 },
+};
+function val(id) { return Number.parseFloat(document.getElementById(id).value) }
+function frequency(tones) { return 440 * Math.pow(2, tones / 12) }
+function normalize(x, from, to) { return (x - from) / (to - from) }
+function ease(x) { return 1 - (1 - x) * (1 - x) }
+function f(x, from, to) { return ease(normalize(x, from, to)) }
+
+function ctz(v) {
+    v &= -v;
+    return !(v & 0x0F) << 2 | !(v & 0x33) << 1 | !(v & 0x55);
+}
+
+function play() {
+    if (!playing) return;
+    var bpm = val('bpm');
+    var samples = ctx.sampleRate * 60 / bpm;
+    var wf = waveform[document.getElementsByTagName('form')[0].elements['waveform'].value];
+    console.log(wf);
+    var buf = ctx.createBuffer(1, samples, ctx.sampleRate);
+    var hz = frequency(val('note') + scale[ctz(++beat)]);
+    var conga = document.getElementById('conga').checked;
+    var rhythm = document.getElementById('rhythm').checked;
+    var bolt = document.getElementById('bolt').checked;
+    var skip = conga && bolt ? beat % 16 % 14 == 0 : (conga || rhythm) && !(beat % 8);
+    for (var i = 0; i < samples; ++i) {
+        var x = i / samples;
+        var vol = skip ? 0 :
+x < params[0][0] ? 0            + (params[0][1] - 0           ) * f(x, 0,            params[0][0]) :
+x < params[1][0] ? params[0][1] + (params[1][1] - params[0][1]) * f(x, params[0][0], params[1][0]) :
+x < params[2][0] ? params[1][1] + (params[2][1] - params[1][1]) * f(x, params[1][0], params[2][0]) :
+                   params[2][1] + (0            - params[2][1]) * f(x, params[2][0], 1);
+        buf.getChannelData(0)[i] = vol * wf((i * hz / ctx.sampleRate) % 1);
+    }
+    source = ctx.createBufferSource();
+    source.buffer = buf;
+    source.connect(ctx.destination);
+    source.start(next);
+    source.onended = play;
+    next += 60 / bpm;
+}
+
+function toggle() {
+    playing = !playing;
+    if (playing) {
+        next = ctx.currentTime;
+        play();
+        play();
+    } else {
+        source.stop();
+        --beat;
+    }
+}
+</script>
