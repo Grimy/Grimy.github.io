@@ -1,32 +1,44 @@
 <meta charset=UTF-8>
 <title>NecroNome</title>
 <style>
+body { background: #E6E6E6; color: #333 }
+* { box-sizing: border-box }
 fieldset {
-    padding: 20px;
-    margin: 10px;
-    box-sizing: padding-box;
-    width: 400px;
-    height: 400px;
-    display: inline-block;
-    border: 2px inset #999;
+    padding: 20px; width: 400px; border: 1px solid #04B; border-radius: 8px; background: #EEE;
+    -webkit-box-shadow: 0 3px 5px rgba(0,0,0,.4); box-shadow: 0 3px 5px rgba(0,0,0,.4);
 }
-label { padding-left: 5px; display: inline-block; }
-hr { visibility: hidden; height: 0; margin: 4px 0; }
-input[type=range] { position: relative; top: 4px; }
-.clickable { cursor: pointer; }
-main {
+legend { font-size: 1.3em }
+legend, h1 { color: #04B }
+label { padding-left: 5px; display: inline-block }
+hr { visibility: hidden; height: 0; margin: 5px 0 }
+input[type=range] { position: relative; top: 4px }
+.clickable { cursor: pointer }
+form {
     width: 80%;
     margin: 0 auto;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
 }
-output { width: 6em; }
-h1, button { width: 100%; }
+output { width: 6em }
+h1, button { display: block; width: 400px; margin: 30px auto }
+button {
+    padding: 0; cursor: pointer;
+    -webkit-transition: background-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+    -o-transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    background-color: #06F; color: #EEE; height: 2.2em; font-size: 1.4em;
+    border: 1px solid rgba(0, 0, 0, .4); border-radius: 4px;
+}
+button:hover  { background-color: #05D }
+button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.4); box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
 </style>
-<form>
-<main>
 <h1>NecroNome</h1>
+<form>
+<fieldset>
+    <legend>Envelope</legend>
+    <canvas id=canvas class=clickable width=360 height=360></canvas>
+</fieldset>
 <fieldset>
     <legend>BPM</legend>
     Select a level:
@@ -53,16 +65,10 @@ h1, button { width: 100%; }
     <hr>
     <input type=checkbox id=bolt checked>Bolt / Coda</input>
     <input type=checkbox id=rhythm>Shrine of Rhythm</input>
-    <hr>
+    <hr><hr>
     <label for=bpm>Or set the BPM manually:</label>
     <hr>
     <input type=number name=bpm id=bpm min=45 max=999 step=1>
-</fieldset>
-<fieldset>
-    <legend>Envelope</legend>
-    <canvas id=canvas class=clickable width=360 height=360>
-        <path fill=none stroke=black stroke-width='.01' id=path />
-    </canvas>
 </fieldset>
 <fieldset>
     <legend>Melody</legend>
@@ -75,9 +81,8 @@ h1, button { width: 100%; }
     <hr><input type=radio name=waveform value=sawtooth>Sawtooth</input>
     <hr><input type=radio name=waveform value=pink>Pink noise</input>
 </fieldset>
-<button type=button id=toggle>Play/Pause</button>
-</main>
-<form>
+</form>
+<button type=button id=toggle>Play</button>
 
 <script>
 function $(id) { return document.getElementById(id) }
@@ -103,7 +108,7 @@ var params = [[.05, 1], [.25, .75], [.4, 0]];
 
     g.font = '16px Serif';
     g.strokeStyle = 'black';
-    g.fillStyle = 'cyan';
+    g.fillStyle = '#79F';
     g.lineWidth = 4 / SCALE;
     g.lineCap = g.lineJoin = 'round';
 
@@ -116,7 +121,7 @@ var params = [[.05, 1], [.25, .75], [.4, 0]];
     function paint(x, y) {
         g.clearRect(0, 0, SCALE + 2*PAD, SCALE + 2*PAD);
         g.save();
-        g.fillStyle = '#333';
+        g.fillStyle = '#04B';
         g.fillText(axisLabel('TIME', x), PAD, SCALE + PAD + 16);
         g.rotate(-Math.PI / 2);
         g.fillText(axisLabel('AMPLITUDE', y), 1 - SCALE - PAD, 15);
@@ -174,8 +179,8 @@ var params = [[.05, 1], [.25, .75], [.4, 0]];
 
     canvas.onmousedown = mouseHandler;
     canvas.onmousemove = mouseHandler;
-    canvas.onmouseup =  function(ev) { grabbing = -1; };
-    (canvas.onmouseout = function(ev) { grabbing = -1; paint(); })();
+    canvas.onmouseup = function(ev) { grabbing = -1 };
+    (canvas.onmouseout = function(ev) { grabbing = -1; paint() })();
 })();
 
 ($('note').oninput = function(ev) {
@@ -256,6 +261,7 @@ var params = [[.05, 1], [.25, .75], [.4, 0]];
             source.stop();
             --beat;
         }
+        this.innerHTML = playing ? 'Pause' : 'Play';
     };
 })();
 </script>
