@@ -73,13 +73,13 @@ h1, button { width: 100%; }
     <hr><input type=radio name=waveform value=triangle checked>Triangle</input>
     <hr><input type=radio name=waveform value=square>Square</input>
     <hr><input type=radio name=waveform value=sawtooth>Sawtooth</input>
-    <hr><input type=radio name=waveform value=white>White noise</input>
+    <hr><input type=radio name=waveform value=pink>Pink noise</input>
 </fieldset>
 <button type=button id=toggle>Play/Pause</button>
 </main>
 <form>
-<script>
 
+<script>
 function $(id) { return document.getElementById(id) }
 var params = [[.05, 1], [.25, .75], [.4, 0]];
 
@@ -193,13 +193,20 @@ var params = [[.05, 1], [.25, .75], [.4, 0]];
     var next;
     var source;
     var playing = false;
+    var noise = [0, 0];
 
     var waveform = {
         sine:     function(x) { return Math.sin(2 * Math.PI * x) },
         triangle: function(x) { return Math.abs(2 - 4 * x) - 1 },
         square:   function(x) { return x < .5 ? .8 : -.8 },
         sawtooth: function(x) { return 2 * x - 1 },
-        white:    function(x) { return 2 * Math.random() - 1 },
+        pink:     function(x) {
+            var white = 2 * Math.random() - 1;
+            var a = 1 - $('note').value / 12;
+            var b = (1 - a / 2) * a;
+            noise.push((white + a * noise[0] - b * noise[1]) / (1 + a + b));
+            return noise.shift(1);
+        },
     };
     function frequency(tones) { return 440 * Math.pow(2, tones / 12) }
     function normalize(x, from, to) { return (x - from) / (to - from) }
