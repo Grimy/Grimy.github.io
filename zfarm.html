@@ -9,7 +9,10 @@ fieldset {
 }
 legend { font-size: 1.3rem }
 legend, h1 { color: #04B }
-label { display: block; margin: 1ex .25em }
+label {
+	display: block; margin: 1ex .25em;
+	text-decoration: underline dotted; cursor: help;
+}
 input, select { width: 50%; margin: 0 }
 form {
 	width: 80%;
@@ -35,17 +38,17 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 
 <p>Warning: this calculator is currently in beta-test, results may be off.</p>
 
-<form action=#>
+<form action='#'>
 	<fieldset>
 
 		<legend>Inputs</legend>
 
-		<label>
+		<label title='Your minimum attack, in the stance you use for farming'>
 			<input type=text id=attack value=80Qi>
 			Min ATK
 		</label>
 
-		<label>
+		<label title='Biome of the maps you create'>
 			<select id=biome>
 				<option value=gardens>Garden</option>
 				<option value=mountain>Mountain</option>
@@ -56,52 +59,52 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 			Biome
 		</label>
 
-		<label>
+		<label title='Total number of map imp-orts you have unlocked'>
 			<input type=text id=imports value=5 pattern='[0-5]'>
 			Map imp-orts
 		</label>
 
-		<label>
+		<label title='Check if you have unlocked the Titimp imp-ort'>
 			<input type=checkbox checked id=titimp>
 			Unlocked titimp?
 		</label>
 
-		<label>
+		<label title='Level of your Agility perk (max 20)'>
 			<input type=text id=agility value=20 pattern='1?\d|20'>
 			Agility
 		</label>
 
-		<label>
+		<label title='Level of your Range perk (max 10)'>
 			<input type=text id=range value=10 pattern='\d|10'>
 			Range
 		</label>
 
-		<label>
+		<label title='Critical hit chance, as displayed in the damage breakdown (max 80)'>
 			<input type=text id=crit_chance value=50 pattern='[1-7]?\d|80'>
 			Crit chance
 		</label>
 
-		<label>
+		<label title='Bonus critical damage, as displayed in the damage breakdown'>
 			<input type=text id=crit_damage value=400>
 			Crit damage%
 		</label>
 
-		<label>
+		<label title='Maximum size of the maps you create'>
 			<input type=text id=size value=30 pattern='\d\d'>
 			Map size
 		</label>
 
-		<label>
+		<label title='Maximum difficulty of the maps you create'>
 			<input type=text id=difficulty value=84 pattern='\d+'>
 			Map difficulty%
 		</label>
 
-		<label>
-			<input type=text id=overkill value=0 pattern='\d|1[0-5]'>
+		<label title='Level of your Overkill perk (max 30)'>
+			<input type=text id=overkill value=0 pattern='[12]?\d|30'>
 			Overkill
 		</label>
 
-		<label>
+		<label title='Check if you have unlocked the Hyperspeed mastery'>
 			<input type=checkbox id=hyperspeed>
 			Hyperspeed?
 		</label>
