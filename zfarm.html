@@ -94,8 +94,8 @@ var suffices = [
 	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
 	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
 	'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
-];
-var regex = new RegExp(suffices.join('|'));
+].map((x) => x.toLowerCase());
+var regex = new RegExp(suffices.join('|'), 'i');
 
 // Inputs
 var atk, range, size, difficulty, import_chance, titimp, agility, cc, cd;
@@ -105,7 +105,7 @@ function input(id) { return $('#' + id).value; }
 Array.prototype.max = function() { return Math.max.apply(null, this); };
 
 function parse(str) {
-	return parseFloat(str.replace(regex, (x) => "E" + (3 + 3 * suffices.indexOf(x))));
+	return parseFloat(str.replace(regex, (x) => "E" + (3 + 3 * suffices.indexOf(x.toLowerCase()))));
 }
 
 /*
