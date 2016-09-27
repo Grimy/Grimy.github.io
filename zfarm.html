@@ -128,7 +128,9 @@ function parse_suffixes(str) {
 		'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
 		'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
 	].map((x) => x.toLowerCase());
+	suffixes.reverse();
 	var regex = new RegExp(suffixes.join('|'), 'i');
+	suffixes.reverse();
 	return parseFloat(str.replace(regex, (x) => "E" + suffixes.indexOf(x) * 3));
 }
 
