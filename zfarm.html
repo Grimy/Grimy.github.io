@@ -1,0 +1,180 @@
+<meta charset=UTF-8>
+<title>ZFarm</title>
+<style>
+body { background: #E6E6E6; color: #333 }
+* { box-sizing: border-box }
+fieldset {
+    padding: 20px; width: 40rem; border: 1px solid #04B; border-radius: 8px; background: #EEE;
+    -webkit-box-shadow: 0 3px 5px rgba(0,0,0,.4); box-shadow: 0 3px 5px rgba(0,0,0,.4);
+}
+legend { font-size: 1.3rem }
+legend, h1 { color: #04B }
+label { padding-left: 5px; display: inline-block }
+input[type=text] { width: 6em }
+hr { visibility: hidden; height: 0; margin: 5px 0 }
+.clickable { cursor: pointer }
+form {
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+}
+output { width: 6em }
+h1, button { display: block; width: 400px; margin: 30px auto }
+button {
+    padding: 0; cursor: pointer;
+    -webkit-transition: background-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+    -o-transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    background-color: #06F; color: #EEE; height: 2.2em; font-size: 1.4em;
+    border: 1px solid rgba(0, 0, 0, .4); border-radius: 4px;
+}
+button:hover  { background-color: #05D }
+button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.4); box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
+#results { font-size: 1.2em }
+</style>
+<h1>Where should I farm?</h1>
+
+<p>Warning: this calculator is currently in beta-test, results may be off.</p>
+
+<form>
+<fieldset>
+	<legend>Inputs</legend>
+	<input type=text id=attack value=80Qi></input>
+	<label for=attack>ATK</label>
+	<hr>
+	<input type=text id=imports value=5></input>
+	<label for=imports>Map imp-orts</label>
+	<hr>
+	<input type=checkbox checked id=titimp></input>
+	<label for=titimp>Unlocked titimp?</label>
+	<hr>
+	<input type=text id=agility value=20></input>
+	<label for=titimp>Agility</label>
+	<hr>
+	<input type=text id=range value=10></input>
+	<label for=titimp>Range</label>
+	<hr>
+	<input type=text id=crit_chance value=50></input>
+	<label for=titimp>Crit chance</label>
+	<hr>
+	<input type=text id=crit_damage value=400></input>
+	<label for=titimp>Crit damage%</label>
+	<hr>
+	<input type=text id=size value=30></input>
+	<label for=size>Map size</label>
+	<hr>
+	<input type=text id=difficulty value=84></input>
+	<label for=difficulty>Map difficulty%</label>
+	<button type=button onclick='run()'>Recalculate</button>
+</fieldset>
+
+<fieldset id=results>
+	<legend>Results</legend>
+	<p><b>You should farm on <b id=z_best></b>.</b>
+	<p>The highest zone where you can one-shot everything is <b id=z1></b>.
+	<p>Farming on <b id=z2></b> takes <b id=time2></b>% longer for 25% more loot.
+	<p>Farming on <b id=z3></b> takes <b id=time3></b>% longer for 56.25% more loot.
+	<p>Farming on <b id=z4></b> takes <b id=time4></b>% longer for 95.31% more loot.
+</fieldset>
+</form>
+
+<script>
+
+var cells = 10000;
+var biome = [.7, 1.3, 1.3, 1, .7, .8, 1.1, .95, .95, 1, .8, 1.3, 1.1, 1.4];
+var suffices = [
+	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
+	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
+	'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
+];
+var regex = new RegExp(suffices.join('|'));
+
+// Inputs
+var atk, range, size, difficulty, import_chance, titimp, agility, cc, cd;
+
+function $(str) { return document.querySelector(str); }
+function input(id) { return $('#' + id).value; }
+Array.prototype.max = function() { return Math.max.apply(null, this); };
+
+function parse(str) {
+	return parseFloat(str.replace(regex, (x) => "E" + (3 + 3 * suffices.indexOf(x))));
+}
+
+/*
+function enemy_atk(zone, cell) {
+	var amt = difficulty * (5.5 * Math.sqrt(zone * Math.pow(3.27, zone)) - 1.1);
+	amt *= zone < 60 ? (3.1875 + .0595 * cell) : (4 + .09 * cell) * Math.pow(1.15, zone - 59);
+	return amt;
+}
+*/
+
+function enemy_hp(zone, cell) {
+	var amt = difficulty * (14.3 * Math.sqrt(zone * Math.pow(3.265, zone)) - 12.1);
+	amt *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + .08 * cell) * Math.pow(1.1, zone - 59);
+	return amt;
+}
+
+function pick(list) {
+	return list[Math.floor(Math.random() * list.length)];
+}
+
+function show_time(ticks) {
+	return ((ticks / cells / 5 - 1) * 100).toFixed(1);
+}
+
+function simulate(zone) {
+	var ticks = 0;
+	var buff = 0;
+
+	for (var i = 0; i < cells; ++i) {
+		var cell = i % size;
+		var rng = Math.random();
+		var hp = enemy_hp(zone, cell) * (rng < import_chance ? 1 : pick(biome));
+		var turns = 0;
+		while (hp >= 1) {
+			++turns;
+			var crit = Math.random() < cc ? cd : 1;
+			hp -= atk * (1 + range * Math.random()) * crit * (buff ? 2 : 1);
+			buff -= buff > 0;
+		}
+		ticks += 1 + (agility < 3) + Math.ceil(turns * 10 * Math.pow(.95, agility));
+		if (titimp && rng < .03)
+			buff = Math.min(buff + 30, 45);
+	}
+
+	return ticks;
+}
+
+function run() {
+	atk = parse(input('attack'));
+	size = input('size');
+	difficulty = input('difficulty') / 100;
+	import_chance = input('imports') * .03;
+	titimp = $('#titimp').checked;
+	agility = input('agility');
+	range = 120 / (80 + 2 * input('range')) - 1;
+	cc = input('crit_chance') / 100;
+	cd = 1 + input('crit_damage') / 100;
+
+	var zone = 6;
+	while (atk >= biome.max() * enemy_hp(zone, size - 1))
+		++zone;
+
+	var ticks = [simulate(zone), simulate(zone + 1), simulate(zone + 2)];
+	var value = [1 / (5 * cells), 1.25 / ticks[0], 1.25 * 1.25 / ticks[1], 1.25 * 1.25 * 1.25 / ticks[2]];
+
+	$('#z_best').textContent = "z" + (zone - 1 + value.indexOf(value.max()));
+	$('#z1').textContent = "z" + (zone - 1);
+	$('#z2').textContent = "z" + (zone);
+	$('#time2').textContent = show_time(ticks[0]);
+	$('#z3').textContent = "z" + (zone + 1);
+	$('#time3').textContent = show_time(ticks[1]);
+	$('#z4').textContent = "z" + (zone + 2);
+	$('#time4').textContent = show_time(ticks[2]);
+}
+
+run();
+
+</script>
