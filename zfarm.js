@@ -44,6 +44,7 @@ function pick(list) {
 function simulate(zone, g) {
 	var ticks = 0;
 	var buff = 0;
+	var ok_dmg = 0;
 	seed = 1;
 
 	for (var i = 0; i < cells; ++i) {
@@ -51,14 +52,20 @@ function simulate(zone, g) {
 		var toughness = imp < g.import_chance ? 1 : pick(g.biome);
 		var hp = g.difficulty * toughness * enemy_hp(zone, i % g.size);
 		var turns = 0;
+
+		hp -= Math.min(ok_dmg, hp);
+		if (hp >= 1)
+			ticks += Math.ceil(.115 * g.agility) ;
+
 		while (hp >= 1) {
 			++turns;
 			var crit = rng() < g.cc ? g.cd : 1;
 			hp -= g.atk * (1 + g.range * rng()) * crit * (buff ? 2 : 1);
 			buff -= buff > 0;
 		}
-		ticks += Math.ceil(.115 * g.agility) + Math.ceil(turns * g.agility);
-		ticks -= turns * g.hyperspeed;
+
+		ok_dmg = -hp * g.overkill;
+		ticks += Math.ceil(turns * g.agility) - turns * g.hyperspeed;
 		if (g.titimp && imp < .03)
 			buff = Math.min(buff + 30, 45);
 	}
@@ -124,12 +131,9 @@ function display(infos) {
 		// difficulty: .84,
 		// hyperspeed: false,
 		// import_chance: .5,
+		// overkill: 0,
 		// range: 1.2,
 		// size: 30,
 		// titimp: true,
 	// }))
 // }
-seed = 0x123456789abcdef;
-for (var i = 0; i < 400; ++i) {
-	console.log(rng());
-}
