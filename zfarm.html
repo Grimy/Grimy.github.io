@@ -39,7 +39,6 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 <p>Warning: this calculator is currently in beta-test, results may be off.</p>
 
 <!-- TODO
-* Fix agility < 20
 * Overkill
 * Trimp death
 * Input checking
@@ -145,8 +144,8 @@ function pick(list) {
 	return list[Math.floor(Math.random() * list.length)];
 }
 
-function show_time(ticks) {
-	return ((ticks / cells / 5 - 1) * 100).toFixed(1);
+function show_percentage(ratio) {
+	return ((ratio - 1) * 100).toFixed(1);
 }
 
 function simulate(zone) {
@@ -185,20 +184,20 @@ function run() {
 	cd = 1 + input('crit_damage') / 100;
 
 	var zone = 6;
-	while (atk >= biome.max() * enemy_hp(zone, size - 1))
+	while (atk >= biome.max() * enemy_hp(zone + 1, size - 1))
 		++zone;
 
-	var ticks = [simulate(zone), simulate(zone + 1), simulate(zone + 2)];
-	var value = [1 / (5 * cells), 1.25 / ticks[0], 1.25 * 1.25 / ticks[1], 1.25 * 1.25 * 1.25 / ticks[2]];
+	var ticks = [simulate(zone), simulate(zone + 1), simulate(zone + 2), simulate(zone + 3)];
+	var value = ticks.map((x, i) => Math.pow(1.25, i) / x);
 
-	$('#z_best').textContent = "z" + (zone - 1 + value.indexOf(value.max()));
-	$('#z1').textContent = "z" + (zone - 1);
-	$('#z2').textContent = "z" + (zone);
-	$('#time2').textContent = show_time(ticks[0]);
-	$('#z3').textContent = "z" + (zone + 1);
-	$('#time3').textContent = show_time(ticks[1]);
-	$('#z4').textContent = "z" + (zone + 2);
-	$('#time4').textContent = show_time(ticks[2]);
+	$('#z_best').textContent = "z" + (zone + value.indexOf(value.max()));
+	$('#z1').textContent = "z" + (zone);
+	$('#z2').textContent = "z" + (zone + 1);
+	$('#time2').textContent = show_percentage(ticks[1] / ticks[0]);
+	$('#z3').textContent = "z" + (zone + 2);
+	$('#time3').textContent = show_percentage(ticks[2] / ticks[0]);
+	$('#z4').textContent = "z" + (zone + 3);
+	$('#time4').textContent = show_percentage(ticks[3] / ticks[0]);
 }
 
 run();
