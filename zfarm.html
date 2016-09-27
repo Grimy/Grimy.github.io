@@ -39,7 +39,6 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 <p>Warning: this calculator is currently in beta-test, results may be off.</p>
 
 <!-- TODO
-* Biome picker
 * Fix agility < 20
 * Overkill
 * Trimp death
@@ -50,6 +49,15 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 	<legend>Inputs</legend>
 	<input type=text id=attack value=80Qi></input>
 	<label for=attack>Min ATK</label>
+	<hr>
+	<select id=biome>
+		<option value=gardens>Garden</option>
+		<option value=mountain>Mountain</option>
+		<option value=depths>Depths</option>
+		<option value=forest>Forest</option>
+		<option value=sea>Sea</option>
+	</select>
+	<label for=biome>Biome</label>
 	<hr>
 	<input type=text id=imports value=5></input>
 	<label for=imports>Map imp-orts</label>
@@ -90,16 +98,26 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 <script>
 
 var cells = 10000;
-var biome = [.7, 1.3, 1.3, 1, .7, .8, 1.1, .95, .95, 1, .8, 1.3, 1.1, 1.4];
+
+var biomes = {
+	all: [.7, 1.3, 1.3, 1, .7, .8, 1.1],
+	gardens: [.95, .95, 1, .8, 1.3, 1.1, 1.4],
+	sea: [.9, 1.1, 1.1],
+	mountain: [2, 1.4, 1.4],
+	forest: [1.2, 1.5],
+	depths: [1, .7, 1.4, .8],
+};
+
 var suffices = [
 	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
 	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
 	'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
 ].map((x) => x.toLowerCase());
+
 var regex = new RegExp(suffices.join('|'), 'i');
 
 // Inputs
-var atk, range, size, difficulty, import_chance, titimp, agility, cc, cd;
+var atk, biome, range, size, difficulty, import_chance, titimp, agility, cc, cd;
 
 function $(str) { return document.querySelector(str); }
 function input(id) { return $('#' + id).value; }
@@ -156,6 +174,7 @@ function simulate(zone) {
 
 function run() {
 	atk = parse(input('attack'));
+	biome = biomes.all.concat(biomes[$('#biome').value]);
 	size = input('size');
 	difficulty = input('difficulty') / 100;
 	import_chance = input('imports') * .03;
