@@ -19,6 +19,11 @@ function rng() {
 	return seed / 2147483648;
 }
 
+// Converts a ratio (x1.15) into a percentage (+15%)
+function percentage(ratio) {
+	return ((ratio - 1) * 100).toFixed(1);
+}
+
 /*
 function enemy_atk(zone, cell) {
 	var amt = 5.5 * Math.sqrt(zone * Math.pow(3.27, zone)) - 1.1;
@@ -93,22 +98,27 @@ function stats(g) {
 }
 
 function display(infos) {
+	var one_shot = 'The highest zone where you one-shot everything is <b>z' + infos[0].zone + '</b>.' ;
+
 	var table = '';
 
 	for (var i = 0; i < 4; ++i) {
 		var cps = cells * 10 / infos[i].ticks;
 		infos[i].value = cps * infos[i].loot;
-		table += '<p>z' + infos[i].zone + ': ' + infos[i].loot.toFixed(1) + '% loot at ' + cps.toFixed(3) + ' cells/s (blah % better/worse).';
+		table += '<p>z' + infos[i].zone + ': ' + infos[i].loot.toFixed(1) + '% loot';
+		table += ' at ' + cps.toFixed(3) + ' cells/s';
+		if (i) {
+			delta = percentage(infos[i].value / infos[0].value);
+			table += ' = ' + Math.abs(delta) + '% ' + (delta < 0 ? 'less' : 'more') + ' loot/s than on z' + infos[0].zone;
+		}
+		table += '.';
 	}
-
-	var one_shot = 'The highest zone where you one-shot everything is <b>z' + infos[0].zone + '</b>.' ;
 
 	infos.sort((a, b) => b.value - a.value);
 
 	var best = infos[0].zone;
 	var second = infos[1].zone;
 	var ratio = infos[0].value / infos[1].value;
-	var percent = ((ratio - 1) * 100).toFixed(1);
 	var loot_diff = Math.ceil(infos.max_loot * (1 - 1 / ratio));
 	var adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
@@ -117,7 +127,7 @@ function display(infos) {
 	result += 
 		loot_diff <= 1 ? ' or z' + second + '.</b> They’re equally efficient.' :
 		loot_diff <= 6 ? '.</b> But a z' + second + ' map with ' + loot_diff + '% higher loot is better.' :
-		                 '.</b> It’s ' + percent + '% more efficient than z' + second + '.';
+		                 '.</b> It’s ' + percentage(ratio) + '% more efficient than z' + second + '.';
 	return '<p style="font-size: 1.1em">' + result + '<p>' + one_shot + table;
 }
 

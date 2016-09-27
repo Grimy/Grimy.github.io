@@ -38,10 +38,6 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 
 <p>Warning: this calculator is currently in beta-test, results may be off.</p>
 
-<!-- TODO
-* Trimp death
-* Input checking
--->
 <form action=#>
 	<fieldset>
 		<legend>Inputs</legend>
@@ -57,31 +53,31 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 		</select>
 		<label for=biome>Biome</label>
 		<hr>
-		<input type=text id=imports value=5></input>
+		<input type=text id=imports value=5 pattern='[0-5]'></input>
 		<label for=imports>Map imp-orts</label>
 		<hr>
 		<input type=checkbox checked id=titimp></input>
 		<label for=titimp>Unlocked titimp?</label>
 		<hr>
-		<input type=text id=agility value=20></input>
+		<input type=text id=agility value=20 pattern='1?\d|20'></input>
 		<label for=titimp>Agility</label>
 		<hr>
-		<input type=text id=range value=10></input>
+		<input type=text id=range value=10 pattern='\d|10'></input>
 		<label for=titimp>Range</label>
 		<hr>
-		<input type=text id=crit_chance value=50></input>
+		<input type=text id=crit_chance value=50 pattern='[1-7]?\d|80'></input>
 		<label for=titimp>Crit chance</label>
 		<hr>
 		<input type=text id=crit_damage value=400></input>
 		<label for=titimp>Crit damage%</label>
 		<hr>
-		<input type=text id=size value=30></input>
+		<input type=text id=size value=30 pattern='\d\d'></input>
 		<label for=size>Map size</label>
 		<hr>
-		<input type=text id=difficulty value=84></input>
+		<input type=text id=difficulty value=84 pattern='\d+'></input>
 		<label for=difficulty>Map difficulty%</label>
 		<hr>
-		<input type=text id=overkill value=0></input>
+		<input type=text id=overkill value=0 pattern='\d|1[0-5]'></input>
 		<label for=overkill>Overkill</label>
 		<hr>
 		<input type=checkbox id=hyperspeed></input>
