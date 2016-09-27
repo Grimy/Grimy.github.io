@@ -43,8 +43,9 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 * Fix agility < 20
 * Overkill
 * Trimp death
+* Input checking
 -->
-<form>
+<form action=#>
 <fieldset>
 	<legend>Inputs</legend>
 	<input type=text id=attack value=80Qi></input>
@@ -73,7 +74,7 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 	<hr>
 	<input type=text id=difficulty value=84></input>
 	<label for=difficulty>Map difficulty%</label>
-	<button type=button onclick='run()'>Recalculate</button>
+	<button type=submit onclick='run()'>Recalculate</button>
 </fieldset>
 
 <fieldset id=results>
