@@ -69,6 +69,11 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 			Unlocked titimp?
 		</label>
 
+		<label title='Bonus enemy health in maps, in percent'>
+			<input type=text checked id=challenge>
+			Challenge +health%
+		</label>
+
 		<label title='Level of your Agility perk (max 20)'>
 			<input type=text id=agility value=20 pattern='1?\d|20'>
 			Agility
@@ -141,7 +146,7 @@ function parse_inputs() {
 		biome: biomes.all.concat(biomes[$('#biome').value]),
 		cc: $('#crit_chance').value / 100,
 		cd: 1 + $('#crit_damage').value / 100,
-		difficulty: $('#difficulty').value / 100,
+		difficulty: $('#difficulty').value / 100 * (1 + $('#challenge').value / 100),
 		hyperspeed: $('#hyperspeed').checked,
 		import_chance: $('#imports').value * .03,
 		overkill: $('#overkill').value * .005,
