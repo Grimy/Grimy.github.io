@@ -1,5 +1,4 @@
-var cells = 10000;
-var seed;
+var max_ticks = 6048000; // One week
 
 var biomes = {
 	all: [.7, 1.3, 1.3, 1, .7, .8, 1.1],
@@ -12,11 +11,13 @@ var biomes = {
 
 Array.prototype.max = function() { return Math.max.apply(null, this) };
 
+var seed = 42;
+var max_rand = Math.pow(2, 31);
 function rng() {
 	seed ^= seed >> 11;
 	seed ^= seed << 8;
 	seed ^= seed >> 19;
-	return seed / 2147483648;
+	return seed;
 }
 
 // Converts a ratio (x1.15) into a percentage (+15%)
@@ -40,57 +41,47 @@ function enemy_hp(zone, cell) {
 	return amt;
 }
 
-// Pick an element at random in the givel array.
-function pick(list) {
-	return list[Math.floor(rng() * list.length)];
-}
-
 // Simulate farming at the given zone, and return the number of ticks it takes.
 function simulate(zone, g) {
 	var ticks = 0;
 	var buff = 0;
 	var ok_dmg = 0;
-	seed = 1;
 
-	for (var i = 0; i < cells; ++i) {
+	for (var cell = 0; ticks < max_ticks; ++cell) {
 		var imp = rng();
-		var toughness = imp < g.import_chance ? 1 : pick(g.biome);
-		var hp = g.difficulty * toughness * enemy_hp(zone, i % g.size);
-		var turns = 0;
+		var toughness = imp < g.import_chance ? 1 : g.biome[imp % g.biome.length];
+		var hp = g.difficulty * toughness * enemy_hp(zone, cell % g.size);
 
 		hp -= Math.min(ok_dmg, hp);
-		if (hp >= 1)
-			ticks += Math.ceil(.115 * g.agility) ;
-
-		while (hp >= 1) {
-			++turns;
+		for (var turns = 0; hp > 0; ++turns) {
 			var crit = rng() < g.cc ? g.cd : 1;
-			hp -= g.atk * (1 + g.range * rng()) * crit * (buff ? 2 : 1);
-			buff -= buff > 0;
+			hp -= g.atk * (1 + g.range * rng()) * crit * (buff > ticks ? 2 : 1);
 		}
 
 		ok_dmg = -hp * g.overkill;
-		ticks += Math.ceil(turns * g.agility) - turns * g.hyperspeed;
-		if (g.titimp && imp < .03)
-			buff = Math.min(buff + 30, 45);
+		ticks += (turns > 0) + (g.agility > 9) + Math.ceil(turns * g.agility);
+		if (g.titimp && imp < .03 * max_rand)
+			buff = Math.min(Math.max(ticks, buff) + 300, ticks + 450);
 	}
 
-	return ticks;
+	return cell;
 }
 
 // Computes informations about 
 function stats(g) {
-	console.log(g.agility);
-
 	var zone = 6;
 	while (g.atk >= g.difficulty * g.biome.max() * enemy_hp(zone + 1, g.size - 1))
 		++zone;
 
+	// var ms = Date.now();
+
 	var infos = [0, 1, 2, 3].map((i) => ({
 		zone: zone + i,
-		ticks: simulate(zone + i, g),
+		cells: simulate(zone + i, g),
 		loot: 100 * Math.pow(1.25, i),
 	}));
+
+	// infos.total_time = Date.now() - ms;
 
 	// Test for gardens
 	infos.max_loot = g.biome.indexOf(.95) > 0 ? 160 : 185;
@@ -103,7 +94,7 @@ function display(infos) {
 	var table = '';
 
 	for (var i = 0; i < 4; ++i) {
-		var cps = cells * 10 / infos[i].ticks;
+		var cps = infos[i].cells * 10 / max_ticks;
 		infos[i].value = cps * infos[i].loot;
 		table += '<p>z' + infos[i].zone + ': ' + infos[i].loot.toFixed(1) + '% loot';
 		table += ' at ' + cps.toFixed(3) + ' cells/s';
@@ -129,6 +120,7 @@ function display(infos) {
 		loot_diff <= 6 ? '.</b> But a z' + second + ' map with ' + loot_diff + '% higher loot is better.' :
 		                 '.</b> It’s ' + percentage(ratio) + '% more efficient than z' + second + '.';
 	return '<p style="font-size: 1.1em">' + result + '<p>' + one_shot + table;
+	// + '<p>Computed in ' + infos.total_time + 'ms';
 }
 
 // for (var atk = 1E16; atk < 1E20; atk += 1E16) {
