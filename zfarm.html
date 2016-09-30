@@ -43,7 +43,7 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 
 		<legend>Inputs</legend>
 
-		<label title='Your minimum attack, in the stance you use for farming'>
+		<label title='Your minimum attack, in the stance you use for farming, without the Titimp buff'>
 			<input type=text id=attack value=12Qi>
 			Min ATK
 		</label>
@@ -114,12 +114,14 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 			Hyperspeed?
 		</label>
 
-		<button type=submit onclick='main()'>Recalculate</button>
+		<button type=submit onclick='display(stats(parse_inputs()))'>Recalculate</button>
 	</fieldset>
 
 	<fieldset>
 		<legend>Results</legend>
-		<div id=results></div>
+		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
+		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
+		<p id=details>
 	</fieldset>
 </form>
 
@@ -136,7 +138,7 @@ function parse_suffixes(str) {
 	suffixes.reverse();
 	var regex = new RegExp(suffixes.join('|'), 'i');
 	suffixes.reverse();
-	return parseFloat(str.replace(regex, (x) => "E" + suffixes.indexOf(x) * 3));
+	return parseFloat(str.replace(regex, (x) => `E${suffixes.indexOf(x) * 3}`));
 }
 
 function parse_inputs() {
@@ -155,9 +157,42 @@ function parse_inputs() {
 	}
 }
 
-function main() {
-	$("#results").innerHTML = display(stats(parse_inputs()));
+function display(infos) {
+	$('#one-shot').textContent = `z${infos[0].zone}`;
+
+	$('#details').innerHTML = '';
+	for (info of infos) {
+		var p = document.createElement('p');
+		var cps = info.cells * 10 / max_ticks;
+		info.value = cps * info.loot;
+		p.textContent = `z${info.zone}: ${info.loot.toFixed(1)}% loot at ${cps.toFixed(3)} cells/s`;
+		var delta = percentage(info.value / infos[0].value);
+		if (delta)
+			p.textContent += ` = ${Math.abs(delta)}% ${delta < 0 ? 'less' : 'more'} loot/s than on z${infos[0].zone}`;
+		p.textContent += '.';
+		$('#details').appendChild(p);
+	}
+
+	infos.sort((a, b) => b.value - a.value);
+
+	var best = infos[0].zone;
+	var second = infos[1].zone;
+	var ratio = infos[0].value / infos[1].value;
+	var max_loot = $('#biome').value == 'gardens' ? 1.85 : 1.60;
+	var loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
+	var adverbs = ["", "", " probably", " probably", " probably", " probably",
+		" probably", "", "", "", " really", " really", " definitely"]
+
+	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on z${best}`;
+	if (loot_diff <= 1) {
+		$('#result').textContent += ` or z${second}`;
+		$('#comment').textContent = `They’re equally efficient.`;
+	} else {
+		$('#comment').textContent = lood_diff <= 6 ?
+			`But a z${second} map with ${loot_diff}% higher loot is better.` :
+			`It’s ${percentage(ratio)}% more efficient than z${second}.`;
+	}
 }
 
-main();
+display(stats(parse_inputs()));
 </script>

@@ -1,3 +1,5 @@
+':' //; exec node "$0"
+
 var max_ticks = 6048000; // One week
 
 var biomes = {
@@ -67,75 +69,34 @@ function simulate(zone, g) {
 	return cell;
 }
 
-// Computes informations about 
+// Computes looting efficiency based on the given game state.
 function stats(g) {
-	var zone = 6;
-	while (g.atk >= g.difficulty * g.biome.max() * enemy_hp(zone + 1, g.size - 1))
-		++zone;
+	var max_os = 6;
+	while (g.atk >= g.difficulty * g.biome.max() * enemy_hp(max_os + 1, g.size - 1))
+		++max_os;
 
-	// var ms = Date.now();
-
-	var infos = [0, 1, 2, 3].map((i) => ({
-		zone: zone + i,
-		cells: simulate(zone + i, g),
-		loot: 100 * Math.pow(1.25, i),
+	return [0, 1, 2, 3].map((i) => max_os + i).map((zone) => ({
+		zone: zone,
+		cells: simulate(zone, g),
+		loot: Math.pow(1.25, zone),
 	}));
-
-	// infos.total_time = Date.now() - ms;
-
-	// Test for gardens
-	infos.max_loot = g.biome.indexOf(.95) > 0 ? 160 : 185;
-	return infos;
 }
 
-function display(infos) {
-	var one_shot = 'The highest zone where you one-shot everything is <b>z' + infos[0].zone + '</b>.' ;
-
-	var table = '';
-
-	for (var i = 0; i < 4; ++i) {
-		var cps = infos[i].cells * 10 / max_ticks;
-		infos[i].value = cps * infos[i].loot;
-		table += '<p>z' + infos[i].zone + ': ' + infos[i].loot.toFixed(1) + '% loot';
-		table += ' at ' + cps.toFixed(3) + ' cells/s';
-		if (i) {
-			delta = percentage(infos[i].value / infos[0].value);
-			table += ' = ' + Math.abs(delta) + '% ' + (delta < 0 ? 'less' : 'more') + ' loot/s than on z' + infos[0].zone;
-		}
-		table += '.';
-	}
-
-	infos.sort((a, b) => b.value - a.value);
-
-	var best = infos[0].zone;
-	var second = infos[1].zone;
-	var ratio = infos[0].value / infos[1].value;
-	var loot_diff = Math.ceil(infos.max_loot * (1 - 1 / ratio));
-	var adverbs = ["", "", " probably", " probably", " probably", " probably",
-		" probably", "", "", "", " really", " really", " definitely"]
-
-	var result = '<b>You should' + adverbs[Math.min(loot_diff, 12)] + ' farm on z' + best;
-	result += 
-		loot_diff <= 1 ? ' or z' + second + '.</b> They’re equally efficient.' :
-		loot_diff <= 6 ? '.</b> But a z' + second + ' map with ' + loot_diff + '% higher loot is better.' :
-		                 '.</b> It’s ' + percentage(ratio) + '% more efficient than z' + second + '.';
-	return '<p style="font-size: 1.1em">' + result + '<p>' + one_shot + table;
-	// + '<p>Computed in ' + infos.total_time + 'ms';
+// When executing from the command-line
+if (typeof window === 'undefined') {
+	var start = Date.now();
+	console.log(stats({
+		agility: 10 * Math.pow(.95, 20),
+		atk: 1e18,
+		biome: biomes.all.concat(biomes['gardens']),
+		cc: .5 * max_rand,
+		cd: 5,
+		difficulty: .84,
+		import_chance: .15 * max_rand,
+		overkill: 0,
+		range: .2 / max_rand,
+		size: 30,
+		titimp: true,
+	}));
+	console.log(Date.now() - start);
 }
-
-// for (var atk = 1E16; atk < 1E20; atk += 1E16) {
-	// display(stats({
-		// agility: 10 * Math.pow(.95, 20),
-		// atk: atk,
-		// biome: biomes.all.concat(biomes['gardens']),
-		// cc: .5,
-		// cd: 5,
-		// difficulty: .84,
-		// hyperspeed: false,
-		// import_chance: .5,
-		// overkill: 0,
-		// range: 1.2,
-		// size: 30,
-		// titimp: true,
-	// }))
-// }
