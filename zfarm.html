@@ -127,18 +127,18 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 
 <script src=zfarm.js></script>
 <script>
+const suffixes = [
+	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
+	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
+	'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
+];
+
 function $(str) { return document.querySelector(str); }
 
 function parse_suffixes(str) {
-	var suffixes = [
-		'(?!)', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
-		'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
-		'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
-	].map((x) => x.toLowerCase());
-	suffixes.reverse();
-	var regex = new RegExp(suffixes.join('|'), 'i');
-	suffixes.reverse();
-	return parseFloat(str.replace(regex, (x) => `E${suffixes.indexOf(x) * 3}`));
+	for (var i = suffixes.length; i > 0; --i)
+		str = str.replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`)
+	return parseFloat(str);
 }
 
 function parse_inputs() {
@@ -157,6 +157,15 @@ function parse_inputs() {
 	}
 }
 
+function prettify(number) {
+	if (number < 10000)
+		return number;
+	let unit = -1;
+	while (number > 1000)
+		number /= 1000, ++unit;
+	return number.toFixed((number < 10) + (number < 100)) + suffixes[unit];
+}
+
 function display(infos) {
 	$('#one-shot').textContent = `z${infos[0].zone}`;
 
@@ -165,11 +174,13 @@ function display(infos) {
 		var p = document.createElement('p');
 		var cps = info.cells * 10 / max_ticks;
 		info.value = cps * info.loot;
-		p.textContent = `z${info.zone}: ${info.loot.toFixed(1)}% loot at ${cps.toFixed(3)} cells/s`;
-		var delta = percentage(info.value / infos[0].value);
-		if (delta)
-			p.textContent += ` = ${Math.abs(delta)}% ${delta < 0 ? 'less' : 'more'} loot/s than on z${infos[0].zone}`;
-		p.textContent += '.';
+		p.textContent = `z${info.zone}: ${prettify(info.loot)} loot at ${cps.toFixed(3)} cells/s`;
+		// if (info.value !== infos[0].value) {
+			// var delta = percentage(info.value / infos[0].value);
+			// p.textContent += ` = ${Math.abs(delta)}% ${delta < 0 ? 'less' : 'more'} loot/s than on z${infos[0].zone}`;
+		// }
+		// p.textContent += '.';
+		p.textContent += ` = ${prettify(info.loot * cps)} loot/s.`;
 		$('#details').appendChild(p);
 	}
 
@@ -178,7 +189,7 @@ function display(infos) {
 	var best = infos[0].zone;
 	var second = infos[1].zone;
 	var ratio = infos[0].value / infos[1].value;
-	var max_loot = $('#biome').value == 'gardens' ? 1.85 : 1.60;
+	var max_loot = $('#biome').value == 'gardens' ? 185 : 160;
 	var loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
 	var adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
@@ -188,7 +199,7 @@ function display(infos) {
 		$('#result').textContent += ` or z${second}`;
 		$('#comment').textContent = `They’re equally efficient.`;
 	} else {
-		$('#comment').textContent = lood_diff <= 6 ?
+		$('#comment').textContent = loot_diff <= 6 ?
 			`But a z${second} map with ${loot_diff}% higher loot is better.` :
 			`It’s ${percentage(ratio)}% more efficient than z${second}.`;
 	}
