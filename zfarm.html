@@ -120,6 +120,9 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
 		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
 		<p id=details>
+		<p>Note: the displayed loot values don’t account for special imps, looting perks and staffs.
+		As such, your actual loot will be much higher. However, these factors affect all maps in the
+		same way, and don’t affect the choice of map.
 	</fieldset>
 </form>
 
@@ -157,7 +160,7 @@ function parse_inputs() {
 
 function prettify(number) {
 	if (number < 10000)
-		return number;
+		return Math.round(number);
 	let unit = -1;
 	while (number > 1000)
 		number /= 1000, ++unit;
