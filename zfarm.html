@@ -77,9 +77,9 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 			Agility
 		</label>
 
-		<label title='Level of your Range perk (max 10)'>
-			<input type=text id=range value=10 pattern='\d|10'>
-			Range
+		<label title='Your max attack, divided by your min attack (usually 1.2, but can vary due to challenges)'>
+			<input type=text id=range value='1.2'>
+			Attack range (max/min)
 		</label>
 
 		<label title='Critical hit chance, as displayed in the damage breakdown (max 80)'>
@@ -149,7 +149,7 @@ function parse_inputs() {
 		difficulty: $('#difficulty').value / 100 * (1 + $('#challenge').value / 100),
 		import_chance: $('#imports').value * .03 * max_rand,
 		overkill: $('#overkill').value * .005,
-		range: (120 / (80 + 2 * $('#range').value) - 1) / max_rand,
+		range: ($('#range').value - 1) / max_rand,
 		size: $('#size').value | 0,
 		titimp: $('#titimp').checked,
 	}
