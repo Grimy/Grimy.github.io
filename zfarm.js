@@ -43,7 +43,7 @@ function enemy_hp(zone, cell) {
 	return amt;
 }
 
-// Simulate farming at the given zone, and return the number of ticks it takes.
+// Simulate farming at the given zone for a fixed time, and return the number cells cleared.
 function simulate(zone, g) {
 	var ticks = 0;
 	var buff = 0;
