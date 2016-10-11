@@ -54,7 +54,9 @@ function simulate(zone, g) {
 		var toughness = imp < g.import_chance ? 1 : g.biome[imp % g.biome.length];
 		var hp = g.difficulty * toughness * enemy_hp(zone, cell % g.size);
 
-		hp -= Math.min(ok_dmg, hp);
+		if (cell % g.size != 0)
+			hp -= Math.min(ok_dmg, hp);
+
 		for (var turns = 0; hp > 0; ++turns) {
 			var crit = rng() < g.cc ? g.cd : 1;
 			hp -= g.atk * (1 + g.range * rng()) * crit * (buff > ticks ? 2 : 1);
@@ -75,7 +77,7 @@ function stats(g) {
 	while (g.atk >= g.difficulty * g.biome.max() * enemy_hp(max_os + 1, g.size - 1))
 		++max_os;
 
-	return [0, 1, 2, 3].map((i) => max_os + i).map((zone) => ({
+	return [0, 1, 2, 3, 4, 5].map((i) => max_os + i).map((zone) => ({
 		zone: zone,
 		cells: simulate(zone, g),
 		loot: Math.pow(1.25, zone),
