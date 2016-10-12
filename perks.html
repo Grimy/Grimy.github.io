@@ -44,7 +44,7 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 
 		<label title='Total Helium Earned, as displayed on the Stats screen'>
 			<input type=text id=helium value=10M>
-			Helium
+			Total Helium
 		</label>
 
 		<label title='The zone on which you plan to do your Void Maps'>
@@ -75,6 +75,21 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 			Last unlock
 		</label>
 
+		<label title='How much you value +1% Helium income'>
+			<input type=text id=weight-he value=6>
+			Weight: Helium
+		</label>
+
+		<label title='How much you value +1% attack'>
+			<input type=text id=weight-atk value=3>
+			Weight: Attack
+		</label>
+
+		<label title='How much you value +1% survivability (health and block)'>
+			<input type=text id=weight-hp value=1>
+			Weight: Health
+		</label>
+
 		<button onclick='parse_inputs(); optimize(); display()'>Optimize!</button>
 	</fieldset>
 
@@ -100,11 +115,22 @@ function parse_suffixes(str) {
 	return parseFloat(str);
 }
 
+function input(id) {
+	return parse_suffixes($('#' + id).value.toLowerCase());
+}
+
 function parse_inputs() {
-	helium = parse_suffixes($('#helium').value.toLowerCase());
+	helium = input('helium');
 	zone = parseInt($('#zone').value);
 	last_unlock = $('#unlock').value;
-	console.log(helium, zone, last_unlock);
+	weights = {
+		helium: input('weight-he'),
+		attack: input('weight-atk'),
+		health: input('weight-hp'),
+		overkill: .4,
+		sipho: .1
+	};
+	console.log(helium, zone, last_unlock, weights);
 }
 
 function prettify(number) {
