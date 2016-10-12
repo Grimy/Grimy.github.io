@@ -1,0 +1,128 @@
+<meta charset=UTF-8>
+<title>Grim’s Perks Calculator</title>
+<style>
+body { background: #E6E6E6; color: #333; font-size: 1.1em }
+* { box-sizing: border-box }
+fieldset {
+	padding: 20px; width: 40rem; border: 1px solid #04B; border-radius: 8px; background: #EEE;
+	-webkit-box-shadow: 0 3px 5px rgba(0,0,0,.4); box-shadow: 0 3px 5px rgba(0,0,0,.4);
+}
+legend { font-size: 1.3rem }
+legend, h1 { color: #04B }
+label {
+	display: block; margin: 1ex .25em;
+	text-decoration: underline dotted; cursor: help;
+}
+input, select { width: 50%; margin: 0 }
+form {
+	width: 80%;
+	margin: 0 auto;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-between;
+}
+h1, button { display: block; width: 400px; margin: 30px auto }
+button {
+	padding: 0; cursor: pointer;
+	-webkit-transition: background-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+	-o-transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
+	transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
+	background-color: #06F; color: #EEE; height: 2.2em; font-size: 1.4em;
+	border: 1px solid rgba(0, 0, 0, .4); border-radius: 4px;
+}
+button:hover  { background-color: #05D }
+button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.4); box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
+</style>
+
+<h1>Grim’s Perks Calculator</h1>
+
+<p>This calculator is in early testing. Sorry for the ugly results screen!
+
+<form action='javascript://0'>
+	<fieldset>
+		<legend>Inputs</legend>
+
+		<label title='Total Helium Earned, as displayed on the Stats screen'>
+			<input type=text id=helium value=10M>
+			Helium
+		</label>
+
+		<label title='The zone on which you plan to do your Void Maps'>
+			<input type=text id=zone value=150 pattern='\d{2,3}'>
+			VM zone
+		</label>
+
+		<label title='The latest perk you have unlocked'>
+			<select id=unlock>
+				<option value=loot2>Looting II</option>
+				<option value=carp2>Carpentry II</option>
+				<option value=moti2>Motivation II</option>
+				<option value=power2>Power II</option>
+				<option value=tough2>Toughness II</option>
+				<option value=ok>Overkill</option>
+				<option value=reso>Resourceful</option>
+				<option value=coord>Coordinated</option>
+				<option value=sipho>Siphonology</option>
+				<option value=anti>Anticipation</option>
+				<option value=resi>Resilience</option>
+				<option value=medit>Meditation</option>
+				<option value=relent>Relentlessness</option>
+				<option value=carp>Carpentry</option>
+				<option value=arti>Artisanistry</option>
+				<option value=range>Range</option>
+				<option value=agility>Base perks only</option>
+			</select>
+			Last unlock
+		</label>
+
+		<button onclick='parse_inputs(); optimize(); display()'>Optimize!</button>
+	</fieldset>
+
+	<fieldset>
+		<legend>Results</legend>
+		<div id=result></div>
+	</fieldset>
+</form>
+
+<script src=perks.js></script>
+<script>
+const suffixes = [
+	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
+	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
+	'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
+];
+
+function $(str) { return document.querySelector(str); }
+
+function parse_suffixes(str) {
+	for (var i = suffixes.length; i > 0; --i)
+		str = str.replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`)
+	return parseFloat(str);
+}
+
+function parse_inputs() {
+	helium = parse_suffixes($('#helium').value.toLowerCase());
+	zone = parseInt($('#zone').value);
+	last_unlock = $('#unlock').value;
+	console.log(helium, zone, last_unlock);
+}
+
+function prettify(number) {
+	if (number < 10000)
+		return Math.round(number);
+	let unit = -1;
+	while (number > 1000)
+		number /= 1000, ++unit;
+	return number.toFixed((number < 10) + (number < 100)) + suffixes[unit];
+}
+
+function display(infos) {
+	$('#result').innerHTML = '';
+	for (perk in level) {
+		if (level[perk] == 0)
+			continue;
+		$('#result').innerHTML += '<p>' + perk + ': ' + level[perk];
+	}
+}
+
+</script>
