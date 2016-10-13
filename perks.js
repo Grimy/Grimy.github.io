@@ -2,10 +2,10 @@
 
 // zxv: 10 numerical inputs, 12 checkboxes, 1 dropdown menu
 // Inputs
-var helium = 14.7e6;
+var helium = 150e3;
 var zone = 150;
-var last_unlock = 'reso';
-var weights = {helium: 6, attack: 3, health: 1, overkill: .4, sipho: .1}
+var last_unlock = 'resi';
+var weights = {helium: 6, attack: 3, health: 1, overkill: 1}
 
 // Outputs
 var level = {};
@@ -47,7 +47,6 @@ const cap = {range: 10, agility: 20, relent: 10, medit: 7, anti: 10, sipho: 3, o
 // Various other constants
 const loot_factor = .7;
 const turkimp = 1 + (1.5 / 1.166 - 1) * .7;
-const magic = (Math.exp(1) - 1) * 100;
 const geneticist_exp = Math.log(1.01) / Math.log(1.02);
 
 const add = (perk, x) => 1 + level[perk] * x / 100;
@@ -90,8 +89,10 @@ function income() {
 }
 
 function attack() {
-	var crits = 1 + (level['relent'] / 20) * add('relent', 30);
-	return weapons() * crits * add('power', 5) * add('range', 1) * add('anti', 10) * add('power2', 1);
+	var base = add('power', 5) * add('power2', 1) * add('range', 1);
+	var crits = add('relent', 5 * add('relent', 30));
+	var sipho = Math.pow(1 + level['sipho'], 0.1);
+	return weapons() * base * crits * sipho * add('anti', 10);
 }
 
 // TODO: account for Slow
@@ -126,8 +127,7 @@ var stats = {
 	helium:   () => add('loot', 5) * add('loot2', 0.25),
 	attack:   () => coord() * attack(),
 	health:   () => survivability(),
-	overkill: () => add('ok', magic),
-	sipho:    () => add('sipho', magic),
+	overkill: () => coord() * attack() * add('ok', 60),
 }
 
 function score() {
@@ -183,6 +183,14 @@ function optimize() {
 		helium -= cost(best);
 		++level[best];
 	}
+}
+
+// When executing from the command-line
+if (typeof window === 'undefined') {
+	optimize();
+	for (perk in level)
+		if (level[perk] != 0)
+			console.log(perk + '\t' + level[perk]);
 }
 
 /*

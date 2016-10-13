@@ -144,11 +144,9 @@ function prettify(number) {
 
 function display(infos) {
 	$('#result').innerHTML = '';
-	for (perk in level) {
-		if (level[perk] == 0)
-			continue;
-		$('#result').innerHTML += '<p>' + perk + ': ' + level[perk];
-	}
+	for (perk in level)
+		if (level[perk] != 0)
+			$('#result').innerHTML += '<p>' + perk + ': ' + level[perk];
 }
 
 </script>
