@@ -43,12 +43,12 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 		<legend>Inputs</legend>
 
 		<label title='Total Helium Earned, as displayed on the Stats screen'>
-			<input type=text id=helium value=10M>
+			<input type=text id=helium required>
 			Total Helium
 		</label>
 
 		<label title='The zone on which you plan to do your Void Maps'>
-			<input type=text id=zone value=150 pattern='\d{2,3}'>
+			<input type=text id=zone required pattern='\d{2,3}'>
 			VM zone
 		</label>
 
@@ -76,7 +76,7 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 		</label>
 
 		<label title='How much you value +1% Helium income'>
-			<input type=text id=weight-he value=6>
+			<input type=text id=weight-he value=7>
 			Weight: Helium
 		</label>
 
@@ -90,7 +90,7 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 			Weight: Health
 		</label>
 
-		<button onclick='parse_inputs(); optimize(); display()'>Optimize!</button>
+		<button onclick='display(optimize(parse_inputs()))'>Optimize!</button>
 	</fieldset>
 
 	<fieldset>
@@ -119,19 +119,18 @@ function input(id) {
 	return parse_suffixes($('#' + id).value.toLowerCase());
 }
 
-function parse_inputs() {
-	helium = input('helium');
-	zone = parseInt($('#zone').value);
-	last_unlock = $('#unlock').value;
-	weights = {
+const parse_inputs = () => ({
+	helium: input('helium'),
+	zone: parseInt($('#zone').value),
+	last_unlock: $('#unlock').value,
+	weights: {
 		helium: input('weight-he'),
 		attack: input('weight-atk'),
 		health: input('weight-hp'),
-		overkill: .4,
-		sipho: .1
-	};
-	console.log(helium, zone, last_unlock, weights);
-}
+		overkill: 1,
+		breed: 0,
+	},
+});
 
 function prettify(number) {
 	if (number < 10000)
@@ -142,7 +141,7 @@ function prettify(number) {
 	return number.toFixed((number < 10) + (number < 100)) + suffixes[unit];
 }
 
-function display(infos) {
+function display(level) {
 	$('#result').innerHTML = '';
 	for (perk in level)
 		if (level[perk] != 0)
