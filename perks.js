@@ -39,11 +39,19 @@ function optimize(params) {
 	// Maximum level, for the perks that have one
 	const cap = {range: 10, agility: 20, relent: 10, medit: 7, anti: 10, sipho: 3, ok: 30};
 
-	// Mathematical helper functions
+	// Copy these Math functions in our namespace
 	const {min, max, pow, log, floor, ceil} = Math;
+
+	// Total bonus from an additive perk. `x` is the percentage from each level.
 	const add = (perk, x) => 1 + level[perk] * x / 100;
+
+	// Total bonus from a compounding perk. `x` is the percentage from each level.
 	const mult = (perk, x) => pow(1 + x / 100, level[perk]);
 
+	// Return a function that returns the total bonus granted by equipment for a given stat.
+	// cost: total cost of tier I equipments for the stat
+	// value: total bonus granted by relevant tier I equipments
+	// exp: 13 for attack, 14 for health (defined in game.global.prestige)
 	function precompute_equipment_ratios(cost, value, exp) {
 		exp /= 0.85;
 		cost *= 1.069;
@@ -52,6 +60,7 @@ function optimize(params) {
 		return () => pow(income() * trimps() / (cost * mult('arti', -5)), exp) * value;
 	}
 
+	// Compute the current cost of a perk, based on its current level.
 	function cost(perk) {
 		if (increment[perk])
 			return base[perk] * add(perk, increment[perk]);
@@ -59,6 +68,7 @@ function optimize(params) {
 			return ceil(level[perk] / 2 + base[perk] * mult(perk, 30));
 	}
 
+	// Max population
 	function trimps() {
 		var carp = mult('carp', 10) * add('carp2', 0.25);
 		var bonus = mod.housing + log(income() / base_income * carp / mult('reso', -5));
@@ -66,27 +76,33 @@ function optimize(params) {
 		return 10 * (base_housing * bonus + territory) * carp * imp.taunt;
 	}
 
+	// Number of ticks it takes to one-shot an enemy.
 	function ticks() {
 		return 2 + floor(10 * mult('agility', -5));
 	}
 
+	// Number of buildings of a given kind that can be built with the current income.
+	// cost: base cost of the buildings
+	// exp: cost increase for each new level of the building
 	function building(cost, exp) {
-		cost *= mult('reso', -5);
+		cost *= 4 * mult('reso', -5);
 		return log(income() * trimps() * (exp - 1) / cost + 1) / log(exp);
 	}
 
 	const moti = () => add('moti', 5) * add('moti2', 1);
 	const looting = () => add('loot', 5) * add('loot2', 0.25);
 
+	// Total resource gain per second
 	function income() {
 		var storage = mod.storage * mult('reso', -5) / add('packrat', 20);
 		var prod = moti() * add('medit', 1) * (1 + mod.turkimp / 2);
 		var lmod = looting() * imp.magn * mod.loot / ticks();
 		var loot = base_loot * lmod * (1 + .166 * mod.turkimp);
 		var chronojest = mod.chronojest * 0.75 * prod * lmod;
-		return imp.whip * books * (prod + loot + chronojest) * (1 - storage);
+		return 1800 * imp.whip * books * (prod + loot + chronojest) * (1 - storage);
 	}
 
+	// Breed speed
 	function breed() {
 		var nurseries = pow(1.01, building(2e6, 1.06));
 		var potency = pow(1.1, floor(zone / 5));
@@ -94,26 +110,37 @@ function optimize(params) {
 		return 0.00085 * nurseries * potency * add('phero', 10) * imp.ven + bait;
 	}
 
-	function coord() {
-		var ratio = 1 + .25 * pow(.98, level['coord']);
-		var coords = log(trimps()) / log(ratio);
-		return pow(1.25, min(zone, coords));
+	function group_size(ratio) {
+		var result = 1;
+		for (var i = 0; i < 20; ++i)
+			result = ceil(result * ratio);
+		return result;
 	}
 
+	// Theoretical fighting group size (actual size is lower because of Coordinated) 
+	function soldiers() {
+		var ratio = 1 + .25 * pow(.98, level['coord']);
+		var coords = log(trimps() / 3 / group_size(ratio)) / log(ratio);
+		return group_size(1.25) * Math.pow(1.25, min(zone - 1, coords));
+	}
+
+	// Total attack
 	function attack() {
 		var power = add('power', 5) * add('power2', 1) * add('range', 1);
 		var crits = add('relent', 5 * add('relent', 30));
 		var sipho = pow(1 + level['sipho'], 0.1);
 		var anti = add('anti', 2 * mod.breed_timer);
-		return coord() * weapons() * power * crits * sipho * anti;
+		return soldiers() * weapons() * power * crits * sipho * anti;
 	}
 
+	// Block per imp
 	function block() {
 		var gyms = building(400, 1.185);
 		var trainers = (gyms * log(1.185) - log(gyms)) / log(1.1) + 25 - mystic;
 		return 6 * gyms * pow(1 + mystic / 100, gyms) * (1 + tacular * trainers);
 	}
 
+	// Total survivability (accounts for health and block)
 	function health() {
 		var health = armors() * add('tough', 5) * mult('resi', 10) * add('tough2', 1);
 		if (zone >= 70 && weight.breed == 0) {
@@ -121,7 +148,7 @@ function optimize(params) {
 			var geneticists = log(breed() / target_speed) / log(1.02);
 			health *= pow(1.01, geneticists);
 		}
-		return coord() * (health + 4 * min(block(), health));
+		return soldiers() * (health + 4 * min(block(), health));
 	}
 
 	const overkill = () => attack() * add('ok', 60);
@@ -201,6 +228,7 @@ function optimize(params) {
 	compare('coord', 'carp');
 	compare('arti', 'reso');
 	compare('loot', 'moti');
+	console.log('Max trimps', trimps());
 
 	return level;
 }
@@ -208,9 +236,22 @@ function optimize(params) {
 // When executing from the command-line
 if (typeof window === 'undefined') {
 	console.log(optimize({
-		helium: 14.7e6,
-		zone: 150,
+		helium: 16.8e6,
+		zone: 116,
 		last_unlock: 'reso',
 		weight: {helium: 7, attack: 3, health: 1, breed: 0},
+		mod: {
+			storage: 0.02,
+			whip: true,
+			magn: true,
+			taunt: true,
+			ven: true,
+			chronojest: 5,
+			loot: 1,
+			turkimp: .5,
+			breed_timer: 30,
+			giga: 1,
+			housing: 3,
+		}
 	}));
 }
