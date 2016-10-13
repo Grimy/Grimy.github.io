@@ -180,7 +180,7 @@ function $(str) { return document.querySelector(str); }
 
 function parse_suffixes(str) {
 	for (var i = suffixes.length; i > 0; --i)
-		str = str.replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`)
+		str = str.replace(' ', '').replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`)
 	return parseFloat(str);
 }
 
