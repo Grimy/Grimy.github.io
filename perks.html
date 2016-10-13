@@ -32,6 +32,8 @@ button {
 }
 button:hover  { background-color: #05D }
 button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.4); box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
+
+#advanced:not(:target) ~ label { display: none }
 </style>
 
 <h1>Grim’s Perks Calculator</h1>
@@ -48,7 +50,7 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 		</label>
 
 		<label title='The zone on which you plan to do your Void Maps'>
-			<input type=text id=zone required pattern='\d{2,3}'>
+			<input type=text id=zone onchange='set_zone()' required pattern='\d{2,3}'>
 			VM zone
 		</label>
 
@@ -90,6 +92,73 @@ button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba
 			Weight: Health
 		</label>
 
+		<label title='How much you value +1% overkill damage'>
+			<input type=text id=weight-ok value=1>
+			Weight: Overkill
+		</label>
+
+		<label title='How much you value +1% breeding speed. When set to 0, breed speed is converted into health using geneticists.'>
+			<input type=text id=weight-breed value=0>
+			Weight: Breed
+		</label>
+
+		<a id=advanced href='#advanced'>Advanced options (you probably shouldn’t bother with those)</a>
+
+		<label title='Uncheck this if you didn’t unlock the Whipimp'>
+			<input type=checkbox checked id=whipimp>
+			Whipimp
+		</label>
+
+		<label title='Uncheck this if you didn’t unlock the Magnimp'>
+			<input type=checkbox checked id=magnimp>
+			Magnimp
+		</label>
+
+		<label title='Uncheck this if you didn’t unlock the Tauntimp'>
+			<input type=checkbox checked id=tauntimp>
+			Tauntimp
+		</label>
+
+		<label title='Uncheck this if you didn’t unlock the Venimp'>
+			<input type=checkbox checked id=venimp>
+			Venimp
+		</label>
+
+		<label title='Multiplier for Chronoimp/Jestimp loot.
+Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for both.'>
+			<input type=text id=chronojest value=5>
+			Chrono/Jest
+		</label>
+
+		<label title='Multiplier for all non-Helium loot.
+This should only account for low map level penalty, scrying, golden maps and challenges.
+The other modifiers are handled by the code.'>
+			<input type=text id=loot value='1'>
+			Loot multiplier
+		</label>
+
+		<label title='Fraction of farm time spent with an active turkimp.
+0 = never, 1 = always, 1.5 = always + Turkimp Tamer III.'>
+			<input type=text id=turkimp value='0.5'>
+			Turkimp
+		</label>
+
+		<label title='Your usual breed timer'>
+			<input type=text id=breed-timer value=30>
+			Breed timer
+		</label>
+
+		<label title='Average number of coordinations you get from a gigastation'>
+			<input type=text id=giga value=1>
+			Coords per giga
+		</label>
+
+		<label title='Used in max pop calculations.
+Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
+			<input type=text id=housing value=3>
+			Housing thingy
+		</label>
+
 		<button onclick='display(optimize(parse_inputs()))'>Optimize!</button>
 	</fieldset>
 
@@ -119,17 +188,51 @@ function input(id) {
 	return parse_suffixes($('#' + id).value.toLowerCase());
 }
 
+function set_zone() {
+	var zone = parseInt($('#zone').value);
+	$('#weight-ok').parentNode.style.display = zone > 170 ? '' : 'none';
+	$('#unlock').value =
+		zone > 200 ? 'loot2' :
+		zone > 170 ? 'ok' :
+		zone > 150 ? 'reso' :
+		zone > 120 ? 'coord' :
+		zone > 115 ? 'sipho' :
+		zone >  70 ? 'anti' :
+		zone >  60 ? 'resi' :
+		zone >  45 ? 'medit' :
+		zone >  35 ? 'carp' :
+		zone >  33 ? 'relent' :
+		zone >  25 ? 'arti' :
+		zone >  20 ? 'range' :
+		             'agility';
+
+	$('#weight-breed').value = zone > 70 ? 0 : 1;
+}
+
 const parse_inputs = () => ({
 	helium: input('helium'),
 	zone: parseInt($('#zone').value),
 	last_unlock: $('#unlock').value,
-	weights: {
+	weight: {
 		helium: input('weight-he'),
 		attack: input('weight-atk'),
 		health: input('weight-hp'),
-		overkill: 1,
-		breed: 0,
+		overkill: input('weight-ok'),
+		breed: input('weight-breed'),
 	},
+	mod: {
+		storage: 0.02,
+		whip: $('#whipimp').checked,
+		magn: $('#magnimp').checked,
+		taunt: $('#tauntimp').checked,
+		ven: $('#venimp').checked,
+		chronojest: input('chronojest'),
+		loot: input('loot'),
+		turkimp: input('turkimp'),
+		breed_timer: input('breed-timer'),
+		giga: input('giga'),
+		housing: input('housing'),
+	}
 });
 
 function prettify(number) {
@@ -147,5 +250,7 @@ function display(level) {
 		if (level[perk] != 0)
 			$('#result').innerHTML += '<p>' + perk + ': ' + level[perk];
 }
+
+set_zone();
 
 </script>

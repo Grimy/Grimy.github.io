@@ -2,7 +2,7 @@
 function optimize(params) {
 	"use strict";
 
-	var {helium, zone, last_unlock, weights} = params;
+	var {helium, zone, last_unlock, weight, mod} = params;
 
 	// Cost of the first level of each perk
 	const base = {
@@ -43,44 +43,6 @@ function optimize(params) {
 	const {min, max, pow, log, floor, ceil} = Math;
 	const add = (perk, x) => 1 + level[perk] * x / 100;
 	const mult = (perk, x) => pow(1 + x / 100, level[perk]);
-
-	// Various constants
-	const mod = {
-		// Your usual breed timer.
-		breed_timer: 30,
-
-		// Average number of coordinations you get from a gigastation.
-		// Irrelevant below z60.
-		giga: 1,
-
-		// Fraction of resources spent on storage, or wasted because storage is full.
-		// Change this if you have a +Storage Size heirloom, I guess?
-		// Packrat and Resourceful are already handled in the code.
-		storage: 0.02,
-
-		// Multiplier for all non-Helium loot.
-		// This should only account for low map level penalty, scrying and golden maps.
-		// The other modifiers are handled by the code.
-		loot: 0.8,
-
-		// Multiplier for Chrono/Jest loot. Set to 0 if you haven’t unlocked these
-		// imps, 2 if only Chrono is unlocked, or 3 if only Jest is unlocked.
-		chronojest: 5,
-
-		// Fraction of farm time spent with an active turkimp.
-		// Set to 0 if you never use turkimps, or up to 1.5 if you have Turkimp Tamer III.
-		turkimp: 0.7,
-
-		// Base multiplier for housing. Increasing this reduces the importance
-		// of Carp, Resourceful and Trumps.
-		housing: 3,
-
-		// Uncheck these boxes if you didn’t unlock the corresponding Imp-orts
-		ven: true,
-		magn: true,
-		taunt: true,
-		whip: true,
-	}
 
 	function precompute_equipment_ratios(cost, value, exp) {
 		exp /= 0.85;
@@ -128,7 +90,7 @@ function optimize(params) {
 	function breed() {
 		var nurseries = pow(1.01, building(2e6, 1.06));
 		var potency = pow(1.1, floor(zone / 5));
-		var bait = weights.breed * add('bait', 100) * 10 * mod.breed_timer / trimps();
+		var bait = weight.breed * add('bait', 100) * 10 * mod.breed_timer / trimps();
 		return 0.00085 * nurseries * potency * add('phero', 10) * imp.ven + bait;
 	}
 
@@ -154,7 +116,7 @@ function optimize(params) {
 
 	function health() {
 		var health = armors() * add('tough', 5) * mult('resi', 10) * add('tough2', 1);
-		if (zone >= 70 && weights.breed == 0) {
+		if (zone >= 70 && weight.breed == 0) {
 			var target_speed = pow(6, 0.1 / mod.breed_timer);
 			var geneticists = log(breed() / target_speed) / log(1.02);
 			health *= pow(1.01, geneticists);
@@ -168,9 +130,9 @@ function optimize(params) {
 
 	function score() {
 		var result = 0;
-		for (var i in weights)
-			if (weights[i] != 0)
-				result += weights[i] * log(stats[i]());
+		for (var i in weight)
+			if (weight[i] != 0)
+				result += weight[i] * log(stats[i]());
 		return result / mult('agility', -5);
 	}
 
@@ -249,6 +211,6 @@ if (typeof window === 'undefined') {
 		helium: 14.7e6,
 		zone: 150,
 		last_unlock: 'reso',
-		weights: {helium: 7, attack: 3, health: 1, breed: 0},
+		weight: {helium: 7, attack: 3, health: 1, breed: 0},
 	}));
 }
