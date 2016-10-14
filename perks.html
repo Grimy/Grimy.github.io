@@ -6,8 +6,7 @@ body { font-size: 1.1em }
 label { display: block; margin: 1ex .25em }
 input, select { width: 50%; margin: 0 }
 
-#advanced { display: block; margin: 1em auto }
-#advanced:not(:target) ~ label { display: none }
+#advanced:not(:target) ~ a, #advanced:not(:target) ~ label, #advanced:target { display: none }
 #perks { width: 50rem; align-self: center; justify-content: center }
 .perk { border: 2px solid black; margin: -1px }
 .perk { flex: 0 0 20%; text-align: center; padding: 0.5ex 0; color: white }
@@ -85,7 +84,8 @@ Helium” (90 seems to work well). You may also want to try
 			Weight: Breed
 		</label>
 
-		<a id=advanced href='#advanced'>Advanced options (you probably shouldn’t bother with those)</a>
+		<a id=advanced class=centered href='#advanced'>Advanced options (you probably shouldn’t bother)</a>
+		<a class=centered href='#'>Hide advanced options</a>
 
 		<label title='Uncheck this if you didn’t unlock the Whipimp'>
 			<input type=checkbox checked id=whipimp>

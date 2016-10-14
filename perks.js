@@ -193,7 +193,7 @@ function optimize(params) {
 		for (var i in weight)
 			if (weight[i] != 0)
 				result += weight[i] * log(stats[i]());
-		return result / mult('agility', -5);
+		return result / mult('agility', -0.1);
 	}
 
 	function best_perk() {
