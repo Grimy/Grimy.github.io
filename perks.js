@@ -169,6 +169,7 @@ function optimize(params) {
 		return result / mult('agility', -5);
 	}
 
+	// TODO optimize this
 	function best_perk() {
 		var best;
 		var max = 0;

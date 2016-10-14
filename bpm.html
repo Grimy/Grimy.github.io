@@ -1,86 +1,59 @@
 <meta charset=UTF-8>
 <title>NecroNome</title>
+<link rel=stylesheet href='grim.css'>
 <style>
-body { background: #E6E6E6; color: #333 }
-* { box-sizing: border-box }
-fieldset {
-    padding: 20px; width: 400px; border: 1px solid #04B; border-radius: 8px; background: #EEE;
-    -webkit-box-shadow: 0 3px 5px rgba(0,0,0,.4); box-shadow: 0 3px 5px rgba(0,0,0,.4);
-}
-legend { font-size: 1.3em }
-legend, h1 { color: #04B }
-label { padding-left: 5px; display: inline-block }
-hr { visibility: hidden; height: 0; margin: 5px 0 }
-input[type=range] { position: relative; top: 4px }
-.clickable { cursor: pointer }
-form {
-    width: 80%;
-    margin: 0 auto;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-}
-output { width: 6em }
-h1, button { display: block; width: 400px; margin: 30px auto }
-button {
-    padding: 0; cursor: pointer;
-    -webkit-transition: background-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
-    -o-transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
-    transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
-    background-color: #06F; color: #EEE; height: 2.2em; font-size: 1.4em;
-    border: 1px solid rgba(0, 0, 0, .4); border-radius: 4px;
-}
-button:hover  { background-color: #05D }
-button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.4); box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
+label { display: inline-block }
+fieldset { flex: 0 0 400px }
+button { width: 600px; margin: 20px auto }
 </style>
 <h1>NecroNome</h1>
-<form>
-<fieldset>
-    <legend>Envelope</legend>
-    <canvas id=canvas class=clickable width=360 height=360></canvas>
-</fieldset>
-<fieldset>
-    <legend>BPM</legend>
-    Select a level:
-    <hr>
-    <input type=radio name=level value=115>1‑1</input>
-    <input type=radio name=level value=130>1‑2</input>
-    <input type=radio name=level value=140>1‑3</input>
-    <input type=radio name=level value=125>Coral Riff</input>
-    <hr>
-    <input type=radio name=level value=130>2‑1</input>
-    <input type=radio name=level value=140>2‑2</input>
-    <input type=radio name=level value=150 checked>2‑3</input>
-    <input type=radio name=level value=120 id=conga>King Conga</input>
-    <hr>
-    <input type=radio name=level value=135>3‑1</input>
-    <input type=radio name=level value=145>3‑2</input>
-    <input type=radio name=level value=155>3‑3</input>
-    <input type=radio name=level value=123>Deep Blues</input>
-    <hr>
-    <input type=radio name=level value=130>4‑1</input>
-    <input type=radio name=level value=145>4‑2</input>
-    <input type=radio name=level value=160>4‑3</input>
-    <input type=radio name=level value=175>Death Metal</input>
-    <hr>
-    <input type=checkbox id=bolt checked>Bolt / Coda</input>
-    <input type=checkbox id=rhythm>Shrine of Rhythm</input>
-    <hr><hr>
-    <label for=bpm>Or set the BPM manually:</label>
-    <hr>
-    <input type=number name=bpm id=bpm min=45 max=999 step=1>
-</fieldset>
-<fieldset>
-    <legend>Melody</legend>
-    <label for=note>Pitch</label>
-    <input id=note type=range min=-12 max=12 value=0 step=1>
-    <output for=note></output>
-    <hr><input type=radio name=waveform value=sine>Sine wave</input>
-    <hr><input type=radio name=waveform value=triangle checked>Triangle</input>
-    <hr><input type=radio name=waveform value=square>Square</input>
-    <hr><input type=radio name=waveform value=sawtooth>Sawtooth</input>
-    <hr><input type=radio name=waveform value=pink>Pink noise</input>
-</fieldset>
+<form class=flexbox>
+	<fieldset>
+		<legend>Envelope</legend>
+		<canvas id=canvas class=clickable width=360 height=360></canvas>
+	</fieldset>
+	<fieldset>
+		<legend>BPM</legend>
+		Select a level:
+		<hr>
+		<input type=radio name=level value=115>1‑1</input>
+		<input type=radio name=level value=130>1‑2</input>
+		<input type=radio name=level value=140>1‑3</input>
+		<input type=radio name=level value=125>Coral Riff</input>
+		<hr>
+		<input type=radio name=level value=130>2‑1</input>
+		<input type=radio name=level value=140>2‑2</input>
+		<input type=radio name=level value=150 checked>2‑3</input>
+		<input type=radio name=level value=120 id=conga>King Conga</input>
+		<hr>
+		<input type=radio name=level value=135>3‑1</input>
+		<input type=radio name=level value=145>3‑2</input>
+		<input type=radio name=level value=155>3‑3</input>
+		<input type=radio name=level value=123>Deep Blues</input>
+		<hr>
+		<input type=radio name=level value=130>4‑1</input>
+		<input type=radio name=level value=145>4‑2</input>
+		<input type=radio name=level value=160>4‑3</input>
+		<input type=radio name=level value=175>Death Metal</input>
+		<hr>
+		<input type=checkbox id=bolt checked>Bolt / Coda</input>
+		<input type=checkbox id=rhythm>Shrine of Rhythm</input>
+		<hr><hr>
+		<label for=bpm>Or set the BPM manually:</label>
+		<hr>
+		<input type=number name=bpm id=bpm min=45 max=999 step=1>
+	</fieldset>
+	<fieldset>
+		<legend>Melody</legend>
+		<label for=note>Pitch</label>
+		<input id=note type=range min=-12 max=12 value=0 step=1>
+		<output for=note></output>
+		<hr><input type=radio name=waveform value=sine>Sine wave</input>
+		<hr><input type=radio name=waveform value=triangle checked>Triangle</input>
+		<hr><input type=radio name=waveform value=square>Square</input>
+		<hr><input type=radio name=waveform value=sawtooth>Sawtooth</input>
+		<hr><input type=radio name=waveform value=pink>Pink noise</input>
+	</fieldset>
 </form>
 <button type=button id=toggle>Play</button>
 
@@ -89,179 +62,179 @@ function $(id) { return document.getElementById(id) }
 var params = [[.05, 1], [.25, .75], [.4, 0]];
 
 (function() {
-    function updateBpm() {
-        var elems = document.getElementsByTagName('form')[0].elements;
-        elems['bpm'].value = elems['level'].value * (1 + elems['bolt'].checked);
-    }
+	function updateBpm() {
+		var elems = document.getElementsByTagName('form')[0].elements;
+		elems['bpm'].value = elems['level'].value * (1 + elems['bolt'].checked);
+	}
 
-    var radios = document.getElementsByName('level');
-    for (var i = 0; i < radios.length; ++i)
-        radios[i].onclick = updateBpm;
-    ($('bolt').onclick = updateBpm)();
+	var radios = document.getElementsByName('level');
+	for (var i = 0; i < radios.length; ++i)
+		radios[i].onclick = updateBpm;
+	($('bolt').onclick = updateBpm)();
 })();
 
 (function() {
-    var canvas = $('canvas');
-    var g = canvas.getContext('2d');
-    var SCALE = 320;
-    var PAD = 20;
+	var canvas = $('canvas');
+	var g = canvas.getContext('2d');
+	var SCALE = 320;
+	var PAD = 20;
 
-    g.font = '16px Serif';
-    g.strokeStyle = 'black';
-    g.fillStyle = '#79F';
-    g.lineWidth = 4 / SCALE;
-    g.lineCap = g.lineJoin = 'round';
+	g.font = '16px Serif';
+	g.strokeStyle = 'black';
+	g.fillStyle = '#79F';
+	g.lineWidth = 4 / SCALE;
+	g.lineCap = g.lineJoin = 'round';
 
-    function axisLabel(text, value) {
-        if (value === undefined)
-            return text;
-        return text + ' (' + Math.floor(value * 100) + '%)'
-    }
+	function axisLabel(text, value) {
+		if (value === undefined)
+			return text;
+		return text + ' (' + Math.floor(value * 100) + '%)'
+	}
 
-    function paint(x, y) {
-        g.clearRect(0, 0, SCALE + 2*PAD, SCALE + 2*PAD);
-        g.save();
-        g.fillStyle = '#04B';
-        g.fillText(axisLabel('TIME', x), PAD, SCALE + PAD + 16);
-        g.rotate(-Math.PI / 2);
-        g.fillText(axisLabel('AMPLITUDE', y), 1 - SCALE - PAD, 15);
-        g.restore();
+	function paint(x, y) {
+		g.clearRect(0, 0, SCALE + 2*PAD, SCALE + 2*PAD);
+		g.save();
+		g.fillStyle = '#04B';
+		g.fillText(axisLabel('TIME', x), PAD, SCALE + PAD + 16);
+		g.rotate(-Math.PI / 2);
+		g.fillText(axisLabel('AMPLITUDE', y), 1 - SCALE - PAD, 15);
+		g.restore();
 
-        g.save();
-        g.translate(PAD, PAD + SCALE);
-        g.scale(SCALE, -SCALE);
+		g.save();
+		g.translate(PAD, PAD + SCALE);
+		g.scale(SCALE, -SCALE);
 
-        g.beginPath();
-        g.moveTo(0, 0);
-        var x = 0;
-        for (var i = 0; i < 3; ++i) {
-            g.quadraticCurveTo((x + params[i][0]) / 2, params[i][1], params[i][0], params[i][1]);
-            x = params[i][0];
-        }
-        g.lineTo(1, 0);
-        g.stroke();
+		g.beginPath();
+		g.moveTo(0, 0);
+		var x = 0;
+		for (var i = 0; i < 3; ++i) {
+			g.quadraticCurveTo((x + params[i][0]) / 2, params[i][1], params[i][0], params[i][1]);
+			x = params[i][0];
+		}
+		g.lineTo(1, 0);
+		g.stroke();
 
-        g.lineWidth = 1 / SCALE;
-        g.beginPath();
-        g.moveTo(1, 0);
-        g.lineTo(0, 0);
-        g.lineTo(0, 1);
-        g.stroke();
-        for (var i = 0; i < 3; ++i) {
-            g.beginPath();
-            g.arc(params[i][0], params[i][1], 11 / SCALE, 0, 2 * Math.PI, false);
-            g.fill();
-            g.stroke();
-        }
-        g.restore();
-    }
+		g.lineWidth = 1 / SCALE;
+		g.beginPath();
+		g.moveTo(1, 0);
+		g.lineTo(0, 0);
+		g.lineTo(0, 1);
+		g.stroke();
+		for (var i = 0; i < 3; ++i) {
+			g.beginPath();
+			g.arc(params[i][0], params[i][1], 11 / SCALE, 0, 2 * Math.PI, false);
+			g.fill();
+			g.stroke();
+		}
+		g.restore();
+	}
 
-    var grabbing;
+	var grabbing;
 
-    function distance(x1, y1, x2, y2) {
-        return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
-    }
+	function distance(x1, y1, x2, y2) {
+		return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+	}
 
-    function mouseHandler(ev) {
-        var x = Math.min(1, Math.max(0, (ev.offsetX - PAD) / SCALE));
-        var y = Math.min(1, Math.max(0, (ev.offsetY - PAD - SCALE) / -SCALE));
-        canvas.className = '';
-        params[grabbing] = [x, y];
-        for (var i = 0; i < 3; ++i) {
-            if (distance(x, y, params[i][0], params[i][1]) < 0.002) {
-                canvas.className = 'clickable';
-                if (ev.type == 'mousedown')
-                    grabbing = i;
-            }
-        }
-        paint(x, y);
-    }
+	function mouseHandler(ev) {
+		var x = Math.min(1, Math.max(0, (ev.offsetX - PAD) / SCALE));
+		var y = Math.min(1, Math.max(0, (ev.offsetY - PAD - SCALE) / -SCALE));
+		canvas.className = '';
+		params[grabbing] = [x, y];
+		for (var i = 0; i < 3; ++i) {
+			if (distance(x, y, params[i][0], params[i][1]) < 0.002) {
+				canvas.className = 'clickable';
+				if (ev.type == 'mousedown')
+					grabbing = i;
+			}
+		}
+		paint(x, y);
+	}
 
-    canvas.onmousedown = mouseHandler;
-    canvas.onmousemove = mouseHandler;
-    canvas.onmouseup = function(ev) { grabbing = -1 };
-    (canvas.onmouseout = function(ev) { grabbing = -1; paint() })();
+	canvas.onmousedown = mouseHandler;
+	canvas.onmousemove = mouseHandler;
+	canvas.onmouseup = function(ev) { grabbing = -1 };
+	(canvas.onmouseout = function(ev) { grabbing = -1; paint() })();
 })();
 
 ($('note').oninput = function(ev) {
-    $('note').nextElementSibling.value = [
-        'A (la)', 'A# (la#)', 'B (si)', 'C (do)', 'C# (do#)', 'D (ré)',
-        'D# (ré#)', 'E (mi)', 'F (fa)', 'F# (fa#)', 'G (sol)', 'G# (sol#)'
-    ][(+$('note').value + 24) % 12];
+	$('note').nextElementSibling.value = [
+		'A (la)', 'A# (la#)', 'B (si)', 'C (do)', 'C# (do#)', 'D (ré)',
+		'D# (ré#)', 'E (mi)', 'F (fa)', 'F# (fa#)', 'G (sol)', 'G# (sol#)'
+	][(+$('note').value + 24) % 12];
 })();
 
 (function() {
-    var scale = [0, 2, 3, 5, 7, 8, 10, 12];
-    // var scale = [0, 2, 4, 5, 7, 9, 10, 12];
-    var ctx = new AudioContext();
-    var beat = 0;
-    var next;
-    var source;
-    var playing = false;
-    var noise = [0, 0];
+	var scale = [0, 2, 3, 5, 7, 8, 10, 12];
+	// var scale = [0, 2, 4, 5, 7, 9, 10, 12];
+	var ctx = new AudioContext();
+	var beat = 0;
+	var next;
+	var source;
+	var playing = false;
+	var noise = [0, 0];
 
-    var waveform = {
-        sine:     function(x) { return Math.sin(2 * Math.PI * x) },
-        triangle: function(x) { return Math.abs(2 - 4 * x) - 1 },
-        square:   function(x) { return x < .5 ? .8 : -.8 },
-        sawtooth: function(x) { return 2 * x - 1 },
-        pink:     function(x) {
-            var white = 2 * Math.random() - 1;
-            var a = 1 - $('note').value / 12;
-            var b = (1 - a / 2) * a;
-            noise.push((white + a * noise[0] - b * noise[1]) / (1 + a + b));
-            return noise.shift(1);
-        },
-    };
-    function frequency(tones) { return 440 * Math.pow(2, tones / 12) }
-    function normalize(x, from, to) { return (x - from) / (to - from) }
-    function ease(x) { return (2 - x) * x }
-    function f(x, from, to) { return ease(normalize(x, from, to)) }
+	var waveform = {
+		sine:     function(x) { return Math.sin(2 * Math.PI * x) },
+		triangle: function(x) { return Math.abs(2 - 4 * x) - 1 },
+		square:   function(x) { return x < .5 ? .8 : -.8 },
+		sawtooth: function(x) { return 2 * x - 1 },
+		pink:     function(x) {
+			var white = 2 * Math.random() - 1;
+			var a = 1 - $('note').value / 12;
+			var b = (1 - a / 2) * a;
+			noise.push((white + a * noise[0] - b * noise[1]) / (1 + a + b));
+			return noise.shift(1);
+		},
+	};
+	function frequency(tones) { return 440 * Math.pow(2, tones / 12) }
+	function normalize(x, from, to) { return (x - from) / (to - from) }
+	function ease(x) { return (2 - x) * x }
+	function f(x, from, to) { return ease(normalize(x, from, to)) }
 
-    // Returns the number of trailing zeroes in the binary representation of v
-    function ctz(v) {
-        v &= -v;
-        return !(v & 0x0F) << 2 | !(v & 0x33) << 1 | !(v & 0x55);
-    }
+	// Returns the number of trailing zeroes in the binary representation of v
+	function ctz(v) {
+		v &= -v;
+		return !(v & 0x0F) << 2 | !(v & 0x33) << 1 | !(v & 0x55);
+	}
 
-    function play() {
-        if (!playing) return;
-        var bpm = +$('bpm').value;
-        var samples = ctx.sampleRate * 60 / bpm;
-        var wf = waveform[document.getElementsByTagName('form')[0].elements['waveform'].value];
-        var buf = ctx.createBuffer(1, samples, ctx.sampleRate);
-        var hz = frequency(+$('note').value + scale[ctz(++beat)]);
-        var skip16 = $('conga').checked && $('bolt').checked;
-        var skip8 = $('conga').checked || $('rhythm').checked;
-        var skip = skip16 ? !(beat % 16 % 14) : skip8 && !(beat % 8);
-        for (var i = 0; i < samples; ++i) {
-            var x = i / samples;
-            var vol = skip ? 0 :
-    x < params[0][0] ? 0            + (params[0][1] - 0           ) * f(x, 0,            params[0][0]) :
-    x < params[1][0] ? params[0][1] + (params[1][1] - params[0][1]) * f(x, params[0][0], params[1][0]) :
-    x < params[2][0] ? params[1][1] + (params[2][1] - params[1][1]) * f(x, params[1][0], params[2][0]) :
-                    params[2][1] + (0            - params[2][1]) * f(x, params[2][0], 1);
-            buf.getChannelData(0)[i] = vol * wf((i * hz / ctx.sampleRate) % 1);
-        }
-        source = ctx.createBufferSource();
-        source.buffer = buf;
-        source.connect(ctx.destination);
-        source.start(next);
-        source.onended = play;
-        next += 60 / bpm;
-    }
+	function play() {
+		if (!playing) return;
+		var bpm = +$('bpm').value;
+		var samples = ctx.sampleRate * 60 / bpm;
+		var wf = waveform[document.getElementsByTagName('form')[0].elements['waveform'].value];
+		var buf = ctx.createBuffer(1, samples, ctx.sampleRate);
+		var hz = frequency(+$('note').value + scale[ctz(++beat)]);
+		var skip16 = $('conga').checked && $('bolt').checked;
+		var skip8 = $('conga').checked || $('rhythm').checked;
+		var skip = skip16 ? !(beat % 16 % 14) : skip8 && !(beat % 8);
+		for (var i = 0; i < samples; ++i) {
+			var x = i / samples;
+			var vol = skip ? 0 :
+	x < params[0][0] ? 0            + (params[0][1] - 0           ) * f(x, 0,            params[0][0]) :
+	x < params[1][0] ? params[0][1] + (params[1][1] - params[0][1]) * f(x, params[0][0], params[1][0]) :
+	x < params[2][0] ? params[1][1] + (params[2][1] - params[1][1]) * f(x, params[1][0], params[2][0]) :
+		params[2][1] + (0            - params[2][1]) * f(x, params[2][0], 1);
+			buf.getChannelData(0)[i] = vol * wf((i * hz / ctx.sampleRate) % 1);
+		}
+		source = ctx.createBufferSource();
+		source.buffer = buf;
+		source.connect(ctx.destination);
+		source.start(next);
+		source.onended = play;
+		next += 60 / bpm;
+	}
 
-    $('toggle').onclick = function() {
-        playing = !playing;
-        if (playing) {
-            next = ctx.currentTime;
-            play();
-            play();
-        } else {
-            source.stop();
-            --beat;
-        }
-        this.innerHTML = playing ? 'Pause' : 'Play';
-    };
+	$('toggle').onclick = function() {
+		playing = !playing;
+		if (playing) {
+			next = ctx.currentTime;
+			play();
+			play();
+		} else {
+			source.stop();
+			--beat;
+		}
+		this.innerHTML = playing ? 'Pause' : 'Play';
+	};
 })();
 </script>

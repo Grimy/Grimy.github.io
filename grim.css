@@ -1,0 +1,52 @@
+* { box-sizing: border-box }
+
+body { background: #F0F0F6; color: #333 }
+fieldset {
+	background: #FBFBF9;
+	margin: 1ex auto 5ex auto;
+	padding: 2ex 2em;
+	border: 1px solid #04B; border-radius: 1ex;
+	box-shadow: 0 3px 5px rgba(0,0,0,.4);
+}
+legend { font-size: 1.3em }
+legend, h1 { color: #04B }
+hr { visibility: hidden; height: 0; margin: 1ex 0 }
+input[type=range] { position: relative; top: 4px }
+
+input, textarea, button {
+	display: inline-block;
+	padding: 6px 12px;
+	color: #222; background-color: #fff;
+	border: 1px solid #ccc; border-radius: 4px;
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	transition: all ease-in-out .15s;
+}
+input:focus, textarea:focus {
+	border-color: #66afe9;
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+}
+button {
+	padding: 0; cursor: pointer;
+	background-color: #06F; color: #EEE; height: 2.2em; font-size: 1.4em;
+	border: 1px solid rgba(0, 0, 0, .4); border-radius: .5ex;
+}
+button:focus, button:hover, button:active { outline: 0; background-color: #05D }
+button:active { background-color: #04B; box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
+
+output { width: 6em }
+h1, button { width: 100%; text-align: center }
+
+nav { padding: 0 5%; background-color: #f8f8f8; border: 1px solid transparent; border-color: #e7e7e7 }
+.ok, .ko { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px }
+nav>a { padding: 7px 15px; color: #777; font-size: 16px; white-space: nowrap; text-decoration: none }
+nav>a:focus, nav>a:hover { color: #333; background-color: #EEE }
+nav>a.active, nav>a:active { color: #333; background-color: #DDD }
+
+.ok, .ko { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px }
+.ok { background-color: #dff0d8; border-color: #d6e9c6; color: #3c763d; fill: #3c763d }
+.ko { background-color: #f2dede; border-color: #ebccd1; color: #a94442; fill: #a94442 }
+.badge { display: inline-block; padding: 3px 7px; font-weight: 700; line-height: 1; color: #fff; background-color: #777; margin-right: 1ex; border-radius: 1em }
+.clickable { cursor: pointer }
+.flexbox { width: 100%; margin: 0 auto; display: flex; flex-flow: row wrap }
+.centered { display: block; clear: both; margin: 0 auto }
+[title] { text-decoration: underline dotted; cursor: help }

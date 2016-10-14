@@ -1,44 +1,19 @@
 <meta charset=UTF-8>
 <title>zFarm</title>
+<link rel=stylesheet href='grim.css'>
 <style>
-body { background: #E6E6E6; color: #333; font-size: 1.1em }
-* { box-sizing: border-box }
-fieldset {
-	padding: 20px; width: 40rem; border: 1px solid #04B; border-radius: 8px; background: #EEE;
-	-webkit-box-shadow: 0 3px 5px rgba(0,0,0,.4); box-shadow: 0 3px 5px rgba(0,0,0,.4);
-}
-legend { font-size: 1.3rem }
-legend, h1 { color: #04B }
-label {
-	display: block; margin: 1ex .25em;
-	text-decoration: underline dotted; cursor: help;
-}
+label { display: block; margin: 1ex .25em }
 input, select { width: 50%; margin: 0 }
-form {
-	width: 80%;
-	margin: 0 auto;
-	display: flex;
-	flex-flow: row wrap;
-	justify-content: space-between;
-}
-h1, button { display: block; width: 400px; margin: 30px auto }
-button {
-	padding: 0; cursor: pointer;
-	-webkit-transition: background-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
-	-o-transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
-	transition: background-color ease-in-out .15s, box-shadow ease-in-out .15s;
-	background-color: #06F; color: #EEE; height: 2.2em; font-size: 1.4em;
-	border: 1px solid rgba(0, 0, 0, .4); border-radius: 4px;
-}
-button:hover  { background-color: #05D }
-button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.4); box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
+fieldset { flex: 0 1 40em; margin: 0 auto }
 </style>
 
-<h1>Where should I farm?</h1>
+<h1>zFarm</h1>
+
+<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Request a feature or report a bug</a>
 
 <p>Warning: this calculator assumes that your trimps are alive 100% of the time. If this is not the case, you’ll want to farm slightly lower than what it suggests.</p>
 
-<form action='javascript://0'>
+<form class=flexbox action='javascript://0'>
 	<fieldset>
 
 		<legend>Inputs</legend>
