@@ -4,6 +4,9 @@ function optimize(params) {
 
 	var {helium, zone, last_unlock, weight, mod} = params;
 
+	if (!(helium < 1e12))
+		return;
+
 	// Cost of the first level of each perk
 	const base = {
 		loot2:   100e3,
@@ -236,10 +239,10 @@ function optimize(params) {
 // When executing from the command-line
 if (typeof window === 'undefined') {
 	console.log(optimize({
-		helium: 16.8e6,
-		zone: 116,
-		last_unlock: 'reso',
-		weight: {helium: 7, attack: 3, health: 1, breed: 0},
+		helium: 13e9,
+		zone: 245,
+		last_unlock: 'loot2',
+		weight: {helium: 17, attack: 3, health: 1, breed: 0},
 		mod: {
 			storage: 0.02,
 			whip: true,

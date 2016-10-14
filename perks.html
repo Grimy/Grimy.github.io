@@ -34,11 +34,16 @@ button:hover  { background-color: #05D }
 button:active { background-color: #04B; -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.4); box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
 
 #advanced:not(:target) ~ label { display: none }
+#results { width: 50rem }
+#perks { display: flex; flex-flow: row wrap }
+.perk { flex: 0 0 20%; text-align: center; border: 1px solid black; padding: 0.5ex 0 }
 </style>
 
 <h1>Grim’s Perks Calculator</h1>
 
-<p>This calculator is in early testing. Sorry for the ugly results screen!
+<p id=warning>Warning: the default weights aren’t great for late-game He/hr.
+If you’re not doing a deep run, try increasing “Weight: Helium” to 20 or more. You may
+also want to try <a href='https://docs.google.com/spreadsheets/d/16JjhHQ3fpoXe-r5Az66tx1RM5GPTdDiwvA3_g12geJE/edit'>nsheetz’s calculator</a>.
 
 <form action='javascript://0'>
 	<fieldset>
@@ -162,9 +167,9 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 		<button onclick='display(optimize(parse_inputs()))'>Optimize!</button>
 	</fieldset>
 
-	<fieldset>
+	<fieldset id=results>
 		<legend>Results</legend>
-		<div id=result></div>
+		<div id=perks></div>
 	</fieldset>
 </form>
 
@@ -191,20 +196,22 @@ function input(id) {
 function set_zone() {
 	var zone = parseInt($('#zone').value);
 	$('#weight-ok').parentNode.style.display = zone > 170 ? '' : 'none';
+	$('#giga').parentNode.style.display = zone > 60 ? '' : 'none';
+	$('#warning').style.display = zone > 200 ? '' : 'none';
 	$('#unlock').value =
-		zone > 200 ? 'loot2' :
-		zone > 170 ? 'ok' :
-		zone > 150 ? 'reso' :
-		zone > 120 ? 'coord' :
-		zone > 115 ? 'sipho' :
-		zone >  70 ? 'anti' :
-		zone >  60 ? 'resi' :
-		zone >  45 ? 'medit' :
-		zone >  35 ? 'carp' :
-		zone >  33 ? 'relent' :
-		zone >  25 ? 'arti' :
-		zone >  20 ? 'range' :
-		             'agility';
+		zone >= 200 ? 'loot2' :
+		zone >= 170 ? 'ok' :
+		zone >= 150 ? 'reso' :
+		zone >= 120 ? 'coord' :
+		zone >= 115 ? 'sipho' :
+		zone >=  70 ? 'anti' :
+		zone >=  60 ? 'resi' :
+		zone >=  45 ? 'medit' :
+		zone >=  35 ? 'carp' :
+		zone >=  33 ? 'relent' :
+		zone >=  25 ? 'arti' :
+		zone >=  20 ? 'range' :
+		              'agility';
 
 	$('#weight-breed').value = zone > 70 ? 0 : 1;
 }
@@ -245,11 +252,44 @@ function prettify(number) {
 }
 
 function display(level) {
-	$('#result').innerHTML = '';
-	for (perk in level)
-		if (level[perk] != 0)
-			$('#result').innerHTML += '<p>' + perk + ': ' + level[perk];
+	$('#perks').innerHTML = '';
+	var unlocked = false;
+	for (perk in level) {
+		unlocked += level[perk];
+		if (!unlocked)
+			continue;
+		$('#perks').innerHTML += `<div class=perk>${name[perk]}<br>${level[perk]}</div>`;
+	}
 }
+
+const name = {
+	loot2:   'Looting II',
+	carp2:   'Carpentry II',
+	moti2:   'Motivation II',
+	power2:  'Power II',
+	tough2:  'Toughness II',
+	ok:      'Overkill',
+	reso:    'Resourceful',
+	coord:   'Coordinated',
+	sipho:   'Siphonology',
+	anti:    'Anticipation',
+	resi:    'Resilience',
+	medit:   'Meditation',
+	relent:  'Relentlessness',
+	carp:    'Carpentry',
+	arti:    'Artisanistry',
+	range:   'Range',
+	agility: 'Agility',
+	bait:    'Bait',
+	trumps:  'Trumps',
+	phero:   'Pheromones',
+	packrat: 'Packrat',
+	moti:    'Motivation',
+	power:   'Power',
+	tough:   'Toughness',
+	loot:    'Looting',
+};
+
 
 set_zone();
 
