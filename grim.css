@@ -1,6 +1,6 @@
 * { box-sizing: border-box }
 
-body { background: #F0F0F6; color: #333 }
+body { background: #F0F0F6; color: #333; margin: 0 }
 fieldset {
 	background: #FBFBF9;
 	margin: 1ex auto 5ex auto;
@@ -16,7 +16,7 @@ input[type=range] { position: relative; top: 4px }
 input, textarea, button {
 	display: inline-block;
 	padding: 6px 12px;
-	color: #222; background-color: #fff;
+	color: #222; background-color: #FFF;
 	border: 1px solid #ccc; border-radius: 4px;
 	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
 	transition: all ease-in-out .15s;
@@ -34,13 +34,13 @@ button:focus, button:hover, button:active { outline: 0; background-color: #05D }
 button:active { background-color: #04B; box-shadow: inset 0 3px 5px rgba(0,0,0,.4) }
 
 output { width: 6em }
-h1, button { width: 100%; text-align: center }
+h1, button { width: 100%; text-align: center; margin: 1ex auto }
 
-nav { padding: 0 5%; background-color: #f8f8f8; border: 1px solid transparent; border-color: #e7e7e7 }
+nav { padding: 0 5%; background-color: #06F; border: 0 solid #04B; border-width: 1px 0 }
 .ok, .ko { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px }
-nav>a { padding: 7px 15px; color: #777; font-size: 16px; white-space: nowrap; text-decoration: none }
-nav>a:focus, nav>a:hover { color: #333; background-color: #EEE }
-nav>a.active, nav>a:active { color: #333; background-color: #DDD }
+nav>a { padding: 1ex 2em; color: #EEE; font-size: 16px; white-space: nowrap; text-decoration: none }
+nav>a:focus, nav>a:hover { background-color: #05D }
+nav>a.active, nav>a:active { background-color: #04B }
 
 .ok, .ko { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px }
 .ok { background-color: #dff0d8; border-color: #d6e9c6; color: #3c763d; fill: #3c763d }

@@ -6,11 +6,12 @@ body { font-size: 1.1em }
 label { display: block; margin: 1ex .25em }
 input, select { width: 50%; margin: 0 }
 
+#advanced { display: block; margin: 1em auto }
 #advanced:not(:target) ~ label { display: none }
-#perks { width: 50rem; align-self: center }
-#perks, .perk { border: 1px solid black }
+#perks { width: 50rem; align-self: center; justify-content: center }
+.perk { border: 2px solid black; margin: -1px }
 .perk { flex: 0 0 20%; text-align: center; padding: 0.5ex 0; color: white }
-.perk { background-color: grey }
+.perk { background-color: #666 }
 .perk.tier2 { background-color: #809080 }
 .perk.capped { background-color: #696980 }
 </style>
@@ -27,12 +28,12 @@ Helium” (90 seems to work well). You may also want to try
 		<legend>Inputs</legend>
 
 		<label title='Total Helium Earned, as displayed on the Stats screen'>
-			<input type=text id=helium value=10B required>
+			<input type=text id=helium required>
 			Total Helium
 		</label>
 
 		<label title='The zone on which you plan to do your Void Maps'>
-			<input type=text id=zone value=210 onchange='set_zone()' required pattern='\d{2,3}'>
+			<input type=text id=zone onchange='set_zone()' required pattern='\d{2,3}'>
 			VM zone
 		</label>
 
@@ -84,7 +85,7 @@ Helium” (90 seems to work well). You may also want to try
 			Weight: Breed
 		</label>
 
-		<p><a id=advanced href='#advanced'>Advanced options (you probably shouldn’t bother with those)</a>
+		<a id=advanced href='#advanced'>Advanced options (you probably shouldn’t bother with those)</a>
 
 		<label title='Uncheck this if you didn’t unlock the Whipimp'>
 			<input type=checkbox checked id=whipimp>
@@ -141,8 +142,6 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 			Housing thingy
 		</label>
 
-		</p>
-
 		<button onclick='display(optimize(parse_inputs()))'>Optimize!</button>
 	</fieldset>
 
@@ -150,9 +149,9 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 </form>
 
 <nav class=flexbox>
-	<a href='https://github.com/Grimy'>Made by Grimy</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/blob/master/perks.js'>View the source</a>
+	<a href='https://github.com/Grimy'>By Grimy</a>
 </nav>
 
 <script src=trimps.js></script>
@@ -215,7 +214,7 @@ const parse_inputs = () => ({
 
 function display(level) {
 	var html = '';
-	for (var perk of perks) {
+	for (var perk of perks.slice(perks.indexOf($('#unlock').value))) {
 		var capped = level[perk] == cap[perk] ? ' capped' : '';
 		var tier2 = increment[perk] ? ' tier2' : '';
 		html += `<div class='perk${capped}${tier2}'>${name[perk]}<br>${level[perk]}</div>`;
