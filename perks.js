@@ -284,7 +284,7 @@ if (typeof window === 'undefined') {
 		last_unlock: 'loot2',
 		weight: {helium: 70, attack: 3, breed: 0, health: 1, overkill: 1},
 		mod: {
-			storage: 0.02,
+			storage: 0.125,
 			whip: true,
 			magn: true,
 			taunt: true,

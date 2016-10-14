@@ -37,7 +37,6 @@ output { width: 6em }
 h1, button { width: 100%; text-align: center; margin: 1ex auto }
 
 nav { padding: 0 5%; background-color: #06F; border: 0 solid #04B; border-width: 1px 0 }
-.ok, .ko { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px }
 nav>a { padding: 1ex 2em; color: #EEE; font-size: 16px; white-space: nowrap; text-decoration: none }
 nav>a:focus, nav>a:hover { background-color: #05D }
 nav>a.active, nav>a:active { background-color: #04B }

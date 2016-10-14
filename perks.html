@@ -18,7 +18,7 @@ input, select { width: 50%; margin: 0 }
 
 <h1>Perk Optimizer</h1>
 
-<p class=ko id=warning>Warning: the default weights aren’t great for late-game
+<p class=ko id=post-spire>Warning: the default weights aren’t great for late-game
 He/hr. If you’re not doing a deep run, you should massively increase “Weight:
 Helium” (90 seems to work well). You may also want to try
 <a href='https://docs.google.com/spreadsheets/d/16JjhHQ3fpoXe-r5Az66tx1RM5GPTdDiwvA3_g12geJE/edit'>nsheetz’s calculator</a>.
@@ -166,7 +166,7 @@ function set_zone() {
 	var zone = parseInt($('#zone').value);
 	$('#weight-ok').parentNode.style.display = zone > 170 ? '' : 'none';
 	$('#giga').parentNode.style.display = zone > 60 ? '' : 'none';
-	$('#warning').style.display = zone > 200 ? '' : 'none';
+	$('#post-spire').style.display = zone > 200 ? '' : 'none';
 	$('#unlock').value =
 		zone >= 200 ? 'loot2' :
 		zone >= 170 ? 'ok' :
@@ -213,13 +213,15 @@ const parse_inputs = () => ({
 });
 
 function display(level) {
-	var html = '';
+	$('#perks').innerHTML = '';
+	if (!level)
+		return;
 	for (var perk of perks.slice(perks.indexOf($('#unlock').value))) {
 		var capped = level[perk] == cap[perk] ? ' capped' : '';
 		var tier2 = increment[perk] ? ' tier2' : '';
-		html += `<div class='perk${capped}${tier2}'>${name[perk]}<br>${level[perk]}</div>`;
+		$('#perks').innerHTML +=
+			`<div class='perk${capped}${tier2}'>${name[perk]}<br>${level[perk]}</div>`;
 	}
-	$('#perks').innerHTML = html;
 }
 
 const name = {
