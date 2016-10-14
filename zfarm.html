@@ -103,46 +103,23 @@ fieldset { flex: 0 1 40em; margin: 0 auto }
 	</fieldset>
 </form>
 
+<script src=trimps.js></script>
 <script src=zfarm.js></script>
 <script>
-const suffixes = [
-	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
-	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
-	'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
-];
 
-function $(str) { return document.querySelector(str); }
-
-function parse_suffixes(str) {
-	for (var i = suffixes.length; i > 0; --i)
-		str = str.replace(' ', '').replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`)
-	return parseFloat(str);
-}
-
-function parse_inputs() {
-	return {
-		agility: 10 * Math.pow(.95, $('#agility').value) - $('#hyperspeed').checked,
-		atk: parse_suffixes($('#attack').value.toLowerCase()),
-		biome: biomes.all.concat(biomes[$('#biome').value]),
-		cc: $('#crit_chance').value / 100 * max_rand,
-		cd: 1 + $('#crit_damage').value / 100,
-		difficulty: $('#difficulty').value / 100 * (1 + $('#challenge').value / 100),
-		import_chance: $('#imports').value * .03 * max_rand,
-		overkill: $('#overkill').value * .005,
-		range: ($('#range').value - 1) / max_rand,
-		size: $('#size').value | 0,
-		titimp: $('#titimp').checked,
-	}
-}
-
-function prettify(number) {
-	if (number < 10000)
-		return Math.round(number);
-	let unit = -1;
-	while (number > 1000)
-		number /= 1000, ++unit;
-	return number.toFixed((number < 10) + (number < 100)) + suffixes[unit];
-}
+const parse_inputs = () => ({
+	agility: 10 * Math.pow(.95, $('#agility').value) - $('#hyperspeed').checked,
+	atk: parse_suffixes($('#attack').value.toLowerCase()),
+	biome: biomes.all.concat(biomes[$('#biome').value]),
+	cc: $('#crit_chance').value / 100 * max_rand,
+	cd: 1 + $('#crit_damage').value / 100,
+	difficulty: $('#difficulty').value / 100 * (1 + $('#challenge').value / 100),
+	import_chance: $('#imports').value * .03 * max_rand,
+	overkill: $('#overkill').value * .005,
+	range: ($('#range').value - 1) / max_rand,
+	size: $('#size').value | 0,
+	titimp: $('#titimp').checked,
+});
 
 function display(infos) {
 	$('#one-shot').textContent = `z${infos[0].zone}`;

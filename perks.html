@@ -3,31 +3,36 @@
 <link rel=stylesheet href='grim.css'>
 <style>
 body { font-size: 1.1em }
-label { display: block; margin: 1ex .25em; }
+label { display: block; margin: 1ex .25em }
 input, select { width: 50%; margin: 0 }
 
 #advanced:not(:target) ~ label { display: none }
-#results { width: 50rem }
-.perk { flex: 0 0 20%; text-align: center; border: 1px solid black; padding: 0.5ex 0 }
+#perks { width: 50rem; align-self: center }
+#perks, .perk { border: 1px solid black }
+.perk { flex: 0 0 20%; text-align: center; padding: 0.5ex 0; color: white }
+.perk { background-color: grey }
+.perk.tier2 { background-color: #809080 }
+.perk.capped { background-color: #696980 }
 </style>
 
 <h1>Perk Optimizer</h1>
 
-<p class=ko id=warning>Warning: the default weights aren’t great for late-game He/hr.
-If you’re not doing a deep run, try increasing “Weight: Helium” to 20 or more. You may
-also want to try <a href='https://docs.google.com/spreadsheets/d/16JjhHQ3fpoXe-r5Az66tx1RM5GPTdDiwvA3_g12geJE/edit'>nsheetz’s calculator</a>.
+<p class=ko id=warning>Warning: the default weights aren’t great for late-game
+He/hr. If you’re not doing a deep run, you should massively increase “Weight:
+Helium” (90 seems to work well). You may also want to try
+<a href='https://docs.google.com/spreadsheets/d/16JjhHQ3fpoXe-r5Az66tx1RM5GPTdDiwvA3_g12geJE/edit'>nsheetz’s calculator</a>.
 
 <form class=flexbox action='javascript://0'>
 	<fieldset>
 		<legend>Inputs</legend>
 
 		<label title='Total Helium Earned, as displayed on the Stats screen'>
-			<input type=text id=helium required>
+			<input type=text id=helium value=10B required>
 			Total Helium
 		</label>
 
 		<label title='The zone on which you plan to do your Void Maps'>
-			<input type=text id=zone onchange='set_zone()' required pattern='\d{2,3}'>
+			<input type=text id=zone value=210 onchange='set_zone()' required pattern='\d{2,3}'>
 			VM zone
 		</label>
 
@@ -141,11 +146,7 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 		<button onclick='display(optimize(parse_inputs()))'>Optimize!</button>
 	</fieldset>
 
-	<!-- TODO remove border from results -->
-	<fieldset id=results>
-		<legend>Results</legend>
-		<div id=perks class=flexbox></div>
-	</fieldset>
+	<div id=perks class=flexbox></div>
 </form>
 
 <nav class=flexbox>
@@ -154,23 +155,9 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 	<a href='https://github.com/Grimy/Grimy.github.io/blob/master/perks.js'>View the source</a>
 </nav>
 
+<script src=trimps.js></script>
 <script src=perks.js></script>
 <script>
-
-// TODO refactor common js
-const suffixes = [
-	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
-	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
-	'Uv', 'Dv', 'Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt',
-];
-
-function $(str) { return document.querySelector(str); }
-
-function parse_suffixes(str) {
-	for (var i = suffixes.length; i > 0; --i)
-		str = str.replace(' ', '').replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`)
-	return parseFloat(str);
-}
 
 function input(id) {
 	return parse_suffixes($('#' + id).value.toLowerCase());
@@ -201,7 +188,7 @@ function set_zone() {
 
 // TODO add checkboxes for Use Geneticist, Slow Done, Frugal Done, Sci V done
 const parse_inputs = () => ({
-	helium: input('helium'),
+	he_left: input('helium'),
 	zone: parseInt($('#zone').value),
 	last_unlock: $('#unlock').value,
 	weight: {
@@ -226,24 +213,14 @@ const parse_inputs = () => ({
 	}
 });
 
-function prettify(number) {
-	if (number < 10000)
-		return Math.round(number);
-	let unit = -1;
-	while (number > 1000)
-		number /= 1000, ++unit;
-	return number.toFixed((number < 10) + (number < 100)) + suffixes[unit];
-}
-
 function display(level) {
-	$('#perks').innerHTML = '';
-	var unlocked = false;
-	for (perk in level) {
-		unlocked += level[perk];
-		if (!unlocked)
-			continue;
-		$('#perks').innerHTML += `<div class=perk>${name[perk]}<br>${level[perk]}</div>`;
+	var html = '';
+	for (var perk of perks) {
+		var capped = level[perk] == cap[perk] ? ' capped' : '';
+		var tier2 = increment[perk] ? ' tier2' : '';
+		html += `<div class='perk${capped}${tier2}'>${name[perk]}<br>${level[perk]}</div>`;
 	}
+	$('#perks').innerHTML = html;
 }
 
 const name = {
