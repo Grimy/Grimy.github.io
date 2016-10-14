@@ -1,6 +1,7 @@
 <meta charset=UTF-8>
 <title>Grim’s Perks Calculator</title>
 <style>
+// TODO refactor common CSS
 body { background: #E6E6E6; color: #333; font-size: 1.1em }
 * { box-sizing: border-box }
 fieldset {
@@ -167,6 +168,7 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 		<button onclick='display(optimize(parse_inputs()))'>Optimize!</button>
 	</fieldset>
 
+	<!-- TODO remove border from results -->
 	<fieldset id=results>
 		<legend>Results</legend>
 		<div id=perks></div>
@@ -175,6 +177,8 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 
 <script src=perks.js></script>
 <script>
+
+// TODO refactor common js
 const suffixes = [
 	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
 	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
@@ -216,6 +220,7 @@ function set_zone() {
 	$('#weight-breed').value = zone > 70 ? 0 : 1;
 }
 
+// TODO add checkboxes for Use Geneticist, Slow Done, Frugal Done, Sci V done
 const parse_inputs = () => ({
 	helium: input('helium'),
 	zone: parseInt($('#zone').value),

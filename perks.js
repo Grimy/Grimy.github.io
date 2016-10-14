@@ -55,6 +55,7 @@ function optimize(params) {
 	// cost: total cost of tier I equipments for the stat
 	// value: total bonus granted by relevant tier I equipments
 	// exp: 13 for attack, 14 for health (defined in game.global.prestige)
+	// TODO handle foo-climbing
 	function precompute_equipment_ratios(cost, value, exp) {
 		exp /= 0.85;
 		cost *= 1.069;
@@ -137,6 +138,7 @@ function optimize(params) {
 	}
 
 	// Block per imp
+	// TODO handle shieldblock
 	function block() {
 		var gyms = building(400, 1.185);
 		var trainers = (gyms * log(1.185) - log(gyms)) / log(1.1) + 25 - mystic;
@@ -158,6 +160,7 @@ function optimize(params) {
 
 	const stats = { helium: looting, attack, health, overkill, breed }
 
+	// TODO adjust weight of helium based on the current zone
 	function score() {
 		var result = 0;
 		for (var i in weight)
