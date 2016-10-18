@@ -2,25 +2,23 @@
 <title>zFarm</title>
 <link rel=stylesheet href='grim.css'>
 <style>
+body { font-size: 1.1em }
 label { display: block; margin: 1ex .25em }
-input, select { width: 50%; margin: 0 }
-fieldset { flex: 0 1 40em; margin: 0 auto }
+input, select, textarea { width: 50%; margin: 0 }
+fieldset { flex: 0 1 40em }
 </style>
 
 <h1>zFarm</h1>
 
-<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Request a feature or report a bug</a>
-
-<p>Warning: this calculator assumes that your trimps are alive 100% of the time. If this is not the case, you’ll want to farm slightly lower than what it suggests.</p>
+<p>&nbsp;Warning: this calculator assumes that your trimps are alive 100% of the time. If this is not the case, you’ll want to farm slightly lower than what it suggests.</p>
 
 <form class=flexbox action='javascript://0'>
 	<fieldset>
-
 		<legend>Inputs</legend>
 
-		<label title='Your minimum attack, in the stance you use for farming, without the Titimp buff'>
-			<input type=text id=attack value=12Qi>
-			Min ATK
+		<label title='Export your Trimps save and paste it here'>
+			<textarea id=save onchange='read_save()'></textarea>
+			Import save
 		</label>
 
 		<label title='Biome of the maps you create'>
@@ -32,6 +30,11 @@ fieldset { flex: 0 1 40em; margin: 0 auto }
 				<option value=sea>Sea</option>
 			</select>
 			Biome
+		</label>
+
+		<label title='Your minimum attack, in the stance you use for farming, without the Titimp buff'>
+			<input type=text id=attack value=12Qi>
+			Min ATK
 		</label>
 
 		<label title='Total number of map imp-orts you have unlocked'>
@@ -60,12 +63,12 @@ fieldset { flex: 0 1 40em; margin: 0 auto }
 		</label>
 
 		<label title='Critical hit chance, as displayed in the damage breakdown (max 80)'>
-			<input type=text id=crit_chance value=50 pattern='[0-9.]+'>
+			<input type=text id=cc value=50 pattern='[0-9.]+'>
 			Crit chance
 		</label>
 
 		<label title='Bonus critical damage, as displayed in the damage breakdown'>
-			<input type=text id=crit_damage value=400>
+			<input type=text id=cd value=400>
 			Crit damage%
 		</label>
 
@@ -103,16 +106,73 @@ fieldset { flex: 0 1 40em; margin: 0 auto }
 	</fieldset>
 </form>
 
+<nav class=flexbox>
+	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
+	<a href='https://github.com/Grimy/Grimy.github.io/blob/master/zfarm.js'>View the source</a>
+	<a href='https://github.com/Grimy'>By Grimy</a>
+</nav>
+
+<script src=lz-string.js></script>
 <script src=trimps.js></script>
 <script src=zfarm.js></script>
 <script>
+
+function read_save() {
+	let game = JSON.parse(LZString.decompressFromBase64($('#save').value));
+	if (!game)
+		return;
+
+	let imps = 0;
+	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
+		imps += game.unlocks.imps[imp];
+	let crits = game.portal.Relentlessness.level;
+	let challenge = game.global.challengeActive;
+	let attack = game.global.soldierCurrentAttack;
+	let maxFluct = 1.2;
+	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
+	let enemyHealth = 1;
+
+	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
+	attack *= 1 + 0.01 * game.global.achievementBonus;
+	attack *= 1 + 0.2 * game.global.roboTrimpLevel;
+	attack *= 1 + game.goldenUpgrades.Battle.currentBonus;
+
+	if (challenge == "Daily") {
+		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
+		enemyHealth *= 1 + 0.2 * daily('badHealth');
+		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
+		minFluct -= 0.09 + 0.01 * daily('minDamage');
+		maxFluct += daily('maxDamage');
+		attack *= 1 - 0.09 * daily('weakness');
+		attack *= 1 - 0.02 * daily('oddTrimpNerf');
+		attack *= 1 + 0.2 * daily('evenTrimpBuff');
+	} else if (challenge == "Toxicity" || challenge == "Balance" || challenge == "Meditate") {
+		enemyHealth = 2;
+	} else if (challenge == "Lead" && (game.global.world % 2) == 1) {
+		attack *= 1.5;
+	} else if (challenge == "Discipline") {
+		maxFluct = 1.995;
+		minFluct = 0.005;
+	}
+
+	// TODO pass Max Atk instead of Range
+	$('#agility').value = game.portal.Agility.level;
+	$('#attack').value = prettify(attack * minFluct);
+	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
+	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
+	$('#range').value = maxFluct / minFluct;
+	$('#overkill').value = game.portal.Overkill.level;
+	$('#titimp').checked = game.unlocks.imps.Titimp;
+	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
+	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
+}
 
 const parse_inputs = () => ({
 	agility: 10 * Math.pow(.95, $('#agility').value) - $('#hyperspeed').checked,
 	atk: parse_suffixes($('#attack').value.toLowerCase()),
 	biome: biomes.all.concat(biomes[$('#biome').value]),
-	cc: $('#crit_chance').value / 100 * max_rand,
-	cd: 1 + $('#crit_damage').value / 100,
+	cc: $('#cc').value / 100 * max_rand,
+	cd: 1 + $('#cd').value / 100,
 	difficulty: $('#difficulty').value / 100 * (1 + $('#challenge').value / 100),
 	import_chance: $('#imports').value * .03 * max_rand,
 	overkill: $('#overkill').value * .005,
@@ -160,5 +220,6 @@ function display(infos) {
 	}
 }
 
+read_save();
 display(stats(parse_inputs()));
 </script>
