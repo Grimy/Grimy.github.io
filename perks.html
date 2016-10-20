@@ -4,7 +4,7 @@
 <style>
 body { font-size: 1.1em }
 label { display: block; margin: 1ex .25em }
-input, select { width: 50%; margin: 0 }
+input, select, textarea { width: 50%; margin: 0 }
 
 #advanced:not(:target) ~ a, #advanced:not(:target) ~ label, #advanced:target { display: none }
 #perks { width: 50rem; align-self: center; justify-content: center }
@@ -17,14 +17,16 @@ input, select { width: 50%; margin: 0 }
 
 <h1>Perk Optimizer</h1>
 
-<p class=ko id=post-spire>Warning: the default weights aren’t great for late-game
-He/hr. If you’re not doing a deep run, you should massively increase “Weight:
-Helium” (90 seems to work well). You may also want to try
-<a href='https://docs.google.com/spreadsheets/d/16JjhHQ3fpoXe-r5Az66tx1RM5GPTdDiwvA3_g12geJE/edit'>nsheetz’s calculator</a>.
+<p id=alert class=alert>&nbsp;</p>
 
 <form class=flexbox action='javascript://0'>
 	<fieldset>
 		<legend>Inputs</legend>
+
+		<label title='Export your Trimps save and paste it here'>
+			<textarea id=save onfocus='this.value = ""' onpaste='handle_paste(event)'></textarea>
+			Import save
+		</label>
 
 		<label title='Total Helium Earned, as displayed on the Stats screen'>
 			<input type=text id=helium required>
@@ -34,29 +36,6 @@ Helium” (90 seems to work well). You may also want to try
 		<label title='The zone on which you plan to do your Void Maps'>
 			<input type=text id=zone onchange='set_zone()' required pattern='\d{2,3}'>
 			VM zone
-		</label>
-
-		<label title='The latest perk you have unlocked'>
-			<select id=unlock>
-				<option value=loot2>Looting II</option>
-				<option value=carp2>Carpentry II</option>
-				<option value=moti2>Motivation II</option>
-				<option value=power2>Power II</option>
-				<option value=tough2>Toughness II</option>
-				<option value=ok>Overkill</option>
-				<option value=reso>Resourceful</option>
-				<option value=coord>Coordinated</option>
-				<option value=sipho>Siphonology</option>
-				<option value=anti>Anticipation</option>
-				<option value=resi>Resilience</option>
-				<option value=medit>Meditation</option>
-				<option value=relent>Relentlessness</option>
-				<option value=carp>Carpentry</option>
-				<option value=arti>Artisanistry</option>
-				<option value=range>Range</option>
-				<option value=agility>Base perks only</option>
-			</select>
-			Last unlock
 		</label>
 
 		<label title='How much you value +1% Helium income'>
@@ -86,6 +65,29 @@ Helium” (90 seems to work well). You may also want to try
 
 		<a id=advanced class=centered href='#advanced'>Advanced options (you probably shouldn’t bother)</a>
 		<a class=centered href='#'>Hide advanced options</a>
+
+		<label title='The most expensive prestige you unlock before portalling'>
+			<select id=climb>
+				<option value=dagger>Dagger</option>
+				<option value=boots>Boots</option>
+				<option value=mace>Mace</option>
+				<option value=helm>Helm</option>
+				<option value=pole>Polearm</option>
+				<option value=pants>Pants</option>
+				<option value=axe>Battleaxe</option>
+				<option value=guards>Shoulderguars</option>
+				<option value=sword>Greatsword</option>
+				<option value=plate>Breastplate</option>
+				<option value=arbalest>Arbalest</option>
+				<option selected value=gambeson>Gambeson</option>
+			</select>
+			-climbing
+		</label>
+
+		<label title='A comma-separated list of perks you have unlocked'>
+			<input type=text id=unlocks required>
+			Unlocked perks
+		</label>
 
 		<label title='Uncheck this if you didn’t unlock the Whipimp'>
 			<input type=checkbox checked id=whipimp>
@@ -154,9 +156,12 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 	<a href='https://github.com/Grimy'>By Grimy</a>
 </nav>
 
+<script src=lz-string.js></script>
 <script src=trimps.js></script>
 <script src=perks.js></script>
 <script>
+
+var old_perks;
 
 function input(id) {
 	return parse_suffixes($('#' + id).value.toLowerCase());
@@ -164,32 +169,43 @@ function input(id) {
 
 function set_zone() {
 	var zone = parseInt($('#zone').value);
-	$('#weight-ok').parentNode.style.display = zone > 170 ? '' : 'none';
+ 	$('#weight-ok').parentNode.style.display = zone > 160 ? '' : 'none';
 	$('#giga').parentNode.style.display = zone > 60 ? '' : 'none';
 	$('#post-spire').style.display = zone > 200 ? '' : 'none';
-	$('#unlock').value =
-		zone >= 200 ? 'loot2' :
-		zone >= 170 ? 'ok' :
-		zone >= 150 ? 'reso' :
-		zone >= 120 ? 'coord' :
-		zone >= 115 ? 'sipho' :
-		zone >=  70 ? 'anti' :
-		zone >=  60 ? 'resi' :
-		zone >=  45 ? 'medit' :
-		zone >=  35 ? 'carp' :
-		zone >=  33 ? 'relent' :
-		zone >=  25 ? 'arti' :
-		zone >=  20 ? 'range' :
-		              'agility';
-
 	$('#weight-breed').value = zone > 70 ? 0 : 1;
+}
+
+function read_save(game) {
+	$('#helium').value = game.global.totalHeliumEarned;
+	$('#zone').value = game.stats.highestVoidMap.valueTotal;
+	$('#unlocks').value = Object.keys(game.portal).filter((perk) => !game.portal[perk].locked).join(',')
+	$('#whipimp').checked = game.unlocks.imps.Whipimp;
+	$('#magnimp').checked = game.unlocks.imps.Magnimp;
+	$('#tauntimp').checked = game.unlocks.imps.Tauntimp;
+	$('#venimp').checked = game.unlocks.imps.Venimp;
+	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
+	old_perks = game.portal;
+}
+
+function handle_paste(ev) {
+	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
+	if (game) {
+		$('#alert').classList = 'ok';
+		$('#alert').textContent = 'Save loaded successfully!';
+		read_save(game);
+		display(optimize(parse_inputs()));
+	} else {
+		$('#alert').classList = 'ko';
+		$('#alert').textContent = 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.';
+	}
 }
 
 // TODO add checkboxes for Use Geneticist, Slow Done, Frugal Done, Sci V done
 const parse_inputs = () => ({
 	he_left: input('helium'),
 	zone: parseInt($('#zone').value),
-	last_unlock: $('#unlock').value,
+	unlocks: $('#unlocks').value.split(','),
+	climb: $('#climb').value,
 	weight: {
 		helium: input('weight-he'),
 		attack: input('weight-atk'),
@@ -216,43 +232,15 @@ function display(level) {
 	$('#perks').innerHTML = '';
 	if (!level)
 		return;
-	for (var perk of perks.slice(perks.indexOf($('#unlock').value))) {
+	for (var perk of $('#unlocks').value.split(',')) {
 		var capped = level[perk] == cap[perk] ? ' capped' : '';
 		var tier2 = increment[perk] ? ' tier2' : '';
+		var name = perk.replace(/_/g, ' ');
+		var diff = level[perk] - old_perks[perk].level;
+		var diff_text = diff == 0 ? '' : diff > 0 ? ` (+${diff})` : ` (${diff})`;
 		$('#perks').innerHTML +=
-			`<div class='perk${capped}${tier2}'>${name[perk]}<br>${level[perk]}</div>`;
+			`<div class='perk${capped}${tier2}'>${name}<br>${level[perk]}${diff_text}</div>`;
 	}
 }
-
-const name = {
-	loot2:   'Looting II',
-	carp2:   'Carpentry II',
-	moti2:   'Motivation II',
-	power2:  'Power II',
-	tough2:  'Toughness II',
-	ok:      'Overkill',
-	reso:    'Resourceful',
-	coord:   'Coordinated',
-	sipho:   'Siphonology',
-	anti:    'Anticipation',
-	resi:    'Resilience',
-	medit:   'Meditation',
-	relent:  'Relentlessness',
-	carp:    'Carpentry',
-	arti:    'Artisanistry',
-	range:   'Range',
-	agility: 'Agility',
-	bait:    'Bait',
-	trumps:  'Trumps',
-	phero:   'Pheromones',
-	packrat: 'Packrat',
-	moti:    'Motivation',
-	power:   'Power',
-	tough:   'Toughness',
-	loot:    'Looting',
-};
-
-
-set_zone();
 
 </script>
