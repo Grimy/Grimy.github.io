@@ -41,7 +41,7 @@ nav>a { padding: 1ex 2em; color: #EEE; font-size: 16px; white-space: nowrap; tex
 nav>a:focus, nav>a:hover { background-color: #05D }
 nav>a.active, nav>a:active { background-color: #04B }
 
-.ok, .ko { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px }
+.ok, .ko, .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px }
 .ok { background-color: #dff0d8; border-color: #d6e9c6; color: #3c763d; fill: #3c763d }
 .ko { background-color: #f2dede; border-color: #ebccd1; color: #a94442; fill: #a94442 }
 .badge { display: inline-block; padding: 3px 7px; font-weight: 700; line-height: 1; color: #fff; background-color: #777; margin-right: 1ex; border-radius: 1em }

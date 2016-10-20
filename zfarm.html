@@ -10,16 +10,14 @@ fieldset { flex: 0 1 40em }
 
 <h1>zFarm</h1>
 
-<p>&nbsp;Warning: this calculator assumes that your trimps are alive 100% of the time. If this is not the case, you’ll want to farm slightly lower than what it suggests.</p>
-
-<p class=ko id=load-failed style=display:none>Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.</p>
+<p id=alert class=alert>&nbsp;</p>
 
 <form class=flexbox action='javascript://0'>
 	<fieldset>
 		<legend>Inputs</legend>
 
 		<label title='Export your Trimps save and paste it here'>
-			<textarea maxlength=0 id=save onpaste='handle_paste(event)'></textarea>
+			<textarea id=save onfocus='this.value = ""' onpaste='handle_paste(event)'></textarea>
 			Import save
 		</label>
 
@@ -102,6 +100,9 @@ fieldset { flex: 0 1 40em }
 		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
 		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
 		<p id=details>
+		<p>&nbsp;Warning: this calculator assumes that your trimps are alive
+		100% of the time. If this is not the case, you’ll want to farm slightly
+		lower than what it suggests.</p>
 		<p>Note: the displayed loot values don’t account for special imps, looting perks and staffs.
 		As such, your actual loot will be much higher. However, these factors affect all maps in the
 		same way, and don’t affect the choice of map.
@@ -169,9 +170,15 @@ function read_save(game) {
 
 function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
-	$('#load-failed').style.display = game ? 'none' : '';
-	if (game)
+	if (game) {
+		$('#alert').classList = 'ok';
+		$('#alert').textContent = 'Save loaded successfully!';
 		read_save(game);
+		display(stats(parse_inputs()));
+	} else {
+		$('#alert').classList = 'ko';
+		$('#alert').textContent = 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.';
+	}
 }
 
 const parse_inputs = () => ({
