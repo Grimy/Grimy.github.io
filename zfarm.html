@@ -141,11 +141,13 @@ function read_save() {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		enemyHealth *= 1 + 0.2 * daily('badHealth');
 		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
-		minFluct -= 0.09 + 0.01 * daily('minDamage');
+		minFluct -= 0.09 * !!daily('minDamage') + 0.01 * daily('minDamage');
 		maxFluct += daily('maxDamage');
 		attack *= 1 - 0.09 * daily('weakness');
-		attack *= 1 - 0.02 * daily('oddTrimpNerf');
-		attack *= 1 + 0.2 * daily('evenTrimpBuff');
+		if (game.global.world % 2 == 1)
+			attack *= 1 - 0.02 * daily('oddTrimpNerf');
+		else
+			attack *= 1 + 0.2 * daily('evenTrimpBuff');
 	} else if (challenge == "Toxicity" || challenge == "Balance" || challenge == "Meditate") {
 		enemyHealth = 2;
 	} else if (challenge == "Lead" && (game.global.world % 2) == 1) {
