@@ -12,12 +12,14 @@ fieldset { flex: 0 1 40em }
 
 <p>&nbsp;Warning: this calculator assumes that your trimps are alive 100% of the time. If this is not the case, you’ll want to farm slightly lower than what it suggests.</p>
 
+<p class=ko id=load-failed style=display:none>Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.</p>
+
 <form class=flexbox action='javascript://0'>
 	<fieldset>
 		<legend>Inputs</legend>
 
 		<label title='Export your Trimps save and paste it here'>
-			<textarea id=save onchange='read_save()'></textarea>
+			<textarea maxlength=0 id=save onpaste='handle_paste(event)'></textarea>
 			Import save
 		</label>
 
@@ -117,11 +119,7 @@ fieldset { flex: 0 1 40em }
 <script src=zfarm.js></script>
 <script>
 
-function read_save() {
-	let game = JSON.parse(LZString.decompressFromBase64($('#save').value));
-	if (!game)
-		return;
-
+function read_save(game) {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
@@ -165,6 +163,13 @@ function read_save() {
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
 	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
+}
+
+function handle_paste(ev) {
+	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
+	$('#load-failed').style.display = game ? 'none' : '';
+	if (game)
+		read_save(game);
 }
 
 const parse_inputs = () => ({
@@ -220,6 +225,5 @@ function display(infos) {
 	}
 }
 
-read_save();
 display(stats(parse_inputs()));
 </script>
