@@ -283,12 +283,13 @@ function optimize(params) {
 	var free = he_left / 1000;
 	var shitty = {Bait: true, Packrat: true, Trumps: true};
 	for (let best = 'Looting'; best; best = best_perk()) {
-		var spent = 0;
-		do {
-			spent += cost(best);
+		for (let spent = 0; spent < free; spent += cost(best)) {
 			he_left -= cost(best);
 			++level[best];
-		} while (spent < free && level[best] != cap[best] && !shitty[best]);
+			if (level[best] == cap[best] || shitty[best])
+				break;
+		}
+		free = min(he_left / 10, free);
 	}
 
 	// Debug stuff
