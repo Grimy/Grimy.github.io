@@ -1,4 +1,4 @@
-':' //; exec node "$0"
+// 2>&-; exec node "$0"
 
 const equipment = {
 	shield: [40, 4, 'health'],
@@ -57,7 +57,7 @@ function optimize(params) {
 	"use strict";
 
 	var {he_left, zone, unlocks, weight, climb, mod} = params;
-	if (!(he_left <= 1e16))
+	if (he_left > 1e16)
 		return;
 
 	// Copy these Math functions in our namespace
@@ -132,7 +132,7 @@ function optimize(params) {
 		var storage = mod.storage * mult('Resourceful', -5) / add('Packrat', 20);
 		var prod = Motivation() * add('Meditation', 1) * (1 + mod.turkimp / 2);
 		var lmod = looting() * imp.magn * mod.loot / ticks();
-		var loot = base_loot * lmod * (1 + .166 * mod.turkimp);
+		var loot = base_loot * lmod * (1 + 0.166 * mod.turkimp);
 		var chronojest = mod.chronojest * 0.75 * prod * lmod;
 		return 1800 * imp.whip * books * (prod + loot + chronojest) * (1 - storage);
 	}
@@ -154,7 +154,7 @@ function optimize(params) {
 
 	// Theoretical fighting group size (actual size is lower because of Coordinated) 
 	function soldiers() {
-		var ratio = 1 + .25 * pow(.98, level['Coordinated']);
+		var ratio = 1 + 0.25 * pow(0.98, level.Coordinated);
 		var coords = log(trimps() / 3 / group_size(ratio)) / log(ratio);
 		return group_size(1.25) * Math.pow(1.25, min(zone - 1, coords));
 	}
@@ -163,7 +163,7 @@ function optimize(params) {
 	function attack() {
 		var power = add('Power', 5) * add('Power_II', 1) * add('Range', 1);
 		var crits = add('Relentlessness', 5 * add('Relentlessness', 30));
-		var sipho = pow(1 + level['Siphonology'], 0.1);
+		var sipho = pow(1 + level.Siphonology, 0.1);
 		var anti = add('Anticipation', 2 * mod.breed_timer);
 		return soldiers() * tiers('attack') * power * crits * sipho * anti;
 	}
@@ -179,7 +179,7 @@ function optimize(params) {
 	// Total survivability (accounts for health and block)
 	function health() {
 		var health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
-		if (zone >= 70 && weight.breed == 0) {
+		if (zone >= 70 && weight.breed === 0) {
 			var target_speed = pow(6, 0.1 / mod.breed_timer);
 			var geneticists = log(breed() / target_speed) / log(1.02);
 			health *= pow(1.01, geneticists);
@@ -193,13 +193,13 @@ function optimize(params) {
 
 	const overkill = () => add('Overkill', 60);
 
-	const stats = { helium, attack, health, overkill, breed }
+	const stats = { helium, attack, health, overkill, breed };
 
 	// TODO adjust weight of helium based on the current zone
 	function score() {
 		var result = 0;
 		for (var i in weight)
-			if (weight[i] != 0)
+			if (weight[i] !== 0)
 				result += weight[i] * log(stats[i]());
 		return result / mult('Agility', -0.1);
 	}
@@ -244,7 +244,7 @@ function optimize(params) {
 
 	var imp = {};
 	for (let name of ['whip', 'magn', 'taunt', 'ven'])
-		imp[name] = pow(1.003, zone * 99 * .03 * mod[name]);
+		imp[name] = pow(1.003, zone * 99 * 0.03 * mod[name]);
 
 	var scientist_done = zone > 130;
 	var slow = zone > 130;
@@ -262,7 +262,7 @@ function optimize(params) {
 	const equip_total = {
 		attack: {cost: 0, value: 0, exp: 13},
 		health: {cost: 0, value: 0, exp: 14},
-	}
+	};
 
 	for (let piece in equipment) {
 		let [cost, value, stat] = equipment[piece];
@@ -318,8 +318,8 @@ if (typeof window === 'undefined') {
 			taunt: true,
 			ven: true,
 			chronojest: 5,
-			Looting: 1,
-			turkimp: .5,
+			loot: 1,
+			turkimp: 0.5,
 			breed_timer: 30,
 			giga: 1,
 			housing: 3,
