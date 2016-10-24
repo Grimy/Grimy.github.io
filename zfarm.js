@@ -11,7 +11,7 @@ var biomes = {
 	depths: [1, 0.7, 1.4, 0.8],
 };
 
-Array.prototype.max = () => Math.max.apply(null, this);
+Array.prototype.max = function() { return Math.max.apply(null, this) };
 
 var seed = 42;
 var max_rand = Math.pow(2, 31);
