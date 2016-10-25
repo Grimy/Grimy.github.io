@@ -10,10 +10,10 @@ const suffixes = [
 function prettify(number) {
 	if (number < 10000)
 		return Math.round(number);
-	let unit = -1;
+	let unit = 0;
 	while (number > 1000)
 		number /= 1000, ++unit;
-	return number.toFixed((number < 10) + (number < 100)) + suffixes[unit];
+	return number.toFixed((number < 10) + (number < 100)) + (suffixes[unit - 1] || `E${3 * unit}`);
 }
 
 function parse_suffixes(str) {
