@@ -9,9 +9,10 @@ var biomes = {
 	mountain: [2, 1.4, 1.4],
 	forest: [1.2, 1.5],
 	depths: [1, 0.7, 1.4, 0.8],
+	bionic: [1.5, 0.8, 1.2, 1.3, 1.5],
 };
 
-Array.prototype.max = function() { return Math.max.apply(null, this) };
+Array.prototype.max = function() { return Math.max.apply(null, this); };
 
 var seed = 42;
 var max_rand = Math.pow(2, 31);
@@ -27,6 +28,14 @@ function percentage(ratio) {
 	return ((ratio - 1) * 100).toFixed(1);
 }
 
+// Base HP (before difficulty and imp modifiers) for an my
+// at the given position (zone + cell).
+function enemy_hp(zone, cell) {
+	var amt = 14.3 * Math.sqrt(zone * Math.pow(3.265, zone)) - 12.1;
+	amt *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + 0.08 * cell) * Math.pow(1.1, zone - 59);
+	return amt;
+}
+
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
 function simulate(zone, g) {
 	var ticks = 0;
@@ -34,8 +43,14 @@ function simulate(zone, g) {
 	var ok_dmg = 0;
 
 	for (var cell = 0; ticks < max_ticks; ++cell) {
-		var imp = rng();
-		var toughness = imp < g.import_chance ? 1 : g.biome[imp % g.biome.length];
+		var imp, toughness;
+		if (cell % g.size == 99) {
+			imp = max_rand;
+			toughness = 2.9;
+		} else {
+			imp = rng();
+			toughness = imp < g.import_chance ? 1 : g.biome[imp % g.biome.length];
+		}
 		var hp = g.difficulty * toughness * enemy_hp(zone, cell % g.size);
 
 		if (cell % g.size !== 0)
@@ -61,19 +76,31 @@ function stats(g) {
 	while (g.atk >= g.difficulty * g.biome.max() * enemy_hp(max_os + 1, g.size - 1))
 		++max_os;
 
-	return [0, 1, 2, 3, 4, 5].map((i) => max_os + i).map((zone) => ({
-		zone: zone,
+	var result = [0, 1, 2, 3, 4, 5].map((i) => max_os + i).map((zone) => ({
+		zone: 'z' + zone,
 		cells: simulate(zone, g),
 		loot: Math.pow(1.25, zone),
 	}));
+
+	if (max_os >= 120 && max_os % 15 < 8 && g.biome.length == 14) {
+		var zone = 5 + (max_os - max_os % 15);
+		var loot = 2 * Math.pow(1.25, zone);
+		g.size = 100;
+		g.biome = biomes.all.concat(biomes.bionic);
+		g.difficulty = 2.6;
+		var cells = simulate(zone, g);
+		result.push({zone: 'BW' + zone, cells, loot});
+	}
+
+	return result;
 }
 
 // When executing from the command-line
 if (typeof window === 'undefined') {
 	var start = Date.now();
-	console.log(stats({
+	var infos = stats({
 		agility: 10 * Math.pow(0.95, 20),
-		atk: 1e18,
+		atk: 2.5e37,
 		biome: biomes.all.concat(biomes.gardens),
 		cc: 0.5 * max_rand,
 		cd: 5,
@@ -83,6 +110,10 @@ if (typeof window === 'undefined') {
 		range: 0.2 / max_rand,
 		size: 30,
 		titimp: true,
-	}));
+	});
+	for (let info of infos)
+		info.value = info.cells * info.loot;
+	infos.sort((a, b) => b.value - a.value);
+	console.log(infos);
 	console.log(Date.now() - start);
 }

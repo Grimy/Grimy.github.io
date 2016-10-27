@@ -29,11 +29,3 @@ function enemy_atk(zone, cell) {
 	amt *= zone < 60 ? (3.1875 + .0595 * cell) : (4 + .09 * cell) * Math.pow(1.15, zone - 59);
 	return amt;
 }
-
-// Base HP (before difficulty and imp modifiers) for an enemy
-// at the given position (zone + cell).
-function enemy_hp(zone, cell) {
-	var amt = 14.3 * Math.sqrt(zone * Math.pow(3.265, zone)) - 12.1;
-	amt *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + .08 * cell) * Math.pow(1.1, zone - 59);
-	return amt;
-}

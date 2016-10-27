@@ -100,7 +100,7 @@ fieldset { flex: 0 1 40em }
 		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
 		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
 		<p id=details>
-		<p>&nbsp;Warning: this calculator assumes that your trimps are alive
+		<p>Warning: this calculator assumes that your trimps are alive
 		100% of the time. If this is not the case, you’ll want to farm slightly
 		lower than what it suggests.</p>
 		<p>Note: the displayed loot values don’t account for special imps, looting perks and staffs.
@@ -196,19 +196,14 @@ const parse_inputs = () => ({
 });
 
 function display(infos) {
-	$('#one-shot').textContent = `z${infos[0].zone}`;
+	$('#one-shot').textContent = infos[0].zone;
 
 	$('#details').innerHTML = '';
-	for (info of infos) {
+	for (let info of infos) {
 		var p = document.createElement('p');
 		var cps = info.cells * 10 / max_ticks;
 		info.value = cps * info.loot;
-		p.textContent = `z${info.zone}: ${prettify(info.loot)} loot at ${cps.toFixed(3)} cells/s`;
-		// if (info.value !== infos[0].value) {
-			// var delta = percentage(info.value / infos[0].value);
-			// p.textContent += ` = ${Math.abs(delta)}% ${delta < 0 ? 'less' : 'more'} loot/s than on z${infos[0].zone}`;
-		// }
-		// p.textContent += '.';
+		p.textContent = `${info.zone}: ${prettify(info.loot)} loot at ${cps.toFixed(3)} cells/s`;
 		p.textContent += ` = ${prettify(info.loot * cps)} loot/s.`;
 		$('#details').appendChild(p);
 	}
@@ -223,14 +218,14 @@ function display(infos) {
 	var adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
-	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on z${best}`;
+	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${best}`;
 	if (loot_diff <= 1) {
-		$('#result').textContent += ` or z${second}`;
+		$('#result').textContent += ` or ${second}`;
 		$('#comment').textContent = `They’re equally efficient.`;
 	} else {
-		$('#comment').textContent = loot_diff <= 6 ?
-			`But a z${second} map with ${loot_diff}% higher loot is better.` :
-			`It’s ${percentage(ratio)}% more efficient than z${second}.`;
+		$('#comment').textContent = loot_diff <= 6 && best.startsWith('z') ?
+			`But a ${second} map with ${loot_diff}% higher loot is better.` :
+			`It’s ${percentage(ratio)}% more efficient than ${second}.`;
 	}
 }
 
