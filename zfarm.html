@@ -143,6 +143,7 @@ function read_save(game) {
 		minFluct -= 0.09 * !!daily('minDamage') + 0.01 * daily('minDamage');
 		maxFluct += daily('maxDamage');
 		attack *= 1 - 0.09 * daily('weakness');
+		attack *= 1 + 0.1 * Math.ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
 		if (game.global.world % 2 == 1)
 			attack *= 1 - 0.02 * daily('oddTrimpNerf');
 		else
@@ -187,7 +188,8 @@ const parse_inputs = () => ({
 	biome: biomes.all.concat(biomes[$('#biome').value]),
 	cc: $('#cc').value / 100 * max_rand,
 	cd: 1 + $('#cd').value / 100,
-	difficulty: $('#difficulty').value / 100 * (1 + $('#challenge').value / 100),
+	challenge: 1 + $('#challenge').value / 100,
+	difficulty: $('#difficulty').value / 100,
 	import_chance: $('#imports').value * .03 * max_rand,
 	overkill: $('#overkill').value * .005,
 	range: ($('#range').value - 1) / max_rand,

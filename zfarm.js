@@ -28,12 +28,12 @@ function percentage(ratio) {
 	return ((ratio - 1) * 100).toFixed(1);
 }
 
-// Base HP (before difficulty and imp modifiers) for an my
+// Base HP (before imp modifiers) for an my
 // at the given position (zone + cell).
-function enemy_hp(zone, cell) {
+function enemy_hp(g, zone, cell) {
 	var amt = 14.3 * Math.sqrt(zone * Math.pow(3.265, zone)) - 12.1;
 	amt *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + 0.08 * cell) * Math.pow(1.1, zone - 59);
-	return amt;
+	return g.difficulty * g.challenge * amt;
 }
 
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
@@ -51,7 +51,7 @@ function simulate(zone, g) {
 			imp = rng();
 			toughness = imp < g.import_chance ? 1 : g.biome[imp % g.biome.length];
 		}
-		var hp = g.difficulty * toughness * enemy_hp(zone, cell % g.size);
+		var hp = toughness * enemy_hp(g, zone, cell % g.size);
 
 		if (cell % g.size !== 0)
 			hp -= Math.min(ok_dmg, hp);
@@ -73,7 +73,7 @@ function simulate(zone, g) {
 // Computes looting efficiency based on the given game state.
 function stats(g) {
 	var max_os = 6;
-	while (g.atk >= g.difficulty * g.biome.max() * enemy_hp(max_os + 1, g.size - 1))
+	while (g.atk >= g.biome.max() * enemy_hp(g, max_os + 1, g.size - 1))
 		++max_os;
 
 	var result = [0, 1, 2, 3, 4, 5].map((i) => max_os + i).map((zone) => ({
