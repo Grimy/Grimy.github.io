@@ -33,6 +33,11 @@ input, select, textarea { width: 50%; margin: 0 }
 			Total Helium
 		</label>
 
+		<label title='Check this when respeccing from the View Perks screen'>
+			<input type=checkbox id=respec>
+			Mid-run respec
+		</label>
+
 		<label title='The zone on which you plan to do your Void Maps'>
 			<input type=text id=zone onchange='set_zone()' required pattern='\d{2,3}'>
 			VM zone
@@ -176,7 +181,13 @@ function set_zone() {
 }
 
 function read_save(game) {
-	$('#helium').value = game.global.totalHeliumEarned;
+	let he_left = game.global.heliumLeftover;
+	for (let perk in game.portal)
+		he_left += game.portal[perk].heliumSpent;
+	if (!$('#respec').checked)
+		he_left += game.resources.helium.owned;
+
+	$('#helium').value = he_left;
 	$('#zone').value = game.stats.highestVoidMap.valueTotal;
 	$('#unlocks').value = Object.keys(game.portal).filter((perk) => !game.portal[perk].locked).join(',')
 	$('#whipimp').checked = game.unlocks.imps.Whipimp;

@@ -188,7 +188,7 @@ function optimize(params) {
 	}
 
 	function helium() {
-		return base_helium * looting() + 45;
+		return (base_helium * looting() + 45) / mult('Resourceful', window.location.protocol == "file:" ? -5 : 0);
 	}
 
 	const overkill = () => add('Overkill', 60);
@@ -297,9 +297,7 @@ function optimize(params) {
 	console.log(equip_total);
 	console.log('Suggested looting weight:', log(1024) / log(potential_helium / base_helium));
 
-	console.log(tiers('health'));
-	compare('Power', 'Artisanistry');
-	console.log('Max trimps', trimps());
+	console.log('Helium left:', he_left);
 
 	return level;
 }
@@ -311,6 +309,7 @@ if (typeof window === 'undefined') {
 		zone: 350,
 		weight: {helium: 70, attack: 1, breed: 0, health: 1, overkill: 1},
 		climb: 'plate',
+		unlocks: Object.keys(base_cost),
 		mod: {
 			storage: 0.125,
 			whip: true,
