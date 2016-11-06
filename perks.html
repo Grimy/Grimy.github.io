@@ -188,7 +188,7 @@ function read_save(game) {
 		he_left += game.resources.helium.owned;
 
 	$('#helium').value = he_left;
-	$('#zone').value = game.stats.highestVoidMap.valueTotal;
+	$('#zone').value = game.stats.highestVoidMap.valueTotal || game.global.highestLevelCleared;
 	$('#unlocks').value = Object.keys(game.portal).filter((perk) => !game.portal[perk].locked).join(',')
 	$('#whipimp').checked = game.unlocks.imps.Whipimp;
 	$('#magnimp').checked = game.unlocks.imps.Magnimp;
