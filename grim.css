@@ -49,3 +49,10 @@ nav>a.active, nav>a:active { background-color: #04B }
 .flexbox { width: 100%; margin: 0 auto; display: flex; flex-flow: row wrap }
 .centered { display: block; clear: both; margin: 0 auto }
 [title] { text-decoration: underline dotted; cursor: help }
+
+.tabs { position: relative }
+.tabs > label { cursor: pointer }
+.tabs > [type=radio] { position: absolute; clip: rect(0,0,0,0) }
+.tabs > label + * { position: absolute }
+.tabs > :checked + label { background: #c99 }
+.tabs > :not(:checked) + label + * { opacity: 0 }

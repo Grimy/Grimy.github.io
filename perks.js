@@ -1,5 +1,7 @@
 // 2>&-; exec node "$0"
 
+const testing = typeof window === 'undefined' || window.location.protocol == "file:";
+
 const equipment = {
 	shield: [40, 4, 'health'],
 	dagger: [40, 2, 'attack'],
@@ -124,13 +126,13 @@ function optimize(params) {
 		return log(income() * trimps() * (exp - 1) / cost + 1) / log(exp);
 	}
 
-	const Motivation = () => add('Motivation', 5) * add('Motivation_II', 1);
+	const moti = () => add('Motivation', 5) * add('Motivation_II', 1);
 	const looting = () => add('Looting', 5) * add('Looting_II', 0.25);
 
 	// Total resource gain per second
 	function income() {
 		var storage = mod.storage * mult('Resourceful', -5) / add('Packrat', 20);
-		var prod = Motivation() * add('Meditation', 1) * (1 + mod.turkimp / 2);
+		var prod = moti() * add('Meditation', 1) * (1 + mod.turkimp / 2);
 		var lmod = looting() * imp.magn * mod.loot / ticks();
 		var loot = base_loot * lmod * (1 + 0.166 * mod.turkimp);
 		var chronojest = mod.chronojest * 0.75 * prod * lmod;
@@ -188,7 +190,7 @@ function optimize(params) {
 	}
 
 	function helium() {
-		return (base_helium * looting() + 45) / mult('Resourceful', window.location.protocol == "file:" ? -5 : 0);
+		return (base_helium * looting() + 45) / mult('Resourceful', testing ? -5 : 0);
 	}
 
 	const overkill = () => add('Overkill', 60);
@@ -298,14 +300,15 @@ function optimize(params) {
 	console.log('Suggested looting weight:', log(1024) / log(potential_helium / base_helium));
 
 	console.log('Helium left:', he_left);
+	compare('Motivation', 'Power');
 
 	return level;
 }
 
 // When executing from the command-line
-if (typeof window === 'undefined') {
+if (testing) {
 	console.log(optimize({
-		he_left: 1e15,
+		he_left: 1e12,
 		zone: 350,
 		weight: {helium: 70, attack: 1, breed: 0, health: 1, overkill: 1},
 		climb: 'plate',
