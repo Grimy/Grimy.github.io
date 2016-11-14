@@ -2,48 +2,44 @@
 <title>NecroNome</title>
 <link rel=stylesheet href='grim.css'>
 <style>
-label { display: inline-block }
+input[type=radio], input[type=checkbox] { width: auto }
+label { display: inline-block; white-space: nowrap; margin-right: 1em }
 fieldset { flex: 0 0 400px }
 button { width: 600px; margin: 20px auto }
+hr { visibility: hidden; height: 0; margin: 1ex 0 }
 </style>
 <h1>NecroNome</h1>
 <form class=flexbox>
-	<fieldset>
+	<fieldset class=box>
 		<legend>Envelope</legend>
 		<canvas id=canvas class=clickable width=360 height=360></canvas>
 	</fieldset>
-	<fieldset>
+	<fieldset class=box>
 		<legend>BPM</legend>
-		Select a level:
-		<hr>
-		<input type=radio name=level value=115>1‑1</input>
-		<input type=radio name=level value=130>1‑2</input>
-		<input type=radio name=level value=140>1‑3</input>
-		<input type=radio name=level value=125>Coral Riff</input>
-		<hr>
-		<input type=radio name=level value=130>2‑1</input>
-		<input type=radio name=level value=140>2‑2</input>
-		<input type=radio name=level value=150 checked>2‑3</input>
-		<input type=radio name=level value=120 id=conga>King Conga</input>
-		<hr>
-		<input type=radio name=level value=135>3‑1</input>
-		<input type=radio name=level value=145>3‑2</input>
-		<input type=radio name=level value=155>3‑3</input>
-		<input type=radio name=level value=123>Deep Blues</input>
-		<hr>
-		<input type=radio name=level value=130>4‑1</input>
-		<input type=radio name=level value=145>4‑2</input>
-		<input type=radio name=level value=160>4‑3</input>
-		<input type=radio name=level value=175>Death Metal</input>
-		<hr>
-		<input type=checkbox id=bolt checked>Bolt / Coda</input>
-		<input type=checkbox id=rhythm>Shrine of Rhythm</input>
-		<hr><hr>
-		<label for=bpm>Or set the BPM manually:</label>
-		<hr>
-		<input type=number name=bpm id=bpm min=45 max=999 step=1>
+		<p>Select a level:</p>
+		<label><input type=radio name=level value=115>1‑1</label>
+		<label><input type=radio name=level value=130>1‑2</label>
+		<label><input type=radio name=level value=140>1‑3</label>
+		<label><input type=radio name=level value=125>Coral Riff</label>
+		<label><input type=radio name=level value=130>2‑1</label>
+		<label><input type=radio name=level value=140>2‑2</label>
+		<label><input type=radio name=level value=150 checked>2‑3</label>
+		<label><input type=radio name=level value=120 id=conga>King Conga</label>
+		<label><input type=radio name=level value=135>3‑1</label>
+		<label><input type=radio name=level value=145>3‑2</label>
+		<label><input type=radio name=level value=155>3‑3</label>
+		<label><input type=radio name=level value=123>Deep Blues</label>
+		<label><input type=radio name=level value=130>4‑1</label>
+		<label><input type=radio name=level value=145>4‑2</label>
+		<label><input type=radio name=level value=160>4‑3</label>
+		<label><input type=radio name=level value=175>Death Metal</label>
+		<label><input type=checkbox id=bolt checked>Bolt / Coda</label>
+		<label><input type=checkbox id=rhythm>Shrine of Rhythm</label>
+		<label>Or set the BPM manually:
+			<input type=number name=bpm id=bpm min=45 max=999 step=1>
+		</label>
 	</fieldset>
-	<fieldset>
+	<fieldset class=box>
 		<legend>Melody</legend>
 		<label for=note>Pitch</label>
 		<input id=note type=range min=-12 max=12 value=0 step=1>
@@ -55,7 +51,7 @@ button { width: 600px; margin: 20px auto }
 		<hr><input type=radio name=waveform value=pink>Pink noise</input>
 	</fieldset>
 </form>
-<button type=button id=toggle>Play</button>
+<button class=centered type=button id=toggle>Play</button>
 
 <script>
 function $(id) { return document.getElementById(id) }

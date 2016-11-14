@@ -1,11 +1,9 @@
+<!DOCTYPE html>
 <meta charset=UTF-8>
 <title>Perk Optimizer</title>
-<link rel=stylesheet href='grim.css'>
+<link rel=stylesheet href=grim.css>
 <style>
-body { font-size: 1.1em }
-label { display: block; margin: 1ex .25em }
-input, select, textarea { width: 50%; margin: 0 }
-
+#advanced { margin-bottom: 1ex }
 #advanced:not(:target) ~ a, #advanced:not(:target) ~ label, #advanced:target { display: none }
 #perks { width: 50rem; align-self: center; justify-content: center }
 .perk { border: 2px solid black; margin: -1px }
@@ -17,10 +15,13 @@ input, select, textarea { width: 50%; margin: 0 }
 
 <h1>Perk Optimizer</h1>
 
-<p id=alert class=alert>&nbsp;</p>
+<p id=alert class=ko style='display: none'>
+	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
+	Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.
+</p>
 
-<form class=flexbox action='javascript://0'>
-	<fieldset>
+<form class=flexbox action='javascript:display(optimize(parse_inputs()))'>
+	<fieldset class=box>
 		<legend>Inputs</legend>
 
 		<label title='Export your Trimps save and paste it here'>
@@ -90,7 +91,7 @@ input, select, textarea { width: 50%; margin: 0 }
 		</label>
 
 		<label title='A comma-separated list of perks you have unlocked'>
-			<input type=text id=unlocks required>
+			<input type=text id=unlocks value='Looting,Toughness,Power,Motivation,Packrat,Pheromones,Trumps,Bait,Agility'>
 			Unlocked perks
 		</label>
 
@@ -149,15 +150,15 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 			Housing thingy
 		</label>
 
-		<button onclick='display(optimize(parse_inputs()))'>Optimize!</button>
+		<button class=centered>Optimize!</button>
 	</fieldset>
 
 	<div id=perks class=flexbox></div>
 </form>
 
 <nav class=flexbox>
-	<a href='zfarm.html'>zFarm</a>
-	<a href='perks.html' class=active>Perks</a>
+	<a href=zfarm.html>zFarm</a>
+	<a href=perks.html class=active>Perks</a>
 	<span class=filler></span>
 	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/blob/master/perks.js'>View the source</a>
@@ -203,14 +204,10 @@ function read_save(game) {
 
 function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
+	$('#alert').style.display = game ? 'none' : 'block';
 	if (game) {
-		$('#alert').classList = 'ok';
-		$('#alert').textContent = 'Save loaded successfully!';
 		read_save(game);
 		display(optimize(parse_inputs()));
-	} else {
-		$('#alert').classList = 'ko';
-		$('#alert').textContent = 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.';
 	}
 }
 
@@ -250,7 +247,7 @@ function display(level) {
 		var capped = level[perk] == cap[perk] ? ' capped' : '';
 		var tier2 = increment[perk] ? ' tier2' : '';
 		var name = perk.replace(/_/g, ' ');
-		var diff = level[perk] - old_perks[perk].level;
+		var diff = old_perks ? level[perk] - old_perks[perk].level : 0;
 		var diff_text = diff == 0 ? '' : diff > 0 ? ` (+${diff})` : ` (${diff})`;
 		$('#perks').innerHTML +=
 			`<div class='perk${capped}${tier2}'>${name}<br>${level[perk]}${diff_text}</div>`;
