@@ -39,7 +39,7 @@ fieldset { flex: 0 1 36em }
 		</label>
 
 		<div id=stances><!--
-			--><input onchange='set_stance()' id=x-stance type=radio name=stance value=1><!--
+			--><input onchange='set_stance()' id=x-stance type=radio name=stance value=1 checked><!--
 			--><label for=x-stance>X</label><!--
 			--><input onchange='set_stance()' id=d-stance type=radio name=stance value=4><!--
 			--><label for=d-stance>D</label><!--
@@ -220,6 +220,7 @@ const parse_inputs = () => ({
 	range: ($('#range').value - 1) / max_rand,
 	size: $('#size').value | 0,
 	titimp: $('#titimp').checked,
+	looting: $('#s-stance').checked ? 2 : 1,
 });
 
 function display(infos) {

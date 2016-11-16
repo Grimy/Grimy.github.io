@@ -79,7 +79,7 @@ function stats(g) {
 	var result = [0, 1, 2, 3, 4, 5].map((i) => max_os + i).map((zone) => ({
 		zone: 'z' + zone,
 		cells: simulate(zone, g),
-		loot: Math.pow(1.25, zone),
+		loot: Math.pow(1.25, zone) * g.looting,
 	}));
 
 	if (max_os >= 120 && max_os % 15 < 8 && g.biome.length == 14) {
