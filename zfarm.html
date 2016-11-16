@@ -4,6 +4,11 @@
 <link rel=stylesheet href=blue.css>
 <style>
 fieldset { flex: 0 1 36em }
+#stances { position: relative; margin: 1.5ex 0.25em }
+#stances > label { cursor: pointer; border: 1px solid black; border-radius: 2px; padding: 4px }
+#stances > input { position: absolute; clip: rect(0, 0, 0, 0) }
+#stances > input, #stances > label { display: inline }
+#stances > input:checked + label { background: #5CB85C }
 </style>
 
 <h1>zFarm</h1>
@@ -33,13 +38,17 @@ fieldset { flex: 0 1 36em }
 			Biome
 		</label>
 
-		<label title='If you want to farm in S stance, check this *before* importing your save'>
-			<input type=checkbox id=scrying>
-			Scrying?
-		</label>
+		<div id=stances><!--
+			--><input onchange='set_stance()' id=x-stance type=radio name=stance value=1><!--
+			--><label for=x-stance>X</label><!--
+			--><input onchange='set_stance()' id=d-stance type=radio name=stance value=4><!--
+			--><label for=d-stance>D</label><!--
+			--><input onchange='set_stance()' id=s-stance type=radio name=stance value=0.5><!--
+			--><label for=s-stance>S</label>
+		</div>
 
 		<label title='Your minimum attack, in the stance you use for farming, without the Titimp buff'>
-			<input type=text id=attack value=12Qi>
+			<input type=text id=attack required>
 			Min ATK
 		</label>
 
@@ -79,12 +88,12 @@ fieldset { flex: 0 1 36em }
 		</label>
 
 		<label title='Maximum size of the maps you create'>
-			<input type=text id=size value=30 pattern='\d\d'>
+			<input type=text id=size value=27 pattern='\d\d'>
 			Map size
 		</label>
 
 		<label title='Maximum difficulty of the maps you create'>
-			<input type=text id=difficulty value=84 pattern='\d+'>
+			<input type=text id=difficulty value=80 pattern='\d+'>
 			Map difficulty%
 		</label>
 
@@ -101,7 +110,7 @@ fieldset { flex: 0 1 36em }
 		<button class=centered>Recalculate</button>
 	</fieldset>
 
-	<fieldset class=box>
+	<fieldset id=results class=box style='opacity: 0'>
 		<legend>Results</legend>
 		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
 		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
@@ -129,6 +138,13 @@ fieldset { flex: 0 1 36em }
 <script src=zfarm.js></script>
 <script>
 
+var base_attack;
+
+function set_stance() {
+	var stance = $('#stances > input:checked').value;
+	$('#attack').value = prettify(base_attack * stance);
+}
+
 function read_save(game) {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
@@ -144,10 +160,7 @@ function read_save(game) {
 	attack *= 1 + 0.01 * game.global.achievementBonus;
 	attack *= 1 + 0.2 * game.global.roboTrimpLevel;
 	attack *= 1 + game.goldenUpgrades.Battle.currentBonus;
-	attack *= [1, 2, 0.25, 2, 2][game.global.formation];
-
-	if (game.global.world >= 70)
-		attack *= $('#scrying').checked ? 0.5 : 4;
+	attack /= [1, 0.5, 4, 0.5, 0.5][game.global.formation];
 
 	if (challenge == "Daily") {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
@@ -172,7 +185,6 @@ function read_save(game) {
 
 	// TODO pass Max Atk instead of Range
 	$('#agility').value = game.portal.Agility.level;
-	$('#attack').value = prettify(attack * minFluct);
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
 	$('#range').value = maxFluct / minFluct;
@@ -180,6 +192,10 @@ function read_save(game) {
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
 	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
+
+	$('#stances').children[game.global.formation].checked = true;
+	base_attack = attack;
+	set_stance();
 }
 
 function handle_paste(ev) {
@@ -207,6 +223,7 @@ const parse_inputs = () => ({
 });
 
 function display(infos) {
+	$('#results').style.opacity = 1;
 	$('#one-shot').textContent = infos[0].zone;
 
 	$('#details').innerHTML = '';
@@ -240,5 +257,4 @@ function display(infos) {
 	}
 }
 
-display(stats(parse_inputs()));
 </script>
