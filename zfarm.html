@@ -33,6 +33,11 @@ fieldset { flex: 0 1 36em }
 			Biome
 		</label>
 
+		<label title='If you want to farm in S stance, check this *before* importing your save'>
+			<input type=checkbox id=scrying>
+			Scrying?
+		</label>
+
 		<label title='Your minimum attack, in the stance you use for farming, without the Titimp buff'>
 			<input type=text id=attack value=12Qi>
 			Min ATK
@@ -139,6 +144,10 @@ function read_save(game) {
 	attack *= 1 + 0.01 * game.global.achievementBonus;
 	attack *= 1 + 0.2 * game.global.roboTrimpLevel;
 	attack *= 1 + game.goldenUpgrades.Battle.currentBonus;
+	attack *= [1, 2, 0.25, 2, 2][game.global.formation];
+
+	if (game.global.world >= 70)
+		attack *= $('#scrying').checked ? 0.5 : 4;
 
 	if (challenge == "Daily") {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
