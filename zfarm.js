@@ -84,7 +84,7 @@ function stats(g) {
 
 	if (max_os >= 120 && max_os % 15 < 8 && g.biome.length == 14) {
 		var zone = 5 + (max_os - max_os % 15);
-		var loot = 2 * Math.pow(1.25, zone);
+		var loot = 2 * Math.pow(1.25, zone) * g.looting;
 		g.size = 100;
 		g.biome = biomes.all.concat(biomes.bionic);
 		g.difficulty = 2.6;
