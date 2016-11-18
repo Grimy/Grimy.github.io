@@ -183,7 +183,7 @@ function optimize(params) {
 		var health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
 		if (zone >= 70 && weight.breed === 0) {
 			var target_speed = pow(6, 0.1 / mod.breed_timer);
-			var geneticists = log(breed() / target_speed) / log(1.02);
+			var geneticists = log(breed() / target_speed) / -log(0.98);
 			health *= pow(1.01, geneticists);
 		}
 		return soldiers() * (health + 0 * min(block(), health));
