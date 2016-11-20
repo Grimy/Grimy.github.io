@@ -123,16 +123,16 @@ function optimize(params) {
 	// exp: cost increase for each new level of the building
 	function building(cost, exp) {
 		cost *= 4 * mult('Resourceful', -5);
-		return log(income() * trimps() * (exp - 1) / cost + 1) / log(exp);
+		return log(income(true) * trimps() * (exp - 1) / cost + 1) / log(exp);
 	}
 
 	const moti = () => add('Motivation', 5) * add('Motivation_II', 1);
 	const looting = () => add('Looting', 5) * add('Looting_II', 0.25);
 
 	// Total resource gain per second
-	function income() {
+	function income(wood) {
 		var storage = mod.storage * mult('Resourceful', -5) / add('Packrat', 20);
-		var prod = moti() * add('Meditation', 1) * (1 + mod.turkimp / 2);
+		var prod = wood ? 0 : moti() * add('Meditation', 1) * (1 + mod.turkimp / 2);
 		var lmod = looting() * imp.magn * mod.loot / ticks();
 		var loot = base_loot * lmod * (1 + 0.166 * mod.turkimp);
 		var chronojest = mod.chronojest * 0.75 * prod * lmod;
@@ -182,11 +182,11 @@ function optimize(params) {
 	function health() {
 		var health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
 		if (zone >= 70 && weight.breed === 0) {
-			var target_speed = pow(6, 0.1 / mod.breed_timer);
+			var target_speed = (pow(3, 0.1 / mod.breed_timer) - 1) * 10;
 			var geneticists = log(breed() / target_speed) / -log(0.98);
 			health *= pow(1.01, geneticists);
 		}
-		return soldiers() * (health + 0 * min(block(), health));
+		return soldiers() * min(health / 60 + block(), health / 12);
 	}
 
 	function helium() {
@@ -296,17 +296,14 @@ function optimize(params) {
 
 	// Debug stuff
 	var potential_helium = run_helium(zone + 10);
-	console.log(equip_total);
-	console.log('Suggested looting weight:', log(1024) / log(potential_helium / base_helium));
-
-	console.log('Helium left:', he_left);
-	compare('Motivation', 'Power');
+	// console.log(equip_total);
+	// console.log('Suggested looting weight:', log(1024) / log(potential_helium / base_helium));
 
 	return level;
 }
 
 // When executing from the command-line
-if (testing) {
+if (typeof window === 'undefined') {
 	console.log(optimize({
 		he_left: 1e12,
 		zone: 350,
