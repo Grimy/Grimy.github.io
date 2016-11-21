@@ -3,6 +3,8 @@
 <title>zFarm</title>
 <link rel=stylesheet href=blue.css>
 <style>
+#advanced { margin-bottom: 1ex }
+#advanced:not(:target) ~ a, #advanced:not(:target) ~ label, #advanced:target { display: none }
 fieldset { flex: 0 1 36em }
 #stances { position: relative; margin: 1.5ex 0.25em }
 #stances > label { cursor: pointer; border: 1px solid black; border-radius: 2px; padding: 4px }
@@ -13,14 +15,14 @@ fieldset { flex: 0 1 36em }
 
 <h1>zFarm</h1>
 
-<p id=alert class=ko style='display: none'>
+<p id=load-failed class=ko style='display: none'>
 	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
 	Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.
 </p>
 
-<p id=alert class=ko>
+<p id=bad-version class=ko style='display: none'>
 	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
-	Warning: not updated for Trimps 4.0. All results past z230 will be completely wrong.
+	Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.
 </p>
 
 <form class=flexbox action='javascript:display(stats(parse_inputs()))'>
@@ -43,19 +45,27 @@ fieldset { flex: 0 1 36em }
 			Biome
 		</label>
 
-		<div id=stances><!--
-			--><input onchange='set_stance()' id=x-stance type=radio name=stance value=1 checked><!--
-			--><label for=x-stance>X</label><!--
-			--><input onchange='set_stance()' id=d-stance type=radio name=stance value=4><!--
-			--><label for=d-stance>D</label><!--
-			--><input onchange='set_stance()' id=s-stance type=radio name=stance value=0.5><!--
-			--><label for=s-stance>S</label>
+		<div id=stances>
+			<input onchange='set_stance()' id=x-stance type=radio name=stance value=1 checked>
+			<label for=x-stance>X</label>
+			<input onchange='set_stance()' id=d-stance type=radio name=stance value=4>
+			<label for=d-stance>D</label>
+			<input onchange='set_stance()' id=s-stance type=radio name=stance value=0.5>
+			<label for=s-stance>S</label>
 		</div>
 
 		<label title='Your minimum attack, in the stance you use for farming, without the Titimp buff'>
 			<input type=text id=attack required>
 			Min ATK
 		</label>
+
+		<label title='Your current world zone'>
+			<input type=text id=zone required pattern='\d+'>
+			World zone
+		</label>
+
+		<a id=advanced class=centered href='#advanced'>Advanced options (you probably shouldn’t bother)</a>
+		<a class=centered href='#'>Hide advanced options</a>
 
 		<label title='Total number of map imp-orts you have unlocked'>
 			<input type=text id=imports value=5 pattern='[0-5]'>
@@ -78,7 +88,7 @@ fieldset { flex: 0 1 36em }
 		</label>
 
 		<label title='Your max attack, divided by your min attack (usually 1.2, but can vary due to challenges)'>
-			<input type=text id=range value='1.2'>
+			<input type=text id=range value=1.2>
 			Attack range (max/min)
 		</label>
 
@@ -92,12 +102,12 @@ fieldset { flex: 0 1 36em }
 			Crit damage%
 		</label>
 
-		<label title='Maximum size of the maps you create'>
+		<label title='Average size of the maps you create'>
 			<input type=text id=size value=27 pattern='\d\d'>
 			Map size
 		</label>
 
-		<label title='Maximum difficulty of the maps you create'>
+		<label title='Average difficulty of the maps you create'>
 			<input type=text id=difficulty value=80 pattern='\d+'>
 			Map difficulty%
 		</label>
@@ -189,6 +199,7 @@ function read_save(game) {
 	}
 
 	// TODO pass Max Atk instead of Range
+	$('#zone').value = game.global.world;
 	$('#agility').value = game.portal.Agility.level;
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
@@ -197,16 +208,17 @@ function read_save(game) {
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
 	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
-
 	$('#stances').children[game.global.formation].checked = true;
+
 	base_attack = attack;
 	set_stance();
 }
 
 function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
-	$('#alert').style.display = game ? 'none' : 'block';
+	$('#load-failed').style.display = game ? 'none' : 'block';
 	if (game) {
+		$('#bad-version').style.display = game.global.version <= 4.0 ? 'none' : 'block';
 		read_save(game);
 		display(stats(parse_inputs()));
 	}
@@ -226,6 +238,7 @@ const parse_inputs = () => ({
 	size: $('#size').value | 0,
 	titimp: $('#titimp').checked,
 	looting: $('#s-stance').checked ? 2 : 1,
+	zone: $('#zone').value,
 });
 
 function display(infos) {

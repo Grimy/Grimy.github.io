@@ -28,11 +28,13 @@ function percentage(ratio) {
 	return ((ratio - 1) * 100).toFixed(1);
 }
 
-// Base HP (before imp modifiers) for an my
+// Base HP (before imp modifiers) for an enemy
 // at the given position (zone + cell).
 function enemy_hp(g, zone, cell) {
 	var amt = 14.3 * Math.sqrt(zone * Math.pow(3.265, zone)) - 12.1;
 	amt *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + 0.08 * cell) * Math.pow(1.1, zone - 59);
+	if (g.zone >= 230)
+		amt *= Math.round(50 * Math.pow(1.05, Math.floor(g.zone / 6 - 25))) / 10
 	return g.difficulty * g.challenge * amt;
 }
 
@@ -72,6 +74,7 @@ function simulate(zone, g) {
 
 // Computes looting efficiency based on the given game state.
 function stats(g) {
+	console.log(g);
 	var max_os = 6;
 	while (g.atk >= g.biome.max() * enemy_hp(g, max_os + 1, g.size - 1))
 		++max_os;
