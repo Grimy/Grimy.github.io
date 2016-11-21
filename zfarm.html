@@ -238,7 +238,7 @@ const parse_inputs = () => ({
 	size: $('#size').value | 0,
 	titimp: $('#titimp').checked,
 	looting: $('#s-stance').checked ? 2 : 1,
-	zone: $('#zone').value,
+	zone: $('#zone').value | 0,
 });
 
 function display(infos) {
@@ -253,6 +253,12 @@ function display(infos) {
 		p.textContent = `${info.zone}: ${prettify(info.loot)} loot at ${cps.toFixed(3)} cells/s`;
 		p.textContent += ` = ${prettify(info.loot * cps)} loot/s.`;
 		$('#details').appendChild(p);
+	}
+
+	if (infos.length < 2) {
+		$('#result').textContent = 'You should really be pushing rather than farming';
+		$('#comment').textContent = '';
+		return;
 	}
 
 	infos.sort((a, b) => b.value - a.value);

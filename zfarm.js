@@ -79,11 +79,14 @@ function stats(g) {
 	while (g.atk >= g.biome.max() * enemy_hp(g, max_os + 1, g.size - 1))
 		++max_os;
 
-	var result = [0, 1, 2, 3, 4, 5].map((i) => max_os + i).map((zone) => ({
-		zone: 'z' + zone,
-		cells: simulate(zone, g),
-		loot: Math.pow(1.25, zone) * g.looting,
-	}));
+	var result = [];
+	for (let zone = Math.min(max_os, g.zone); zone <= g.zone; ++zone) {
+		result.push({
+			zone: 'z' + zone,
+			cells: simulate(zone, g),
+			loot: Math.pow(1.25, zone) * g.looting,
+		});
+	}
 
 	if (max_os >= 120 && max_os % 15 < 8 && g.biome.length == 14) {
 		var zone = 5 + (max_os - max_os % 15);
