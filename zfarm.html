@@ -18,6 +18,11 @@ fieldset { flex: 0 1 36em }
 	Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.
 </p>
 
+<p id=alert class=ko>
+	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
+	Warning: not updated for Trimps 4.0. All results past z230 will be completely wrong.
+</p>
+
 <form class=flexbox action='javascript:display(stats(parse_inputs()))'>
 	<fieldset class=box>
 		<legend>Inputs</legend>
