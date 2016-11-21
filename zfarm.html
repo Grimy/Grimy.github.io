@@ -198,7 +198,6 @@ function read_save(game) {
 		minFluct = 0.005;
 	}
 
-	// TODO pass Max Atk instead of Range
 	$('#zone').value = game.global.world;
 	$('#agility').value = game.portal.Agility.level;
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
@@ -209,6 +208,8 @@ function read_save(game) {
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
 	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
 	$('#stances').children[game.global.formation].checked = true;
+	$('#size').value = 27;
+	$('#difficulty').value = 80;
 
 	base_attack = attack;
 	set_stance();
