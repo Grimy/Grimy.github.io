@@ -197,7 +197,7 @@ function read_save(game) {
 		he_left += game.resources.helium.owned;
 
 	$('#helium').value = he_left;
-	$('#zone').value = game.stats.highestVoidMap.valueTotal || game.global.highestLevelCleared;
+	$('#zone').value = game.global.highestLevelCleared - 5;
 	$('#unlocks').value = Object.keys(game.portal).filter((perk) => !game.portal[perk].locked).join(',')
 	$('#whipimp').checked = game.unlocks.imps.Whipimp;
 	$('#magnimp').checked = game.unlocks.imps.Magnimp;
@@ -211,7 +211,7 @@ function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
 	$('#load-failed').style.display = game ? 'none' : 'block';
 	if (game) {
-		$('#bad-version').style.display = game.global.version <= 3.811 ? 'none' : 'block';
+		$('#bad-version').style.display = game.global.version <= 4.0 ? 'none' : 'block';
 		read_save(game);
 		display(optimize(parse_inputs()));
 	}

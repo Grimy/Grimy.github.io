@@ -58,7 +58,7 @@ const perks = Object.keys(base_cost);
 function optimize(params) {
 	"use strict";
 
-	var {he_left, zone, unlocks, weight, climb, mod} = params;
+	let {he_left, zone, unlocks, weight, climb, mod} = params;
 	if (he_left > 1e16)
 		return;
 
@@ -80,16 +80,16 @@ function optimize(params) {
 
 	// Amount of Helium awarded at the end of the given zone.
 	function zone_helium(z) {
-		var level = (z - 19) * 1.35;
-		var base = z >= corruption_start ? 10 : z >= 59 ? 5 : 1;
-		var reward = round(base * pow(1.23, sqrt(level))) + round(base * level);
+		let level = (z - 19) * 1.35;
+		let base = z >= corruption_start ? 10 : z >= 59 ? 5 : 1;
+		let reward = round(base * pow(1.23, sqrt(level))) + round(base * level);
 		return reward * pow(scientist_done ? 1.005 : 1, z);
 	}
 
 	// Total helium from a run up to the given zone
 	function run_helium(z) {
-		var result = 10 * zone_helium(zone);
-		for (var i = 21; i <= z; ++i) {
+		let result = 10 * zone_helium(zone);
+		for (let i = 21; i <= z; ++i) {
 			let corrupt = floor((i - corruption_start) / 3);
 			corrupt = corrupt < 0 ? 0 : min(corrupt + 2, 80);
 			result += zone_helium(i) * ((i == 200 ? 20 : 1) + corrupt * 0.15);
@@ -107,9 +107,9 @@ function optimize(params) {
 
 	// Max population
 	function trimps() {
-		var Carpentry = mult('Carpentry', 10) * add('Carpentry_II', 0.25);
-		var bonus = mod.housing + log(income() / base_income * Carpentry / mult('Resourceful', -5));
-		var territory = add('Trumps', 20) * zone;
+		let Carpentry = mult('Carpentry', 10) * add('Carpentry_II', 0.25);
+		let bonus = mod.housing + log(income() / base_income * Carpentry / mult('Resourceful', -5));
+		let territory = add('Trumps', 20) * zone;
 		return 10 * (base_housing * bonus + territory) * Carpentry * imp.taunt;
 	}
 
@@ -131,95 +131,103 @@ function optimize(params) {
 
 	// Total resource gain per second
 	function income(wood) {
-		var storage = mod.storage * mult('Resourceful', -5) / add('Packrat', 20);
-		var prod = wood ? 0 : moti() * add('Meditation', 1) * (1 + mod.turkimp / 2);
-		var lmod = looting() * imp.magn * mod.loot / ticks();
-		var loot = base_loot * lmod * (1 + 0.166 * mod.turkimp);
-		var chronojest = mod.chronojest * 0.75 * prod * lmod;
+		let storage = mod.storage * mult('Resourceful', -5) / add('Packrat', 20);
+		let prod = wood ? 0 : moti() * add('Meditation', 1) * (1 + mod.turkimp / 2);
+		let lmod = looting() * imp.magn * mod.loot / ticks();
+		let loot = base_loot * lmod * (1 + 0.166 * mod.turkimp);
+		let chronojest = mod.chronojest * 0.75 * prod * lmod;
 		return 1800 * imp.whip * books * (prod + loot + chronojest) * (1 - storage);
 	}
 
 	// Breed speed
 	function breed() {
-		var nurseries = pow(1.01, building(2e6, 1.06));
-		var potency = pow(1.1, floor(zone / 5));
-		var traps = weight.breed * add('Bait', 100) * 10 * mod.breed_timer / trimps();
+		let nurseries = pow(1.01, building(2e6, 1.06));
+		nurseries -= (2000 * pow(0.95, magma())) * (1 - pow(0.9, magma()));
+		let potency = pow(1.1, floor(zone / 5));
+		let traps = weight.breed * add('Bait', 100) * 10 * mod.breed_timer / trimps();
 		return 0.00085 * nurseries * potency * add('Pheromones', 10) * imp.ven + traps;
 	}
 
 	function group_size(ratio) {
-		var result = 1;
-		for (var i = 0; i < 20; ++i)
+		let result = 1;
+		for (let i = 0; i < 20; ++i)
 			result = ceil(result * ratio);
 		return result;
 	}
 
 	// Theoretical fighting group size (actual size is lower because of Coordinated) 
 	function soldiers() {
-		var ratio = 1 + 0.25 * pow(0.98, level.Coordinated);
-		var coords = log(trimps() / 3 / group_size(ratio)) / log(ratio);
-		return group_size(1.25) * Math.pow(1.25, min(zone - 1, coords));
+		let ratio = 1 + 0.25 * pow(0.98, level.Coordinated);
+		let coords = log(trimps() / 3 / group_size(ratio)) / log(ratio);
+		let available = zone - 1 + (magma() ? 100 : 0);
+		return group_size(1.25) * pow(1.25, min(coords, available));
+	}
+
+	// Number of zones spent in the Magma
+	function magma() {
+		return max(zone - 229, 0);
 	}
 
 	// Total attack
 	function attack() {
-		var power = add('Power', 5) * add('Power_II', 1) * add('Range', 1);
-		var crits = add('Relentlessness', 5 * add('Relentlessness', 30));
-		var sipho = pow(1 + level.Siphonology, 0.1);
-		var anti = add('Anticipation', 2 * mod.breed_timer);
-		return soldiers() * tiers('attack') * power * crits * sipho * anti;
+		let attack = tiers('attack') * add('Power', 5) * add('Power_II', 1);
+		attack *= add('Relentlessness', 5 * add('Relentlessness', 30));
+		attack *= pow(1 + level.Siphonology, 0.1) * add('Range', 1);
+		attack *= add('Anticipation', 2);
+		attack *= pow(0.8, magma());
+		return soldiers() * attack;
 	}
 
 	// Block per imp
 	// TODO handle shieldblock
 	function block() {
-		var gyms = building(400, 1.185);
-		var trainers = (gyms * log(1.185) - log(gyms)) / log(1.1) + 25 - mystic;
+		let gyms = building(400, 1.185);
+		let trainers = (gyms * log(1.185) - log(gyms)) / log(1.1) + 25 - mystic;
 		return 6 * gyms * pow(1 + mystic / 100, gyms) * (1 + tacular * trainers);
 	}
 
 	// Total survivability (accounts for health and block)
 	function health() {
-		var health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
+		let health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
 		if (zone >= 70 && weight.breed === 0) {
-			var target_speed = (pow(3, 0.1 / mod.breed_timer) - 1) * 10;
-			var geneticists = log(breed() / target_speed) / -log(0.98);
+			let target_speed = (pow(3, 0.1 / mod.breed_timer) - 1) * 10;
+			let geneticists = log(breed() / target_speed) / -log(0.98);
 			health *= pow(1.01, geneticists);
 		}
+		health *= pow(0.8, magma());
 		return soldiers() * min(health / 60 + block(), health / 12);
 	}
 
 	function helium() {
-		return (base_helium * looting() + 45) / mult('Resourceful', testing ? -5 : 0);
+		return base_helium * looting() + 45;
 	}
 
 	const overkill = () => add('Overkill', 60);
 
 	const stats = { helium, attack, health, overkill, breed };
 
-	// TODO adjust weight of helium based on the current zone
 	function score() {
-		var result = 0;
-		for (var i in weight)
+		let result = 0;
+		for (let i in weight)
 			if (weight[i] !== 0)
 				result += weight[i] * log(stats[i]());
 		return result / mult('Agility', -0.1);
 	}
 
 	function best_perk() {
-		var best;
-		var max = 0;
-		var baseline = score();
+		let best;
+		let max = 0;
+		let baseline = score();
 
-		for (var perk of unlocks) {
+		for (let perk of unlocks) {
 			if (level[perk] === cap[perk] || cost(perk) > he_left)
 				continue;
 
 			++level[perk];
-			var gain = score() - baseline;
+			let gain = score() - baseline;
 			--level[perk];
 
-			var efficiency = gain / cost(perk);
+			let efficiency = gain / cost(perk);
 			if (efficiency > max) {
 				max = efficiency;
 				best = perk;
@@ -230,35 +238,35 @@ function optimize(params) {
 	}
 
 	function compare(a, b) {
-		var tmp = score();
+		let tmp = score();
 		++level[a];
-		var a_gain = score() - tmp;
+		let a_gain = score() - tmp;
 		--level[a];
 		++level[b];
-		var b_gain = score() - tmp;
+		let b_gain = score() - tmp;
 		--level[b];
 		console.log(a, '=', a_gain / b_gain, b);
 	}
 
-	var level = {};
+	let level = {};
 	for (let perk of perks)
 		level[perk] = 0;
 
-	var imp = {};
+	let imp = {};
 	for (let name of ['whip', 'magn', 'taunt', 'ven'])
 		imp[name] = pow(1.003, zone * 99 * 0.03 * mod[name]);
 
-	var scientist_done = zone > 130;
-	var slow = zone > 130;
-	var frugal_done = zone > 100 ? 1.28 : 1.2;
-	var books = pow(1.25, zone) * pow(frugal_done, max(zone - 59, 0));
-	var gigas = min(zone - 60, zone / 2 - 25, zone / 3 - 12, zone / 5, zone / 10 + 17);
-	var base_housing = pow(1.25, min(zone / 2, 30) + mod.giga * max(0, 0|gigas));
-	var mystic = floor(min(zone >= 25 && zone / 5, 9 + zone / 25, 15));
-	var tacular = (20 + zone - zone % 5) / 100;
-	var base_loot = 20.8 * (zone > 200 ? 1.2 : zone > 100 ? 1 : 0.7);
-	var base_income = income();
-	var base_helium = run_helium(zone);
+	let scientist_done = zone > 130;
+	let slow = zone > 130;
+	let frugal_done = zone > 100 ? 1.28 : 1.2;
+	let books = pow(1.25, zone) * pow(frugal_done, max(zone - 59, 0));
+	let gigas = min(zone - 60, zone / 2 - 25, zone / 3 - 12, zone / 5, zone / 10 + 17);
+	let base_housing = pow(1.25, min(zone / 2, 30) + mod.giga * max(0, 0|gigas));
+	let mystic = floor(min(zone >= 25 && zone / 5, 9 + zone / 25, 15));
+	let tacular = (20 + zone - zone % 5) / 100;
+	let base_loot = 20.8 * (zone > 200 ? 1.2 : zone > 100 ? 1 : 0.7);
+	let base_income = income();
+	let base_helium = run_helium(zone);
 
 	// Precompute equipment ratios
 	const equip_total = {
@@ -282,8 +290,8 @@ function optimize(params) {
 	}
 
 	// Main loop
-	var free = he_left / 1000;
-	var shitty = {Bait: true, Packrat: true, Trumps: true};
+	let free = he_left / 1000;
+	let shitty = {Bait: true, Packrat: true, Trumps: true};
 	for (let best = 'Looting'; best; best = best_perk()) {
 		for (let spent = 0; spent < free; spent += cost(best)) {
 			he_left -= cost(best);
@@ -293,11 +301,6 @@ function optimize(params) {
 		}
 		free = min(he_left / 10, free);
 	}
-
-	// Debug stuff
-	var potential_helium = run_helium(zone + 10);
-	// console.log(equip_total);
-	// console.log('Suggested looting weight:', log(1024) / log(potential_helium / base_helium));
 
 	return level;
 }
