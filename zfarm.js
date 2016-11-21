@@ -80,7 +80,7 @@ function stats(g) {
 		++max_os;
 
 	var result = [];
-	for (let zone = Math.min(max_os, g.zone); zone <= g.zone; ++zone) {
+	for (let zone = max_os; zone <= g.zone || zone <= max_os; ++zone) {
 		result.push({
 			zone: 'z' + zone,
 			cells: simulate(zone, g),
@@ -88,8 +88,8 @@ function stats(g) {
 		});
 	}
 
-	if (max_os >= 120 && max_os % 15 < 8 && g.biome.length == 14) {
-		var zone = 5 + (max_os - max_os % 15);
+	if (g.zone >= 120 && max_os % 15 < 8 && g.biome.length == 14) {
+		let zone = 5 + (max_os - max_os % 15);
 		var loot = (300 / 180) * Math.pow(1.25, zone) * g.looting;
 		g.size = 100;
 		g.biome = biomes.all.concat(biomes.bionic);

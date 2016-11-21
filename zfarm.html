@@ -256,7 +256,7 @@ function display(infos) {
 		$('#details').appendChild(p);
 	}
 
-	if (infos.length < 2) {
+	if (infos.length < 2 || infos[1].zone.startsWith('BW')) {
 		$('#result').textContent = 'You should really be pushing rather than farming';
 		$('#comment').textContent = '';
 		return;
