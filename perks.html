@@ -177,6 +177,14 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 
 var old_perks;
 
+let presets = {
+	early: [5, 2, 1, 0, 1],
+	broken: [7, 3, 1, 1, 0],
+	corruption: [25, 7, 1, 2, 0],
+	spire: [0, 1, 1, 0, 0],
+	magma: [35, 4, 3, 1, 0],
+};
+
 function input(id) {
 	return parse_suffixes($('#' + id).value.toLowerCase());
 }
