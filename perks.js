@@ -144,7 +144,7 @@ function optimize(params) {
 		let nurseries = pow(1.01, building(2e6, 1.06));
 		nurseries -= (2000 * pow(0.95, magma())) * (1 - pow(0.9, magma()));
 		let potency = pow(1.1, floor(zone / 5));
-		let traps = weight.breed * add('Bait', 100) * 10 * mod.breed_timer / trimps();
+		let traps = add('Bait', 100) * mod.breed_timer / trimps();
 		return 0.00085 * nurseries * potency * add('Pheromones', 10) * imp.ven + traps;
 	}
 
@@ -189,7 +189,7 @@ function optimize(params) {
 	// Total survivability (accounts for health and block)
 	function health() {
 		let health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
-		if (zone >= 70 && weight.breed === 0) {
+		if (!weight.breed) {
 			let target_speed = (pow(3, 0.1 / mod.breed_timer) - 1) * 10;
 			let geneticists = log(breed() / target_speed) / -log(0.98);
 			health *= pow(1.01, geneticists);
@@ -268,6 +268,8 @@ function optimize(params) {
 	let base_income = income();
 	let base_helium = run_helium(zone);
 
+	weight.breed = zone < 70;
+
 	// Precompute equipment ratios
 	const equip_total = {
 		attack: {cost: 0, value: 0, exp: 13},
@@ -310,7 +312,7 @@ if (typeof window === 'undefined') {
 	console.log(optimize({
 		he_left: 1e12,
 		zone: 350,
-		weight: {helium: 70, attack: 1, breed: 0, health: 1, overkill: 1},
+		weight: {helium: 70, attack: 1, health: 1, overkill: 1},
 		climb: 'plate',
 		unlocks: Object.keys(base_cost),
 		mod: {

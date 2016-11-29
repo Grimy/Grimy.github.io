@@ -29,53 +29,60 @@
 	<fieldset class=box>
 		<legend>Inputs</legend>
 
-		<label title='Export your Trimps save and paste it here'>
+		<label title='Export your Trimps save and paste it here.'>
 			<textarea id=save onfocus='this.value = ""' onpaste='handle_paste(event)'></textarea>
 			Import save
 		</label>
+
+		<label title='Check this when respeccing from the View Perks screen.'>
+			<input type=checkbox onchange='handle_respec()' id=respec>
+			Mid-run respec
+		</label>
+
+		<label title='The base zone used in calculations. Set this to a few zone before your planned portalling zone, for example the zone on which you do your Void Maps.'>
+			<input type=text id=zone onchange='set_zone()' required pattern='\d{2,3}'>
+			Target zone
+		</label>
+
+		<label title='Suggested weights far various stages of the game.'>
+			<select onchange='select_preset(this.value)'>
+				<option>Pick one…
+				<option value=early>Early game</option>
+				<option value=broken>Broken planet</option>
+				<option value=corruption>Corruption</option>
+				<option value=spire>Spire</option>
+				<option value=magma>Magma</option>
+			</select>
+			Presets
+		</label>
+
+		<label title='How much you value +1% Helium income.'>
+			<input type=text id=weight-he value=7>
+			Weight: Helium
+		</label>
+
+		<label title='How much you value +1% attack.'>
+			<input type=text id=weight-atk value=3>
+			Weight: Attack
+		</label>
+
+		<label title='How much you value +1% survivability (health and block).'>
+			<input type=text id=weight-hp value=1>
+			Weight: Health
+		</label>
+
+		<label title='How much you value +1% overkill damage.'>
+			<input type=text id=weight-ok value=1>
+			Weight: Overkill
+		</label>
+
+		<a id=advanced class=centered href='#advanced'>Advanced options (you probably shouldn’t bother)</a>
+		<a class=centered href='#'>Hide advanced options</a>
 
 		<label title='Total Helium Earned, as displayed on the Stats screen'>
 			<input type=text id=helium required>
 			Total Helium
 		</label>
-
-		<label title='Check this when respeccing from the View Perks screen'>
-			<input type=checkbox id=respec>
-			Mid-run respec
-		</label>
-
-		<label title='The base zone used in calculations. Set this to a few zone before your planned portalling zone, for example the zone on which you do your Void Maps'>
-			<input type=text id=zone onchange='set_zone()' required pattern='\d{2,3}'>
-			Target zone
-		</label>
-
-		<label title='How much you value +1% Helium income'>
-			<input type=text id=weight-he value=7>
-			Weight: Helium
-		</label>
-
-		<label title='How much you value +1% attack'>
-			<input type=text id=weight-atk value=3>
-			Weight: Attack
-		</label>
-
-		<label title='How much you value +1% survivability (health and block)'>
-			<input type=text id=weight-hp value=1>
-			Weight: Health
-		</label>
-
-		<label title='How much you value +1% overkill damage'>
-			<input type=text id=weight-ok value=1>
-			Weight: Overkill
-		</label>
-
-		<label title='How much you value +1% breeding speed. When set to 0, breed speed is converted into health using geneticists.'>
-			<input type=text id=weight-breed value=0>
-			Weight: Breed
-		</label>
-
-		<a id=advanced class=centered href='#advanced'>Advanced options (you probably shouldn’t bother)</a>
-		<a class=centered href='#'>Hide advanced options</a>
 
 		<label title='The most expensive prestige you unlock before portalling'>
 			<select id=climb>
@@ -176,14 +183,22 @@ Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 <script>
 
 var old_perks;
+var helium = {base: 0, owned: 0};
 
-let presets = {
-	early: [5, 2, 1, 0, 1],
-	broken: [7, 3, 1, 1, 0],
-	corruption: [25, 7, 1, 2, 0],
-	spire: [0, 1, 1, 0, 0],
-	magma: [35, 4, 3, 1, 0],
-};
+function select_preset(name) {
+	let preset = {
+		early: [3, 2, 1, 0],
+		broken: [7, 3, 1, 1],
+		corruption: [25, 7, 1, 2],
+		spire: [0, 1, 1, 0],
+		magma: [35, 4, 3, 1],
+	}[name];
+
+	$('#weight-he').value = preset[0];
+	$('#weight-atk').value = preset[1];
+	$('#weight-hp').value = preset[2];
+	$('#weight-ok').value = preset[3];
+}
 
 function input(id) {
 	return parse_suffixes($('#' + id).value.toLowerCase());
@@ -193,18 +208,21 @@ function set_zone() {
 	var zone = parseInt($('#zone').value);
  	$('#weight-ok').parentNode.style.display = zone > 160 ? '' : 'none';
 	$('#giga').parentNode.style.display = zone > 60 ? '' : 'none';
-	// $('#post-spire').style.display = zone > 200 ? '' : 'none';
-	$('#weight-breed').value = zone > 70 ? 0 : 1;
+}
+
+function handle_respec() {
+	$('#helium').value = helium.base + ($('#respec').checked ? 0 : helium.owned);
 }
 
 function read_save(game) {
-	let he_left = game.global.heliumLeftover;
-	for (let perk in game.portal)
-		he_left += game.portal[perk].heliumSpent;
-	if (!$('#respec').checked)
-		he_left += game.resources.helium.owned;
+	old_perks = game.portal;
 
-	$('#helium').value = he_left;
+	helium.base = game.global.heliumLeftover;
+	for (let perk in game.portal)
+		helium.base += game.portal[perk].heliumSpent;
+	helium.owned = game.resources.helium.owned;
+	handle_respec();
+
 	$('#zone').value = game.global.highestLevelCleared - 5;
 	$('#unlocks').value = Object.keys(game.portal).filter((perk) => !game.portal[perk].locked).join(',')
 	$('#whipimp').checked = game.unlocks.imps.Whipimp;
@@ -212,7 +230,6 @@ function read_save(game) {
 	$('#tauntimp').checked = game.unlocks.imps.Tauntimp;
 	$('#venimp').checked = game.unlocks.imps.Venimp;
 	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
-	old_perks = game.portal;
 }
 
 function handle_paste(ev) {
@@ -236,10 +253,9 @@ const parse_inputs = () => ({
 		attack: input('weight-atk'),
 		health: input('weight-hp'),
 		overkill: input('weight-ok'),
-		breed: input('weight-breed'),
 	},
 	mod: {
-		storage: 0.02,
+		storage: 0.125,
 		whip: $('#whipimp').checked,
 		magn: $('#magnimp').checked,
 		taunt: $('#tauntimp').checked,
