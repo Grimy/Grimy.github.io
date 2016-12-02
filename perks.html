@@ -25,6 +25,11 @@
 	Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.
 </p>
 
+<p id=trillion-he class=ko style='display: none'>
+	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
+	This calculator isn’t intended for Helium trillionaires. You will likely get better results with <a href='https://docs.google.com/spreadsheets/d/1Tc7uAPg3lm4owK-0CzUAxgPmRU0EqpNAJGDeZE5Ch-Y/edit?usp=sharing'>nsheetz’s</a>.
+</p>
+
 <form class=flexbox action='javascript:display(optimize(parse_inputs()))'>
 	<fieldset class=box>
 		<legend>Inputs</legend>
@@ -237,6 +242,7 @@ function handle_paste(ev) {
 	$('#load-failed').style.display = game ? 'none' : 'block';
 	if (game) {
 		$('#bad-version').style.display = game.global.version <= 4.0 ? 'none' : 'block';
+		$('#trillion-he').style.display = game.global.totalHeliumEarned < 1e12 ? 'none' : 'block';
 		read_save(game);
 		display(optimize(parse_inputs()));
 	}
