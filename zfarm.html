@@ -211,7 +211,7 @@ function read_save(game) {
 	$('#size').value = 27;
 	$('#difficulty').value = 80;
 
-	base_attack = attack;
+	base_attack = attack * minFluct;
 	set_stance();
 }
 
