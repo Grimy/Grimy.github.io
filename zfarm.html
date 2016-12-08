@@ -122,6 +122,11 @@ fieldset { flex: 0 1 36em }
 			Hyperspeed?
 		</label>
 
+		<label title='Check if you have unlocked the Map Reducer mastery'>
+			<input type=checkbox id=reducer>
+			Map Reducer?
+		</label>
+
 		<button class=centered>Recalculate</button>
 	</fieldset>
 
@@ -153,11 +158,12 @@ fieldset { flex: 0 1 36em }
 <script src=zfarm.js></script>
 <script>
 
-var base_attack;
+let base_attack;
 
 function set_stance() {
-	var stance = $('#stances > input:checked').value;
-	$('#attack').value = prettify(base_attack * stance);
+	let stance = $('#stances > input:checked').value;
+	if (base_attack)
+		$('#attack').value = prettify(base_attack * stance);
 }
 
 function read_save(game) {
@@ -198,18 +204,19 @@ function read_save(game) {
 		minFluct = 0.005;
 	}
 
-	$('#zone').value = game.global.world;
 	$('#agility').value = game.portal.Agility.level;
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
-	$('#range').value = maxFluct / minFluct;
-	$('#overkill').value = game.portal.Overkill.level;
-	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
-	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
-	$('#stances').children[game.global.formation].checked = true;
-	$('#size').value = 27;
 	$('#difficulty').value = 80;
+	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
+	$('#overkill').value = game.portal.Overkill.level;
+	$('#range').value = maxFluct / minFluct;
+	$('#reducer').checked = game.talents.mapLoot.purchased;
+	$('#size').value = 27;
+	$('#stances').children[game.global.formation].checked = true;
+	$('#titimp').checked = game.unlocks.imps.Titimp;
+	$('#zone').value = game.global.world;
 
 	base_attack = attack * minFluct;
 	set_stance();
@@ -234,11 +241,12 @@ const parse_inputs = () => ({
 	challenge: 1 + $('#challenge').value / 100,
 	difficulty: $('#difficulty').value / 100,
 	import_chance: $('#imports').value * .03 * max_rand,
+	looting: $('#s-stance').checked ? 2 : 1,
 	overkill: $('#overkill').value * .005,
 	range: ($('#range').value - 1) / max_rand,
+	reducer: $('#reducer').checked,
 	size: $('#size').value | 0,
 	titimp: $('#titimp').checked,
-	looting: $('#s-stance').checked ? 2 : 1,
 	zone: $('#zone').value | 0,
 });
 
@@ -248,8 +256,8 @@ function display(infos) {
 
 	$('#details').innerHTML = '';
 	for (let info of infos) {
-		var p = document.createElement('p');
-		var cps = info.cells * 10 / max_ticks;
+		let p = document.createElement('p');
+		let cps = info.cells * 10 / max_ticks;
 		info.value = cps * info.loot;
 		p.textContent = `${info.zone}: ${prettify(info.loot)} loot at ${cps.toFixed(3)} cells/s`;
 		p.textContent += ` = ${prettify(info.loot * cps)} loot/s.`;
@@ -257,19 +265,24 @@ function display(infos) {
 	}
 
 	if (infos.length < 2 || infos[1].zone.startsWith('BW')) {
-		$('#result').textContent = 'You should really be pushing rather than farming';
-		$('#comment').textContent = '';
+		if ($('#zone').value == 200) {
+			$('#result').textContent = 'You should definitely farm on BW200'
+			$('#comment').textContent = 'Good luck with the Spire!';
+		} else {
+			$('#result').textContent = 'You should really be pushing rather than farming';
+			$('#comment').textContent = '';
+		}
 		return;
 	}
 
 	infos.sort((a, b) => b.value - a.value);
 
-	var best = infos[0].zone;
-	var second = infos[1].zone;
-	var ratio = infos[0].value / infos[1].value;
-	var max_loot = $('#biome').value == 'gardens' ? 185 : 160;
-	var loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
-	var adverbs = ["", "", " probably", " probably", " probably", " probably",
+	let best = infos[0].zone;
+	let second = infos[1].zone;
+	let ratio = infos[0].value / infos[1].value;
+	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
+	let loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
+	let adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
 	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${best}`;
