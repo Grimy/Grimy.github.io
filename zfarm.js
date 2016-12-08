@@ -1,4 +1,4 @@
-// 2>&-; exec node "$0"
+// 2>&-; exec node "$0" "$@"
 
 // Copy these Math functions in our namespace
 const {min, max, sqrt, pow, log, floor, round, ceil} = Math;

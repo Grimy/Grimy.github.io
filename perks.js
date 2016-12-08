@@ -1,4 +1,4 @@
-// 2>&-; exec node "$0"
+// 2>&-; exec node "$0" "$@"
 
 const equipment = {
 	shield: [40, 4, 'health'],
@@ -113,7 +113,7 @@ function optimize(params) {
 
 	// Number of ticks it takes to one-shot an enemy.
 	function ticks() {
-		return 2 + floor(10 * mult('Agility', -5));
+		return 1 + (level.Agility < 3) + ceil(10 * mult('Agility', -5));
 	}
 
 	// Number of buildings of a given kind that can be built with the current income.
@@ -197,7 +197,7 @@ function optimize(params) {
 	}
 
 	function helium() {
-		return base_helium * looting() + 45;
+		return (base_helium * looting() + 45) / mult('Agility', -5);
 	}
 
 	const overkill = () => add('Overkill', 60);
@@ -209,7 +209,7 @@ function optimize(params) {
 		for (let i in weight)
 			if (weight[i] !== 0)
 				result += weight[i] * log(stats[i]());
-		return result + 0.5 / mult('Agility', -5);
+		return result;
 	}
 
 	function best_perk() {
@@ -266,7 +266,7 @@ function optimize(params) {
 	let base_income = income();
 	let base_helium = run_helium(zone);
 
-	weight.breed = zone < 70;
+	weight.breed = zone < 70 ? weight.health : 0;
 
 	// Precompute equipment ratios
 	const equip_total = {
@@ -292,6 +292,7 @@ function optimize(params) {
 	// Main loop
 	let free = he_left / 1000;
 	let shitty = {Bait: true, Packrat: true, Trumps: true};
+
 	for (let best = 'Looting'; best; best = best_perk()) {
 		for (let spent = 0; spent < free; spent += cost(best)) {
 			he_left -= cost(best);
@@ -308,9 +309,9 @@ function optimize(params) {
 // When executing from the command-line
 if (typeof window === 'undefined') {
 	console.log(optimize({
-		he_left: 1e12,
-		zone: 350,
-		weight: {helium: 70, attack: 1, health: 1, overkill: 1},
+		he_left: parseFloat(process.argv[2]),
+		zone: 50,
+		weight: {helium: 5, attack: 4, health: 2, overkill: 0},
 		climb: 'plate',
 		unlocks: perks,
 		mod: {
