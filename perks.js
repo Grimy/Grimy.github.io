@@ -1,7 +1,5 @@
 // 2>&-; exec node "$0"
 
-const testing = typeof window === 'undefined' || window.location.protocol == "file:";
-
 const equipment = {
 	shield: [40, 4, 'health'],
 	dagger: [40, 2, 'attack'],
@@ -107,10 +105,10 @@ function optimize(params) {
 
 	// Max population
 	function trimps() {
-		let Carpentry = mult('Carpentry', 10) * add('Carpentry_II', 0.25);
-		let bonus = mod.housing + log(income() / base_income * Carpentry / mult('Resourceful', -5));
+		let carp = mult('Carpentry', 10) * add('Carpentry_II', 0.25);
+		let bonus = mod.housing + log(income() / base_income * carp / mult('Resourceful', -5));
 		let territory = add('Trumps', 20) * zone;
-		return 10 * (base_housing * bonus + territory) * Carpentry * imp.taunt;
+		return 10 * (base_housing * bonus + territory) * carp * imp.taunt + mod.dg * carp;
 	}
 
 	// Number of ticks it takes to one-shot an enemy.
@@ -260,7 +258,7 @@ function optimize(params) {
 	let slow = zone > 130;
 	let frugal_done = zone > 100 ? 1.28 : 1.2;
 	let books = pow(1.25, zone) * pow(frugal_done, max(zone - 59, 0));
-	let gigas = min(zone - 60, zone / 2 - 25, zone / 3 - 12, zone / 5, zone / 10 + 17);
+	let gigas = min(zone - 60, zone/2 - 25, zone/3 - 12, zone/5, zone/10 + 17, 39);
 	let base_housing = pow(1.25, min(zone / 2, 30) + mod.giga * max(0, 0|gigas));
 	let mystic = floor(min(zone >= 25 && zone / 5, 9 + zone / 25, 15));
 	let tacular = (20 + zone - zone % 5) / 100;
@@ -314,7 +312,7 @@ if (typeof window === 'undefined') {
 		zone: 350,
 		weight: {helium: 70, attack: 1, health: 1, overkill: 1},
 		climb: 'plate',
-		unlocks: Object.keys(base_cost),
+		unlocks: perks,
 		mod: {
 			storage: 0.125,
 			whip: true,

@@ -89,6 +89,11 @@
 			Total Helium
 		</label>
 
+		<label>
+			<input type=text id=dg value=0>
+			Generated housing
+		</label>
+
 		<label title='The most expensive prestige you unlock before portalling'>
 			<select id=climb>
 				<option value=dagger>Dagger</option>
@@ -156,11 +161,6 @@ The other modifiers are handled by the code.'>
 			Breed timer
 		</label>
 
-		<label title='Average number of coordinations you get from a gigastation'>
-			<input type=text id=giga value=1>
-			Coords per giga
-		</label>
-
 		<label title='Used in max pop calculations.
 Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
 			<input type=text id=housing value=3>
@@ -219,6 +219,34 @@ function handle_respec() {
 	$('#helium').value = helium.base + ($('#respec').checked ? 0 : helium.owned);
 }
 
+function generated_housing(game) {
+	let eff = 500e6 + 50e6 * game.generatorUpgrades.Efficiency.upgrades;
+	let capa = 3 + 0.4 * game.generatorUpgrades.Capacity.upgrades;
+	let min_fuel = game.permanentGeneratorUpgrades.Storage.owned ? capa : capa - 0.16;
+	let supply = 230 + 2 * game.generatorUpgrades.Supply.upgrades;
+	let burn = game.permanentGeneratorUpgrades.Slowburn.owned ? 0.4 : 0.5;
+	let cells = game.talents.magmaFlow.purchased ? 18 : 16;
+	let housing = 0;
+	let fuel = 0;
+
+	function tick(threshold) {
+		while (fuel >= threshold) {
+			housing += eff * Math.sqrt(fuel);
+			fuel -= burn;
+		}
+	}
+
+	for (let zone = 230; zone <= (230 + game.global.highestLevelCleared) / 2; ++zone) {
+		for (let cell = 0; cell <= cells; ++cell) {
+			fuel += 0.01 * Math.min(zone, supply) - 2.1;
+			tick(min_fuel);
+		}
+	}
+
+	tick(burn);
+	return housing;
+}
+
 function read_save(game) {
 	old_perks = game.portal;
 
@@ -235,6 +263,7 @@ function read_save(game) {
 	$('#tauntimp').checked = game.unlocks.imps.Tauntimp;
 	$('#venimp').checked = game.unlocks.imps.Venimp;
 	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
+	$('#dg').value = generated_housing(game);
 }
 
 function handle_paste(ev) {
@@ -262,6 +291,7 @@ const parse_inputs = () => ({
 	},
 	mod: {
 		storage: 0.125,
+		dg: input('dg'),
 		whip: $('#whipimp').checked,
 		magn: $('#magnimp').checked,
 		taunt: $('#tauntimp').checked,
@@ -270,7 +300,7 @@ const parse_inputs = () => ({
 		loot: input('loot'),
 		turkimp: input('turkimp'),
 		breed_timer: input('breed-timer'),
-		giga: input('giga'),
+		giga: 1,
 		housing: input('housing'),
 	}
 });
