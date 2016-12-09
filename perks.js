@@ -196,13 +196,17 @@ function optimize(params) {
 		return soldiers() * min(health / 60 + block(), health / 12);
 	}
 
+	function agility() {
+		return 1 / mult('Agility', -5);
+	}
+
 	function helium() {
-		return (base_helium * looting() + 45) / mult('Agility', -5);
+		return base_helium * looting() + 45;
 	}
 
 	const overkill = () => add('Overkill', 60);
 
-	const stats = { helium, attack, health, overkill, breed };
+	const stats = { agility, helium, attack, health, overkill, breed };
 
 	function score() {
 		let result = 0;
@@ -267,6 +271,7 @@ function optimize(params) {
 	let base_helium = run_helium(zone);
 
 	weight.breed = zone < 70 ? weight.health : 0;
+	weight.agility = 5;
 
 	// Precompute equipment ratios
 	const equip_total = {
