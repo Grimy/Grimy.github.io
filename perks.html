@@ -161,12 +161,6 @@ The other modifiers are handled by the code.'>
 			Breed timer
 		</label>
 
-		<label title='Used in max pop calculations.
-Increasing this reduces the importance of Carp, Resourceful and Trumps.'>
-			<input type=text id=housing value=3>
-			Housing thingy
-		</label>
-
 		<button class=centered>Optimize!</button>
 	</fieldset>
 
@@ -301,7 +295,7 @@ const parse_inputs = () => ({
 		turkimp: input('turkimp'),
 		breed_timer: input('breed-timer'),
 		giga: 1,
-		housing: input('housing'),
+		housing: 3,
 	}
 });
 
