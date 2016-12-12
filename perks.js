@@ -171,7 +171,7 @@ function optimize(params) {
 		let attack = tiers('attack') * add('Power', 5) * add('Power_II', 1);
 		attack *= add('Relentlessness', 5 * add('Relentlessness', 30));
 		attack *= pow(1 + level.Siphonology, 0.1) * add('Range', 1);
-		attack *= add('Anticipation', 2);
+		attack *= add('Anticipation', 6);
 		attack *= pow(0.8, magma());
 		return soldiers() * attack;
 	}
