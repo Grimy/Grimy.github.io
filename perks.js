@@ -69,12 +69,13 @@ function optimize(params) {
 	// Total bonus from a compounding perk. `x` is the percentage from each level.
 	const mult = (perk, x) => pow(1 + x / 100, level[perk]);
 
+	const corruption_start = 181;
+
 	function tiers(stat) {
 		let {cost, value, exp} = equip_total[stat];
-		return pow(income() * trimps() / (cost * mult('Artisanistry', -5)), exp) * value;
+		let result = pow(income() * trimps() / (cost * mult('Artisanistry', -5)), exp) * value;
+		return pow(result, mod.income);
 	}
-
-	const corruption_start = 181;
 
 	// Amount of Helium awarded at the end of the given zone.
 	function zone_helium(z) {

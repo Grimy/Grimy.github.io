@@ -117,6 +117,11 @@
 			Unlocked perks
 		</label>
 
+		<label>
+			<input type=text checked id=income value=1>
+			Devalue income
+		</label>
+
 		<label title='Uncheck this if you didn’t unlock the Whipimp'>
 			<input type=checkbox checked id=whipimp>
 			Whipimp
@@ -294,6 +299,7 @@ const parse_inputs = () => ({
 		loot: input('loot'),
 		turkimp: input('turkimp'),
 		breed_timer: input('breed-timer'),
+		income: input('income'),
 		giga: 1,
 		housing: 3,
 	}
