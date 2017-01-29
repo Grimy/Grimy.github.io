@@ -309,6 +309,9 @@ function optimize(params) {
 		free = min(he_left / 10, free);
 	}
 
+	for (let perk in level)
+		console.log(perk + ': ' + level[perk]);
+
 	return level;
 }
 
