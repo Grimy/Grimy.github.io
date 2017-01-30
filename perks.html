@@ -5,7 +5,7 @@
 <style>
 #advanced { margin-bottom: 1ex }
 #advanced:not(:target) ~ a, #advanced:not(:target) ~ label, #advanced:target { display: none }
-#perks { width: 50rem; align-self: center; justify-content: center }
+#results { width: 50rem; align-self: center; justify-content: center }
 .perk { border: 2px solid black; margin: -1px }
 .perk { flex: 0 0 20%; text-align: center; padding: 0.5ex 0; color: white }
 .perk { background-color: #666 }
@@ -169,7 +169,7 @@ The other modifiers are handled by the code.'>
 		<button class=centered>Optimize!</button>
 	</fieldset>
 
-	<div id=perks class=flexbox></div>
+	<div id=results class=flexbox></div>
 </form>
 
 <nav class=flexbox>
@@ -306,7 +306,7 @@ const parse_inputs = () => ({
 });
 
 function display(level) {
-	$('#perks').innerHTML = '';
+	$('#results').innerHTML = '';
 	if (!level)
 		return;
 	for (var perk of $('#unlocks').value.split(',')) {
@@ -315,7 +315,7 @@ function display(level) {
 		var name = perk.replace(/_/g, ' ');
 		var diff = old_perks ? level[perk] - old_perks[perk].level : 0;
 		var diff_text = diff == 0 ? '' : diff > 0 ? ` (+${diff})` : ` (${diff})`;
-		$('#perks').innerHTML +=
+		$('#results').innerHTML +=
 			`<div class='perk${capped}${tier2}'>${name}<br>${level[perk]}${diff_text}</div>`;
 	}
 }

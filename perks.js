@@ -51,7 +51,7 @@ const increment = {Toughness_II: 2.5, Power_II: 2.5, Motivation_II: 2, Carpentry
 // Maximum level, for the perks that have one
 const cap = {Range: 10, Agility: 20, Relentlessness: 10, Meditation: 7, Anticipation: 10, Siphonology: 3, Overkill: 30};
 
-const perks = Object.keys(base_cost);
+var perks = Object.keys(base_cost);
 
 function optimize(params) {
 	"use strict";
