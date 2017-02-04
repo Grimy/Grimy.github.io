@@ -9,8 +9,9 @@
 .perk { border: 2px solid black; margin: -1px }
 .perk { flex: 0 0 20%; text-align: center; padding: 0.5ex 0; color: white }
 .perk { background-color: #666 }
-.perk.tier2 { background-color: #809080 }
 .perk.capped { background-color: #696980 }
+.perk.adding { background-color: #809080 }
+.perk.remove { background-color: #806969 }
 </style>
 
 <h1>Perk Optimizer</h1>
@@ -311,12 +312,13 @@ function display(level) {
 		return;
 	for (var perk of $('#unlocks').value.split(',')) {
 		var capped = level[perk] == cap[perk] ? ' capped' : '';
-		var tier2 = increment[perk] ? ' tier2' : '';
 		var name = perk.replace(/_/g, ' ');
 		var diff = old_perks ? level[perk] - old_perks[perk].level : 0;
 		var diff_text = diff == 0 ? '' : diff > 0 ? ` (+${diff})` : ` (${diff})`;
+		var adding = diff > 0 ? ' adding' : '';
+		var remove = diff < 0 ? ' remove' : '';
 		$('#results').innerHTML +=
-			`<div class='perk${capped}${tier2}'>${name}<br>${level[perk]}${diff_text}</div>`;
+			`<div class='perk${capped}${adding}${remove}'>${name}<br>${level[perk]}${diff_text}</div>`;
 	}
 }
 
