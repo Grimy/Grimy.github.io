@@ -50,13 +50,14 @@ const increment = {Toughness_II: 2.5, Power_II: 2.5, Motivation_II: 2, Carpentry
 
 // Maximum level, for the perks that have one
 const cap = {Range: 10, Agility: 20, Relentlessness: 10, Meditation: 7, Anticipation: 10, Siphonology: 3, Overkill: 30};
+const min = {};
 
 var perks = Object.keys(base_cost);
 
 function optimize(params) {
 	"use strict";
 
-	let {he_left, zone, unlocks, weight, climb, mod} = params;
+	let {he_left, zone, unlocks, fixed, weight, climb, mod} = params;
 	if (he_left > 1e16)
 		return;
 
@@ -225,6 +226,8 @@ function optimize(params) {
 		for (let perk of unlocks) {
 			if (level[perk] === cap[perk] || cost(perk) > he_left)
 				continue;
+			if (level[perk] < min[perk])
+				return perk;
 
 			++level[perk];
 			let gain = score() - baseline;
@@ -254,6 +257,12 @@ function optimize(params) {
 	let level = {};
 	for (let perk of perks)
 		level[perk] = 0;
+
+	for (let item of fixed) {
+		let [perk, value] = item.split('=');
+		cap[perk] = parseInt(value);
+		min[perk] = parseInt(value);
+	}
 
 	let imp = {};
 	for (let name of ['whip', 'magn', 'taunt', 'ven'])

@@ -203,6 +203,8 @@ function read_save(game) {
 	} else if (challenge == "Discipline") {
 		maxFluct = 1.995;
 		minFluct = 0.005;
+	} else if (challenge == "Coordinate") {
+		enemyHealth = Math.pow(1.25, game.global.world);
 	}
 
 	$('#agility').value = game.portal.Agility.level;
@@ -227,7 +229,7 @@ function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
 	$('#load-failed').style.display = game ? 'none' : 'block';
 	if (game) {
-		$('#bad-version').style.display = game.global.version <= 4.1 ? 'none' : 'block';
+		$('#bad-version').style.display = game.global.version <= 4.21 ? 'none' : 'block';
 		read_save(game);
 		display(stats(parse_inputs()));
 	}
