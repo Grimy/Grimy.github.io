@@ -3,7 +3,7 @@
 // Copy these Math functions in our namespace
 const {min, max, sqrt, pow, log, floor, round, ceil} = Math;
 
-const max_ticks = 6048000; // One week
+const max_ticks = 864000; // One day
 
 const biomes = {
 	all: [0.7, 1.3, 1.3, 1, 0.7, 0.8, 1.1],
@@ -39,7 +39,8 @@ function enemy_hp(g, zone, cell) {
 }
 
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
-function simulate(zone, g) {
+function simulate(zone, g, mult) {
+	g.atk = g.attack * mult;
 	let buff = 0;
 	let ok_dmg = 0;
 	let cell = 0;
@@ -72,35 +73,42 @@ function simulate(zone, g) {
 			buff = min(max(ticks, buff) + 300, ticks + 450);
 	}
 
-	return cell;
+	return cell * 10 / max_ticks;
 }
 
 // Computes looting efficiency based on the given game state.
 function stats(g) {
 	let max_os = 6;
-	while (g.atk >= max.apply(0, g.biome) * enemy_hp(g, max_os + 1, g.size - 1))
+	while (g.attack >= max.apply(0, g.biome) * enemy_hp(g, max_os + 1, g.size - 1))
 		++max_os;
 
 	let result = [];
 	let max_zone = max(g.zone - g.reducer, max_os);
 
 	for (let zone = max_os; zone <= max_zone; ++zone) {
-		result.push({
-			zone: 'z' + zone,
-			cells: simulate(zone, g),
-			loot: pow(1.25, zone) * g.looting,
-		});
+		info = { zone: 'z' + zone, loot: pow(1.25, zone) };
+		if (g.zone < 70) {
+			info.x_speed = simulate(zone, g, 1);
+		} else {
+			info.d_speed = simulate(zone, g, 4);
+			info.s_speed = g.scry ? simulate(zone, g, 0.5) : 0;
+		}
+		result.push(info);
 	}
 
 	if (max_zone > 120 && max_zone % 15 >= 5 && g.biome.length == 14) {
 		let zone = 5 + (max_zone - max_zone % 15);
-		let loot = (300 / 180) * pow(1.25, zone) * g.looting;
+		let loot = (300 / 180) * pow(1.25, zone);
 		let bw = Object.assign({}, g);
 		bw.size = 100;
 		bw.difficulty = 2.6;
 		bw.biome = biomes.all.concat(biomes.bionic);
-		let cells = simulate(zone, bw);
-		result.push({zone: 'BW' + zone, cells, loot});
+		result.push({
+			zone: 'BW' + zone,
+			s_speed: g.scry ? simulate(zone, bw, 0.5) : 0,
+			d_speed: simulate(zone, bw, 4),
+			loot,
+		});
 	}
 
 	return result;
@@ -118,7 +126,6 @@ if (typeof window === 'undefined') {
 		challenge: 1,
 		difficulty: 0.84,
 		import_chance: 0.15 * max_rand,
-		looting: 1,
 		overkill: 0,
 		range: 0.2 / max_rand,
 		reducer: false,

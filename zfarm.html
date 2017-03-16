@@ -6,11 +6,8 @@
 #advanced { margin-bottom: 1ex }
 #advanced:not(:target) ~ a, #advanced:not(:target) ~ label, #advanced:target { display: none }
 fieldset { flex: 0 1 36em }
-#stances { position: relative; margin: 1.5ex 0.25em }
-#stances > label { cursor: pointer; border: 1px solid black; border-radius: 2px; padding: 4px }
-#stances > input { position: absolute; clip: rect(0, 0, 0, 0) }
-#stances > input, #stances > label { display: inline }
-#stances > input:checked + label { background: #5CB85C }
+table { border-collapse: collapse; text-align: center }
+table, th, td { border: 1px solid black; padding: 3px }
 </style>
 
 <h1>zFarm</h1>
@@ -45,16 +42,7 @@ fieldset { flex: 0 1 36em }
 			Biome
 		</label>
 
-		<div id=stances>
-			<input onchange='set_stance()' id=x-stance type=radio name=stance value=1 checked>
-			<label for=x-stance>X</label>
-			<input onchange='set_stance()' id=d-stance type=radio name=stance value=4>
-			<label for=d-stance>D</label>
-			<input onchange='set_stance()' id=s-stance type=radio name=stance value=0.5>
-			<label for=s-stance>S</label>
-		</div>
-
-		<label title='Your minimum attack, in the stance you use for farming, without the Titimp buff'>
+		<label title='Your minimum attack, in X, without the Titimp buff'>
 			<input type=text id=attack required>
 			Min ATK
 		</label>
@@ -66,6 +54,11 @@ fieldset { flex: 0 1 36em }
 
 		<a id=advanced class=centered href='#advanced'>Advanced options (you probably shouldn’t bother)</a>
 		<a class=centered href='#'>Hide advanced options</a>
+
+		<label title='Check if you have unlocked the Scrying stance'>
+			<input type=checkbox checked id=scry>
+			Unlocked S?
+		</label>
 
 		<label title='Total number of map imp-orts you have unlocked'>
 			<input type=text id=imports value=5 pattern='[0-5]'>
@@ -134,7 +127,7 @@ fieldset { flex: 0 1 36em }
 		<legend>Results</legend>
 		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
 		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
-		<p id=details>
+		<table id=details></table>
 		<p>Warning: this calculator assumes that your trimps are alive
 		100% of the time. If this is not the case, you’ll want to farm slightly
 		lower than what it suggests.</p>
@@ -160,12 +153,6 @@ fieldset { flex: 0 1 36em }
 "use strict";
 
 let base_attack;
-
-function set_stance() {
-	let stance = $('#stances > input:checked').value;
-	if (base_attack)
-		$('#attack').value = prettify(base_attack * stance);
-}
 
 function read_save(game) {
 	let imps = 0;
@@ -218,17 +205,17 @@ function read_save(game) {
 	$('#range').value = maxFluct / minFluct;
 	$('#reducer').checked = game.talents.mapLoot.purchased;
 	$('#size').value = 27;
-	$('#stances').children[game.global.formation].checked = true;
+	$('#scry').checked = game.global.highestLevelCleared >= 180;
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = game.global.world;
 
 	base_attack = attack * minFluct;
-	set_stance();
 }
 
 function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
 	$('#load-failed').style.display = game ? 'none' : 'block';
+
 	if (game) {
 		$('#bad-version').style.display = game.global.version <= 4.21 ? 'none' : 'block';
 		read_save(game);
@@ -238,34 +225,52 @@ function handle_paste(ev) {
 
 const parse_inputs = () => ({
 	agility: 10 * Math.pow(.95, $('#agility').value) - $('#hyperspeed').checked,
-	atk: parse_suffixes($('#attack').value.toLowerCase()),
+	attack: parse_suffixes($('#attack').value.toLowerCase()),
 	biome: biomes.all.concat(biomes[$('#biome').value]),
 	cc: $('#cc').value / 100 * max_rand,
 	cd: 1 + $('#cd').value / 100,
 	challenge: 1 + $('#challenge').value / 100,
 	difficulty: $('#difficulty').value / 100,
 	import_chance: $('#imports').value * .03 * max_rand,
-	looting: $('#s-stance').checked ? 2 : 1,
 	overkill: $('#overkill').value * .005,
 	range: ($('#range').value - 1) / max_rand,
 	reducer: $('#reducer').checked,
+	scry: $('#scry').checked,
 	size: $('#size').value | 0,
 	titimp: $('#titimp').checked,
 	zone: $('#zone').value | 0,
 });
 
+function yada(values, speed, loot, zone) {
+	if (!speed)
+		return '';
+	let value = loot * speed;
+	values.push({zone, value});
+	return `<td>${speed.toFixed(3)}<td>${prettify(value)}`
+}
+
 function display(infos) {
 	$('#results').style.opacity = 1;
 	$('#one-shot').textContent = infos[0].zone;
 
-	$('#details').innerHTML = '';
+	let values = [];
+
+	let headers = '<th>Level<th>Base loot';
+	if (infos[0].x_speed)
+		headers += '<th>Cells/s<th>Total';
+	if (infos[0].d_speed)
+		headers += '<th>Cells/s (D)<th>Total (D)';
+	if (infos[0].s_speed)
+		headers += '<th>Cells/s (S)<th>Total (S)';
+	$('#details').innerHTML = `<tr>${headers}</tr>`;
+
 	for (let info of infos) {
-		let p = document.createElement('p');
-		let cps = info.cells * 10 / max_ticks;
-		info.value = cps * info.loot;
-		p.textContent = `${info.zone}: ${prettify(info.loot)} loot at ${cps.toFixed(3)} cells/s`;
-		p.textContent += ` = ${prettify(info.loot * cps)} loot/s.`;
-		$('#details').appendChild(p);
+		let tr = document.createElement('tr');
+		tr.innerHTML = `<td>${info.zone}<td>${prettify(info.loot)}`
+		tr.innerHTML += yada(values, info.x_speed, info.loot, info.zone);
+		tr.innerHTML += yada(values, info.s_speed, info.loot * 2, info.zone + ' in S');
+		tr.innerHTML += yada(values, info.d_speed, info.loot, info.zone + ' in D');
+		$('#details').appendChild(tr);
 	}
 
 	if (infos.length < 2 || infos[1].zone.startsWith('BW')) {
@@ -279,11 +284,11 @@ function display(infos) {
 		return;
 	}
 
-	infos.sort((a, b) => b.value - a.value);
+	values.sort((a, b) => b.value - a.value);
 
-	let best = infos[0].zone;
-	let second = infos[1].zone;
-	let ratio = infos[0].value / infos[1].value;
+	let best = values[0].zone;
+	let second = values[1].zone;
+	let ratio = values[0].value / values[1].value;
 	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
 	let loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
 	let adverbs = ["", "", " probably", " probably", " probably", " probably",
@@ -295,7 +300,7 @@ function display(infos) {
 		$('#comment').textContent = `They’re equally efficient.`;
 	} else {
 		$('#comment').textContent = loot_diff <= 6 && best.startsWith('z') ?
-			`But a ${second} map with ${loot_diff}% higher loot is better.` :
+			`But ${second} with ${loot_diff}% higher loot is better.` :
 			`It’s ${percentage(ratio)}% more efficient than ${second}.`;
 	}
 }
