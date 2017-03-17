@@ -259,10 +259,10 @@ function display(infos) {
 	let headers = '<th>Level<th>Base loot';
 	if (infos[0].x_speed)
 		headers += '<th>Cells/s<th>Total';
-	if (infos[0].d_speed)
-		headers += '<th>Cells/s (D)<th>Total (D)';
 	if (infos[0].s_speed)
 		headers += '<th>Cells/s (S)<th>Total (S)';
+	if (infos[0].d_speed)
+		headers += '<th>Cells/s (D)<th>Total (D)';
 	$('#details').innerHTML = `<tr>${headers}</tr>`;
 
 	for (let info of infos) {
