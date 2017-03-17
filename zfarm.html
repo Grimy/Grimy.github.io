@@ -242,35 +242,87 @@ const parse_inputs = () => ({
 	zone: $('#zone').value | 0,
 });
 
-function yada(values, speed, loot, zone) {
-	if (!speed)
-		return '';
-	let value = loot * speed;
-	values.push({zone, value});
-	return `<td>${speed.toFixed(3)}<td>${prettify(value)}`
-}
-
 function display(infos) {
 	$('#results').style.opacity = 1;
 	$('#one-shot').textContent = infos[0].zone;
-
-	let values = [];
+	
+	let formationHeaders = '<th><th>';
+	if (infos[0].x_speed)
+		formationHeaders += '<th colspan="2">X';
+	if (infos[0].s_speed)
+		formationHeaders += '<th colspan="2">S';
+	if (infos[0].d_speed)
+		formationHeaders += '<th colspan="2">D';
+	$('#details').innerHTML = `<tr>${formationHeaders}</tr>`;
 
 	let headers = '<th>Level<th>Base loot';
 	if (infos[0].x_speed)
 		headers += '<th>Cells/s<th>Total';
 	if (infos[0].s_speed)
-		headers += '<th>Cells/s (S)<th>Total (S)';
+		headers += '<th>Cells/s<th>Total';
 	if (infos[0].d_speed)
-		headers += '<th>Cells/s (D)<th>Total (D)';
-	$('#details').innerHTML = `<tr>${headers}</tr>`;
+		headers += '<th>Cells/s<th>Total';
+	$('#details').innerHTML += `<tr>${headers}</tr>`;
+
+	// Traversing over the data to find the best for each formation, overall and second.
+	let bests = {};
+	for (let info of infos) {
+		let value = -1;
+		// Sorry
+		if (info.x_speed) {
+			value = info.loot * info.x_speed;
+			info.x_value = value;
+			if (!bests.best || value > bests.best.bestValue) {
+				info.bestValue = value;
+				bests.best = info;
+			} else if (!bests.second || value > bests.second.bestValue) {
+				info.bestValue = value;
+				bests.second = info;
+			}
+			if (!bests.x || value > bests.x.x_value)
+				bests.x = info;
+		}
+		// Sorry again
+		if (info.s_speed) {
+			value = info.loot * 2 * info.s_speed;
+			info.s_value = value;
+			if (!bests.best || value > bests.best.bestValue) {
+				info.bestValue = value;
+				bests.best = info;
+			} else if (!bests.second || value > bests.second.bestValue) {
+				info.bestValue = value;
+				bests.second = info;
+			}
+			if (!bests.s || value > bests.s.s_value)
+				bests.s = info;
+		}
+		// I'm really sorry
+		if (info.d_speed) {
+			value = info.loot * info.d_speed;
+			info.d_value = value;
+			if (!bests.best || value > bests.best.bestValue) {
+				info.bestValue = value;
+				bests.best = info;
+			} else if (!bests.second || value > bests.second.bestValue) {
+				info.bestValue = value;
+				bests.second = info;
+			}
+			if (!bests.d || value > bests.d.d_value)
+				bests.d = info;
+		}
+	}
+	// Marking the best results
+	bests.best.best = true; // To be really sure that this is the best entry :-P
+	if (bests.x) bests.x.xBest = true;
+	if (bests.s) bests.s.sBest = true;
+	if (bests.d) bests.d.dBest = true;
 
 	for (let info of infos) {
 		let tr = document.createElement('tr');
-		tr.innerHTML = `<td>${info.zone}<td>${prettify(info.loot)}`
-		tr.innerHTML += yada(values, info.x_speed, info.loot, info.zone);
-		tr.innerHTML += yada(values, info.s_speed, info.loot * 2, info.zone + ' in S');
-		tr.innerHTML += yada(values, info.d_speed, info.loot, info.zone + ' in D');
+		tr.innerHTML = formatLevel(info);
+		tr.innerHTML += formatValue(info.x_speed, info.x_value, info.xBest);
+		tr.innerHTML += formatValue(info.s_speed, info.s_value, info.sBest);
+		tr.innerHTML += formatValue(info.d_speed, info.d_value, info.dBest);
 		$('#details').appendChild(tr);
 	}
 
@@ -285,25 +337,59 @@ function display(infos) {
 		return;
 	}
 
-	values.sort((a, b) => b.value - a.value);
-
-	let best = values[0].zone;
-	let second = values[1].zone;
-	let ratio = values[0].value / values[1].value;
+	let best = bests.best;
+	let bestZone = best.zone;
+	if (best.sBest)
+		bestZone += ' in S';
+	else if (best.dBest)
+		bestZone += ' in D';
+		
+	let second = bests.second;
+	let secondBestZone = second.zone;
+	if (second.sBest)
+		bestZone += ' in S';
+	else if (second.dBest)
+		secondBestZone += ' in D';
+	
+	let ratio = best.bestValue / second.bestValue;
 	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
 	let loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
 	let adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
-	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${best}`;
+	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${bestZone}`;
 	if (loot_diff <= 1) {
-		$('#result').textContent += ` or ${second}`;
+		$('#result').textContent += ` or ${secondBestZone}`;
 		$('#comment').textContent = `They’re equally efficient.`;
 	} else {
-		$('#comment').textContent = loot_diff <= 6 && best.startsWith('z') ?
-			`But ${second} with ${loot_diff}% higher loot is better.` :
-			`It’s ${percentage(ratio)}% more efficient than ${second}.`;
+		$('#comment').textContent = loot_diff <= 6 && bestZone.startsWith('z') ?
+			`But ${secondBestZone} with ${loot_diff}% higher loot is better.` :
+			`It’s ${percentage(ratio)}% more efficient than ${secondBestZone}.`;
 	}
+}
+
+function formatLevel(info) {
+	let result = '<td class="align-right">';
+	if (info.xBest || info.sBest || info.dBest) {
+		result += '<b>';
+		result += info.xBest ? 'X ' : '';
+		result += info.sBest ? 'S ' : '';
+		result += info.dBest ? 'D ' : '';
+		result += info.best ? '' : '</b>';
+	}
+	result += info.zone + (info.best ? '</b>' : '')
+	result += '<td>' + prettify(info.loot);
+	return result;
+}
+
+function formatValue(speed, value, bold) {
+	if (!value) return '';
+
+	let result = '<td>' + speed.toFixed(3);
+	result += '<td>' + (bold ? '<b>' : '');
+	result += prettify(value);
+	result += bold ? '</b>' : '';
+	return result;
 }
 
 </script>
