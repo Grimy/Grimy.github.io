@@ -216,6 +216,9 @@ function select_preset(name) {
 	if (name == 'z400') {
 		$('#income').value = 0.5;
 		$('#fixed').value = 'Coordinated=56';
+	} else {
+		$('#income').value = 1;
+		$('#fixed').value = $('#fixed').value.replace('Coordinated=56', '');
 	}
 }
 
