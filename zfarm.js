@@ -82,36 +82,87 @@ function stats(g) {
 	while (g.attack >= max.apply(0, g.biome) * enemy_hp(g, max_os + 1, g.size - 1))
 		++max_os;
 
-	let result = [];
+	let results = {};
 	let max_zone = max(g.zone - g.reducer, max_os);
 
+	let speed;
+	let value;
+	let info;
+	let bests = {byStance: {}};
 	for (let zone = max_os; zone <= max_zone; ++zone) {
-		info = { zone: 'z' + zone, loot: pow(1.25, zone) };
+		let loot = pow(1.25, zone);
+		let zone_stats = {loot: loot, stats: {}};
+
 		if (g.zone < 70) {
-			info.x_speed = simulate(zone, g, 1);
+			speed = simulate(zone, g, 1);
+			value = speed * loot;
+			zone_stats.stats['X'] = {speed: speed, value: value};
 		} else {
-			info.d_speed = simulate(zone, g, 4);
-			info.s_speed = g.scry ? simulate(zone, g, 0.5) : 0;
+			speed = simulate(zone, g, 4);
+			value = speed * loot;
+			zone_stats.stats['D'] = {speed: speed, value: value};
+
+			if (g.scry) {
+				speed = simulate(zone, g, 0.5);
+				value = speed * 2 * loot;
+				zone_stats.stats['S'] = {speed: speed, value: value};
+			}
 		}
-		result.push(info);
+
+		compareTo(zone_stats, bests);
+		results['z' + zone] = zone_stats;
 	}
 
 	if (max_zone > 120 && max_zone % 15 >= 5 && g.biome.length == 14) {
-		let zone = 5 + (max_zone - max_zone % 15);
-		let loot = (300 / 180) * pow(1.25, zone);
 		let bw = Object.assign({}, g);
 		bw.size = 100;
 		bw.difficulty = 2.6;
 		bw.biome = biomes.all.concat(biomes.bionic);
-		result.push({
-			zone: 'BW' + zone,
-			s_speed: g.scry ? simulate(zone, bw, 0.5) : 0,
-			d_speed: simulate(zone, bw, 4),
-			loot,
-		});
+
+		let zone = 5 + (max_zone - max_zone % 15);
+		let loot = (300 / 180) * pow(1.25, zone);
+		let zone_stats = {loot: loot, stats: {}};
+
+		speed = simulate(zone, bw, 4);
+		value = loot * speed;
+		zone_stats.stats['D'] = {speed: speed, value: value};
+
+		if (g.scry) {
+			speed = simulate(zone, bw, 0.5);
+			value = speed * 2 * loot;
+			zone_stats.stats['S'] = {speed: speed, value: value};
+		}
+
+		compareTo(zone_stats, bests);
+		results['BW' + zone] = zone_stats;
 	}
 
-	return result;
+	bests.best.zone_stats.stats[bests.best.stance].best = true;
+	if (bests.second) {
+		bests.second.zone_stats.stats[bests.second.stance].secondBest = true;
+	}
+	for (let stance in bests.byStance) {
+		bests.byStance[stance].zone_stats.stats[stance].stanceBest = true;
+	}
+
+	return results;
+}
+
+function compareTo(zone_stats, bests) {
+	for (let stance in zone_stats.stats) {
+		let value = zone_stats.stats[stance].value;
+
+		if (!bests.best || value > bests.best.value) {
+			bests.second = bests.best;
+			bests.best = {stance: stance, value: value, zone_stats: zone_stats};
+		} else if (!bests.second || value > bests.second.value) {
+			bests.second = {stance: stance, value: value, zone_stats: zone_stats};
+		}
+
+		if (!bests.byStance[stance] || value > bests.byStance[stance].value) {
+			bests.byStance[stance] = {value: value, zone_stats: zone_stats};
+		}
+	}
 }
 
 // When executing from the command-line
