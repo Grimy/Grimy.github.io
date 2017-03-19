@@ -48,9 +48,11 @@ const base_cost = {
 // Cost increment, in percentage of the base cost, for tier II perks
 const increment = {Toughness_II: 2.5, Power_II: 2.5, Motivation_II: 2, Carpentry_II: 10, Looting_II: 10};
 
-// Maximum level, for the perks that have one
-const cap = {Range: 10, Agility: 20, Relentlessness: 10, Meditation: 7, Anticipation: 10, Siphonology: 3, Overkill: 30};
-const min = {};
+// Maximum levels for perks
+var cap;
+
+// Minimum levels for perks
+var must;
 
 var perks = Object.keys(base_cost);
 
@@ -226,7 +228,7 @@ function optimize(params) {
 		for (let perk of unlocks) {
 			if (level[perk] === cap[perk] || cost(perk) > he_left)
 				continue;
-			if (level[perk] < min[perk])
+			if (level[perk] < must[perk])
 				return perk;
 
 			++level[perk];
@@ -258,10 +260,13 @@ function optimize(params) {
 	for (let perk of perks)
 		level[perk] = 0;
 
+	cap = {Range: 10, Agility: 20, Relentlessness: 10, Meditation: 7, Anticipation: 10, Siphonology: 3, Overkill: 30};
+	must = {};
+
 	for (let item of fixed) {
 		let [perk, value] = item.split('=');
 		cap[perk] = parseInt(value);
-		min[perk] = parseInt(value);
+		must[perk] = parseInt(value);
 	}
 
 	let imp = {};
