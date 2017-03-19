@@ -88,8 +88,7 @@ function stats(g) {
 	let speed;
 	let value;
 	let info;
-	let nullBest = {stance: '', value: -1, zone_stats: {}};
-	let bests = {best: nullBest, second: nullBest, byStance: {}};
+	let bests = {byStance: {}};
 	for (let zone = max_os; zone <= max_zone; ++zone) {
 		let loot = pow(1.25, zone);
 		let zone_stats = {loot: loot, stats: {}};
@@ -139,7 +138,9 @@ function stats(g) {
 	}
 
 	bests.best.zone_stats.stats[bests.best.stance].best = true;
-	bests.second.zone_stats.stats[bests.second.stance].secondBest = true;
+	if (bests.second) {
+		bests.second.zone_stats.stats[bests.second.stance].secondBest = true;
+	}
 	for (let stance in bests.byStance) {
 		bests.byStance[stance].zone_stats.stats[stance].stanceBest = true;
 	}
@@ -151,10 +152,10 @@ function compareTo(zone_stats, bests) {
 	for (let stance in zone_stats.stats) {
 		let value = zone_stats.stats[stance].value;
 
-		if (value > bests.best.value) {
+		if (!bests.best || value > bests.best.value) {
 			bests.second = bests.best;
 			bests.best = {stance: stance, value: value, zone_stats: zone_stats};
-		} else if (value > bests.second.value) {
+		} else if (!bests.second || value > bests.second.value) {
 			bests.second = {stance: stance, value: value, zone_stats: zone_stats};
 		}
 

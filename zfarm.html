@@ -246,8 +246,6 @@ const parse_inputs = () => ({
 });
 
 function display(stats) {
-	$('#results').style.opacity = 1;
-
 	let stances = [];
 	if ($('#zone').value < 70) {
 		stances.push('X');
@@ -295,7 +293,9 @@ function display(stats) {
 		$('#details').appendChild(tr);
 	}
 
-	if (stats.length < 2 || zones[1].startsWith('BW')) {
+	$('#results').style.opacity = 1;
+	$('#one-shot').textContent = zones[0];
+	if (zones.length < 2 || zones[1].startsWith('BW')) {
 		if ($('#zone').value == 200) {
 			$('#result').textContent = 'You should definitely farm on BW200'
 			$('#comment').textContent = 'Good luck with the Spire!';
@@ -306,15 +306,15 @@ function display(stats) {
 		return;
 	}
 
-	let bestZone = best.zone + ' in ' + best.stance;
-	let secondBestZone = second.zone + ' in ' + second.stance;
+	let displayStance = $('#zone').value >= 60;
+	let bestZone = best.zone + (displayStance ? ' in ' + best.stance : '');
+	let secondBestZone = second.zone + (displayStance ? ' in ' + second.stance : '');
 	let ratio = best.value / second.value;
 	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
 	let loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
 	let adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
-	$('#one-shot').textContent = zones[0];
 	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${bestZone}`;
 	if (loot_diff <= 1) {
 		$('#result').textContent += ` or ${secondBestZone}`;
