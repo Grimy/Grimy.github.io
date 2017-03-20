@@ -199,7 +199,7 @@ function read_save(game) {
 	}
 
 	$('#agility').value = game.portal.Agility.level;
-	$('#attack').value = attack;
+	$('#attack').value = prettify(attack);
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
