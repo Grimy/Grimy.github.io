@@ -179,6 +179,8 @@ function read_save(game) {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		enemyHealth *= 1 + 0.2 * daily('badHealth');
 		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
+		if (game.global.dailyChallenge.empower)
+			enemyHealth *= 1 + 0.002 * game.global.dailyChallenge.empower.stacks;
 		minFluct -= 0.09 * !!daily('minDamage') + 0.01 * daily('minDamage');
 		maxFluct += daily('maxDamage');
 		attack *= 1 - 0.09 * daily('weakness');
@@ -221,7 +223,7 @@ function handle_paste(ev) {
 	$('#load-failed').style.display = game ? 'none' : 'block';
 
 	if (game) {
-		$('#bad-version').style.display = game.global.version <= 4.21 ? 'none' : 'block';
+		$('#bad-version').style.display = game.global.version <= 4.3 ? 'none' : 'block';
 		read_save(game);
 		display(stats(parse_inputs()));
 	}
