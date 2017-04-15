@@ -120,9 +120,14 @@
 			Unlocked perks
 		</label>
 
-		<label title='A list of perks that you don’t want to change'>
+		<label title='A list of perks that you don’t want to change, for example “Power=42,Toughness=31”'>
 			<input type=text id=fixed value=''>
 			Fixed perks
+		</label>
+
+		<label title='Spire perks will be bought in multiples of this value'>
+			<input type=text id=pack value=1>
+			Round Spire perks?
 		</label>
 
 		<label>
@@ -214,11 +219,13 @@ function select_preset(name) {
 	$('#weight-ok').value = preset[3];
 
 	if (name == 'z400') {
-		$('#income').value = 0.5;
 		$('#fixed').value = 'Coordinated=56';
+		$('#pack').value = 1000;
+		$('#income').value = 0.5;
 	} else {
-		$('#income').value = 1;
 		$('#fixed').value = $('#fixed').value.replace('Coordinated=56', '');
+		$('#pack').value = 1;
+		$('#income').value = 1;
 	}
 }
 
@@ -281,6 +288,7 @@ function read_save(game) {
 	$('#venimp').checked = game.unlocks.imps.Venimp;
 	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
 	$('#dg').value = generated_housing(game);
+	// $('#dark').checked = game.options.menu.darkTheme.enabled == 2;
 }
 
 function handle_paste(ev) {
@@ -301,6 +309,7 @@ const parse_inputs = () => ({
 	unlocks: $('#unlocks').value.split(','),
 	fixed: $('#fixed').value.split(','),
 	climb: $('#climb').value,
+	pack: parseInt($('#pack').value),
 	weight: {
 		helium: input('weight-he'),
 		attack: input('weight-atk'),
@@ -336,7 +345,7 @@ function display(level) {
 		var adding = diff > 0 ? ' adding' : '';
 		var remove = diff < 0 ? ' remove' : '';
 		$('#results').innerHTML +=
-			`<div class='perk${capped}${adding}${remove}'>${name}<br>${level[perk]}${diff_text}</div>`;
+			`<div class='perk${capped}${adding}${remove}'>${name}<br>Level: ${level[perk]}${diff_text}</div>`;
 	}
 }
 

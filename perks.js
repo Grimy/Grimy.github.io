@@ -59,7 +59,7 @@ var perks = Object.keys(base_cost);
 function optimize(params) {
 	"use strict";
 
-	let {he_left, zone, unlocks, fixed, weight, climb, mod} = params;
+	let {he_left, zone, unlocks, fixed, pack, weight, climb, mod} = params;
 	if (he_left > 1e16)
 		return;
 
@@ -226,7 +226,7 @@ function optimize(params) {
 		let baseline = score();
 
 		for (let perk of unlocks) {
-			if (level[perk] === cap[perk] || cost(perk) > he_left)
+			if (level[perk] === cap[perk] || cost(perk) * (increment[perk] ? pack : 1) > he_left)
 				continue;
 			if (level[perk] < must[perk])
 				return perk;
@@ -314,8 +314,10 @@ function optimize(params) {
 	let shitty = {Bait: true, Packrat: true, Trumps: true};
 
 	for (let best = 'Looting'; best; best = best_perk()) {
-		for (let spent = 0; spent < free; spent += cost(best)) {
+		let spent = 0;
+		while (spent < free || (increment[best] && level[best] % pack)) {
 			he_left -= cost(best);
+			spent += cost(best);
 			++level[best];
 			if (level[best] == cap[best] || shitty[best])
 				break;
