@@ -155,8 +155,6 @@ th:empty { visibility: hidden; }
 <script>
 "use strict";
 
-let base_attack;
-
 function read_save(game) {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
@@ -201,7 +199,7 @@ function read_save(game) {
 	}
 
 	$('#agility').value = game.portal.Agility.level;
-	$('#attack').value = prettify(attack);
+	$('#attack').value = prettify(attack * minFluct);
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
@@ -214,8 +212,6 @@ function read_save(game) {
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = game.global.world;
-
-	base_attack = attack * minFluct;
 }
 
 function handle_paste(ev) {
