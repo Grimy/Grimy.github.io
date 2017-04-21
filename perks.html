@@ -28,8 +28,8 @@
 
 <p id=trillion-he class=ok style='display: none'>
 	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
-	An experimental “z400+” preset was added! It’s still very rough, so you’ll need to fiddle with the advanced options Devalue Income and Fixed Perks.
-	Or just use <a href='https://docs.google.com/spreadsheets/d/1Tc7uAPg3lm4owK-0CzUAxgPmRU0EqpNAJGDeZE5Ch-Y/edit?usp=sharing'>nsheetz’s</a>.
+	The z400+ preset was improved! Coordinated is now valued for the extra health it gives, even if you can afford all coordinations.
+	Also check <a href='https://docs.google.com/spreadsheets/d/1Tc7uAPg3lm4owK-0CzUAxgPmRU0EqpNAJGDeZE5Ch-Y/edit?usp=sharing'>nsheetz’s calculator</a>.
 </p>
 
 <form class=flexbox action='javascript:display(optimize(parse_inputs()))'>
@@ -219,11 +219,9 @@ function select_preset(name) {
 	$('#weight-ok').value = preset[3];
 
 	if (name == 'z400') {
-		$('#fixed').value = 'Coordinated=56';
 		$('#pack').value = 1000;
 		$('#income').value = 0.5;
 	} else {
-		$('#fixed').value = $('#fixed').value.replace('Coordinated=56', '');
 		$('#pack').value = 1;
 		$('#income').value = 1;
 	}
@@ -246,28 +244,36 @@ function handle_respec() {
 function generated_housing(game) {
 	let eff = 500e6 + 50e6 * game.generatorUpgrades.Efficiency.upgrades;
 	let capa = 3 + 0.4 * game.generatorUpgrades.Capacity.upgrades;
-	let min_fuel = game.permanentGeneratorUpgrades.Storage.owned ? capa : capa - 0.16;
+	let max_fuel = game.permanentGeneratorUpgrades.Storage.owned ? capa * 1.5 : capa;
 	let supply = 230 + 2 * game.generatorUpgrades.Supply.upgrades;
 	let burn = game.permanentGeneratorUpgrades.Slowburn.owned ? 0.4 : 0.5;
 	let cells = game.talents.magmaFlow.purchased ? 18 : 16;
+	let accel = game.talents.quickGen.purchased ? 1.03 : 1.02;
+	let bs = Math.floor((game.global.highestLevelCleared + 1) * 0.75);
 	let housing = 0;
 	let fuel = 0;
+	let time = 0;
 
-	function tick(threshold) {
-		while (fuel >= threshold) {
-			housing += eff * Math.sqrt(fuel);
-			fuel -= burn;
-		}
+	function tick() {
+		housing += eff * Math.sqrt(Math.min(capa, fuel));
+		fuel -= burn;
 	}
 
-	for (let zone = 230; zone <= (230 + game.global.highestLevelCleared) / 2; ++zone) {
-		for (let cell = 0; cell <= cells; ++cell) {
+	for (let zone = 230; zone <= game.global.highestLevelCleared; ++zone) {
+		for (let cell = 0; cell <= cells && fuel < max_fuel; ++cell) {
 			fuel += 0.01 * Math.min(zone, supply) - 2.1;
-			tick(min_fuel);
 		}
+		let tick_time = Math.ceil(60 / Math.pow(accel, Math.floor((zone - 230) / 3)));
+		time += zone > bs ? 28 : 20;
+		while (time >= tick_time) {
+			time -= tick_time;
+			tick();
+		}
+		housing *= 1.009;
 	}
 
-	tick(burn);
+	while (fuel >= burn)
+		tick(burn);
 	return housing;
 }
 

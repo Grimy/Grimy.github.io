@@ -154,7 +154,7 @@ function optimize(params) {
 		let result = 1;
 		for (let i = 0; i < 20; ++i)
 			result = ceil(result * ratio);
-		return result;
+		return result / pow(ratio, 20);
 	}
 
 	// Theoretical fighting group size (actual size is lower because of Coordinated) 
@@ -163,6 +163,14 @@ function optimize(params) {
 		let coords = log(trimps() / 3 / group_size(ratio)) / log(ratio);
 		let available = zone - 1 + (magma() ? 100 : 0);
 		return group_size(1.25) * pow(1.25, min(coords, available));
+	}
+
+	function breed_factor() {
+		let ratio = 1 + 0.25 * pow(0.98, level.Coordinated);
+		let available = zone - 1 + (magma() ? 100 : 0);
+		let required = group_size(ratio) * pow(ratio, available);
+		let fighting = min(required / trimps(), 1 / 3);
+		return 0.5 / (0.5 - fighting);
 	}
 
 	// Number of zones spent in the Magma
@@ -192,7 +200,7 @@ function optimize(params) {
 	function health() {
 		let health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
 		if (!weight.breed) {
-			let target_speed = (pow(3, 0.1 / mod.breed_timer) - 1) * 10;
+			let target_speed = (pow(breed_factor(), 0.1 / mod.breed_timer) - 1) * 10;
 			let geneticists = log(breed() / target_speed) / -log(0.98);
 			health *= pow(1.01, geneticists);
 		}
