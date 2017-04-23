@@ -46,7 +46,7 @@ const base_cost = {
 };
 
 // Cost increment, in percentage of the base cost, for tier II perks
-const increment = {Toughness_II: 2.5, Power_II: 2.5, Motivation_II: 2, Carpentry_II: 10, Looting_II: 10};
+const increment = {Toughness_II: 500, Power_II: 500, Motivation_II: 1e3, Carpentry_II: 10e3, Looting_II: 10e3};
 
 // Maximum levels for perks
 var cap;
@@ -60,8 +60,8 @@ function optimize(params) {
 	"use strict";
 
 	let {he_left, zone, unlocks, fixed, pack, weight, climb, mod} = params;
-	if (he_left > 1e16)
-		return;
+	while (he_left / pack / pack > 1e13)
+		pack *= 10;
 
 	// Copy these Math functions in our namespace
 	const {min, max, sqrt, pow, log, floor, round, ceil} = Math;
@@ -102,7 +102,7 @@ function optimize(params) {
 	// Compute the current cost of a perk, based on its current level.
 	function cost(perk) {
 		if (increment[perk])
-			return base_cost[perk] * add(perk, increment[perk]);
+			return pack * (base_cost[perk] + increment[perk] * (level[perk] + (pack - 1) / 2));
 		else
 			return ceil(level[perk] / 2 + base_cost[perk] * mult(perk, 30));
 	}
@@ -234,14 +234,14 @@ function optimize(params) {
 		let baseline = score();
 
 		for (let perk of unlocks) {
-			if (level[perk] === cap[perk] || cost(perk) * (increment[perk] ? pack : 1) > he_left)
+			if (level[perk] === cap[perk] || cost(perk) > he_left)
 				continue;
 			if (level[perk] < must[perk])
 				return perk;
 
-			++level[perk];
+			level[perk] += increment[perk] ? pack : 1;
 			let gain = score() - baseline;
-			--level[perk];
+			level[perk] -= increment[perk] ? pack : 1;
 
 			let efficiency = gain / cost(perk);
 			if (efficiency > max) {
@@ -318,15 +318,15 @@ function optimize(params) {
 	}
 
 	// Main loop
-	let free = he_left / 1000;
+	let free = he_left / 2000;
 	let shitty = {Bait: true, Packrat: true, Trumps: true};
 
 	for (let best = 'Looting'; best; best = best_perk()) {
 		let spent = 0;
-		while (spent < free || (increment[best] && level[best] % pack)) {
+		while (spent < free) {
 			he_left -= cost(best);
 			spent += cost(best);
-			++level[best];
+			level[best] += increment[best] ? pack : 1;
 			if (level[best] == cap[best] || shitty[best])
 				break;
 		}
