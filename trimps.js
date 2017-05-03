@@ -1,6 +1,11 @@
 
 function $(str) { return document.querySelector(str); }
 
+$('#dark').disabled = true;
+function switch_theme() {
+	$('#dark').disabled = !$('#dark').disabled;
+}
+
 const suffixes = [
 	'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
 	'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od', 'Nd', 'V',
