@@ -167,19 +167,6 @@ Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for
 			Chrono/Jest
 		</label>
 
-		<label title='Multiplier for all non-Helium loot.
-This should only account for low map level penalty, scrying, golden maps and challenges.
-The other modifiers are handled by the code.'>
-			<input type=text id=loot value='1'>
-			Loot multiplier
-		</label>
-
-		<label title='Fraction of farm time spent with an active turkimp.
-0 = never, 1 = always, 1.5 = always + Turkimp Tamer III.'>
-			<input type=text id=turkimp value='0.5'>
-			Turkimp
-		</label>
-
 		<label title='Your usual breed timer'>
 			<input type=text id=breed-timer value=30>
 			Breed timer
@@ -337,8 +324,6 @@ const parse_inputs = () => ({
 		taunt: $('#tauntimp').checked,
 		ven: $('#venimp').checked,
 		chronojest: input('chronojest'),
-		loot: input('loot'),
-		turkimp: input('turkimp'),
 		breed_timer: input('breed-timer'),
 		income: input('income'),
 		giga: 1,

@@ -134,9 +134,9 @@ function optimize(params) {
 	// Total resource gain per second
 	function income(wood) {
 		let storage = mod.storage * mult('Resourceful', -5) / add('Packrat', 20);
-		let prod = wood ? 0 : moti() * add('Meditation', 1) * (1 + mod.turkimp / 2);
-		let lmod = looting() * imp.magn * mod.loot / ticks();
-		let loot = base_loot * lmod * (1 + 0.166 * mod.turkimp);
+		let prod = wood ? 0 : moti() * add('Meditation', 1) * 1.25;
+		let lmod = looting() * imp.magn / ticks();
+		let loot = base_loot * lmod * 1.083;
 		let chronojest = mod.chronojest * 0.75 * prod * lmod;
 		return 1800 * imp.whip * books * (prod + loot + chronojest) * (1 - storage);
 	}
@@ -354,8 +354,6 @@ if (typeof window === 'undefined') {
 			taunt: true,
 			ven: true,
 			chronojest: 5,
-			loot: 1,
-			turkimp: 0.5,
 			breed_timer: 30,
 			giga: 1,
 			housing: 3,
