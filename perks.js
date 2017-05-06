@@ -216,7 +216,7 @@ function optimize(params) {
 		return base_helium * looting() + 45;
 	}
 
-	const overkill = () => add('Overkill', 60);
+	const overkill = () => level.Overkill ? level.Overkill : 0.5;
 
 	const stats = { agility, helium, attack, health, overkill, breed };
 
