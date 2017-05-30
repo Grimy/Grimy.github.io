@@ -221,7 +221,7 @@ function handle_paste(ev) {
 	$('#load-failed').style.display = game ? 'none' : 'block';
 
 	if (game) {
-		$('#bad-version').style.display = game.global.version <= 4.31 ? 'none' : 'block';
+		$('#bad-version').style.display = game.global.version <= 4.32 ? 'none' : 'block';
 		read_save(game);
 		display(stats(parse_inputs()));
 	}
@@ -313,7 +313,8 @@ function display(stats) {
 	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
 	let loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
 	let adverbs = ["", "", " probably", " probably", " probably", " probably",
-		" probably", "", "", "", " really", " really", " definitely"]
+		" probably", "", "", "", " 
+		       ally", " really", " definitely"]
 
 	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${bestZone}`;
 	if (loot_diff <= 1) {
