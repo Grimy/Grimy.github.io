@@ -39,8 +39,7 @@ function enemy_hp(g, zone, cell) {
 }
 
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
-function simulate(zone, g, mult) {
-	g.atk = g.attack * mult;
+function simulate(zone, g) {
 	let buff = 0;
 	let ok_dmg = 0;
 	let cell = 0;
@@ -76,41 +75,36 @@ function simulate(zone, g, mult) {
 	return cell * 10 / max_ticks;
 }
 
+function info(prefix, zone, loot, stances, g) {
+	result = { zone: prefix + zone, loot: loot * pow(1.25, zone), value: 0 };
+
+	for (let stance of stances) {
+		g.atk = g.attack * ({ X: 1, D: 4, S: 0.5 })[stance];
+		let speed = simulate(zone, g);
+		let value = speed * result.loot * ({ X: 1, D: 1, S: 2 })[stance];
+		result[stance] = { speed, value };
+
+		if (value > result.value) {
+			result.value = value;
+			result.stance = stance;
+		}
+	}
+
+	return result;
+}
+
 // Computes looting efficiency based on the given game state.
 function stats(g) {
 	let max_os = 6;
 	while (g.attack >= max.apply(0, g.biome) * enemy_hp(g, max_os + 1, g.size - 1))
 		++max_os;
 
-	let results = {};
-	let max_zone = max(g.zone - g.reducer, max_os);
+	let stats = [];
+	let max_zone = min(max_os + 15, max(g.zone - g.reducer, max_os));
+	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
 
-	let speed;
-	let value;
-	let info;
-	let bests = {byStance: {}};
 	for (let zone = max_os; zone <= max_zone; ++zone) {
-		let loot = pow(1.25, zone);
-		let zone_stats = {loot: loot, stats: {}};
-
-		if (g.zone < 70) {
-			speed = simulate(zone, g, 1);
-			value = speed * loot;
-			zone_stats.stats['X'] = {speed: speed, value: value};
-		} else {
-			speed = simulate(zone, g, 4);
-			value = speed * loot;
-			zone_stats.stats['D'] = {speed: speed, value: value};
-
-			if (g.scry) {
-				speed = simulate(zone, g, 0.5);
-				value = speed * 2 * loot;
-				zone_stats.stats['S'] = {speed: speed, value: value};
-			}
-		}
-
-		compareTo(zone_stats, bests);
-		results['z' + zone] = zone_stats;
+		stats.push(info('z', zone, 1, stances, g));
 	}
 
 	if (max_zone > 120 && max_zone % 15 >= 5 && g.biome.length == 14) {
@@ -118,39 +112,32 @@ function stats(g) {
 		bw.size = 100;
 		bw.difficulty = 2.6;
 		bw.biome = biomes.all.concat(biomes.bionic);
-
 		let zone = 5 + (max_zone - max_zone % 15);
-		let loot = (300 / 180) * pow(1.25, zone);
-		let zone_stats = {loot: loot, stats: {}};
-
-		speed = simulate(zone, bw, 4);
-		value = loot * speed;
-		zone_stats.stats['D'] = {speed: speed, value: value};
-
-		if (g.scry) {
-			speed = simulate(zone, bw, 0.5);
-			value = speed * 2 * loot;
-			zone_stats.stats['S'] = {speed: speed, value: value};
-		}
-
-		compareTo(zone_stats, bests);
-		results['BW' + zone] = zone_stats;
+		stats.push(info('BW', zone, 300 / 180, stances, bw));
 	}
 
-	bests.best.zone_stats.stats[bests.best.stance].best = true;
-	if (bests.second) {
-		bests.second.zone_stats.stats[bests.second.stance].secondBest = true;
-	}
-	for (let stance in bests.byStance) {
-		bests.byStance[stance].zone_stats.stats[stance].stanceBest = true;
+	let best = {};
+	let copy = stats.slice();
+
+	/* jshint loopfunc:true */
+	for (let stance of stances) {
+		copy.sort((a, b) => b[stance].value - a[stance].value);
+		best[stance] = copy[0].zone;
 	}
 
-	return results;
+	copy.sort((a, b) => b.value - a.value);
+	best.overall = copy[0].zone;
+	best.stance = copy[0].stance;
+	best.second = copy[1].zone;
+	best.second_stance = copy[1].stance;
+	best.ratio = copy[0].value / copy[1].value;
+
+	return [stances, stats, best];
 }
 
 function compareTo(zone_stats, bests) {
-	for (let stance in zone_stats.stats) {
-		let value = zone_stats.stats[stance].value;
+	for (let stance in zone_stats) {
+		let value = zone_stats[stance].value;
 
 		if (!bests.best || value > bests.best.value) {
 			bests.second = bests.best;
@@ -170,7 +157,7 @@ if (typeof window === 'undefined') {
 	let start = Date.now();
 	let infos = stats({
 		agility: 10 * pow(0.95, 20),
-		atk: 2.5e37,
+		attack: 2.5e37,
 		biome: biomes.all.concat(biomes.gardens),
 		cc: 0.5 * max_rand,
 		cd: 5,
@@ -180,13 +167,11 @@ if (typeof window === 'undefined') {
 		overkill: 0,
 		range: 0.2 / max_rand,
 		reducer: false,
+		scry: false,
 		size: 30,
 		titimp: true,
 		zone: 127,
 	});
-	for (let info of infos)
-		info.value = info.cells * info.loot;
-	infos.sort((a, b) => b.value - a.value);
 	console.log(infos);
 	console.log(Date.now() - start);
 }

@@ -243,57 +243,39 @@ const parse_inputs = () => ({
 	zone: $('#zone').value | 0,
 });
 
-function display(stats) {
-	let stances = [];
-	if ($('#zone').value < 70) {
-		stances.push('X');
-	} else {
-		if ($('#scry').checked) {
-			stances.push('S');
-		}
-		stances.push('D');
-	}
+function display(results) {
+	let [stances, stats, best] = results;
+	let show_stance = $('#zone').value >= 60;
+	let html = '';
 
-	$('#details').innerHTML = '';
 	if (stances.length > 1) {
-		let formationHeaders = '<th><th>';
+		html += `<tr><th colspan=2>${stances.replace(/(?!$)/g, '<th colspan=2>')}</tr>`;
+	}
+	html += '<tr><th>Level<th>Base loot' + '<th>Cells/s<th>Total'.repeat(stances.length);
+
+	for (let zone_stats of stats) {
+		let zone = zone_stats.zone;
+		html += '</tr><tr><td class=align-right>';
+
+		for (let stance of stances)
+			if (zone == best[stance] && show_stance)
+				html += `<b>${stance}</b> `;
+
+		html += zone == best.overall ? `<b>${zone}</b>` : zone;
+		html += '<td>' + prettify(zone_stats.loot);
+
 		for (let stance of stances) {
-			formationHeaders += '<th colspan="2">' + stance;
+			let value = prettify(zone_stats[stance].value);
+			html += '<td>' + zone_stats[stance].speed.toFixed(3) + '<td>';
+			html += zone == best[stance] ? `<b>${value}</b>` : value;
 		}
-		$('#details').innerHTML += `<tr>${formationHeaders}</tr>`;
 	}
 
-	let headers = '<th>Level<th>Base loot';
-	for (let stance of stances) {
-		headers += '<th>Cells/s<th>Total';
-	}
-	$('#details').innerHTML += `<tr>${headers}</tr>`;
-
-	let zones = [];
-	let best;
-	let second;
-	for (let zone in stats) {
-		let zone_stats = stats[zone];
-		let tr = document.createElement('tr');
-		tr.innerHTML = formatLevel(zone, zone_stats, stances);
-		for (let stance of stances) {
-			let stance_stats = zone_stats.stats[stance];
-			tr.innerHTML += formatValue(stance_stats);
-
-			if (stance_stats.best) {
-				best = {zone: zone, stance: stance, value: stance_stats.value};
-			}
-			if (stance_stats.secondBest) {
-				second = {zone: zone, stance: stance, value: stance_stats.value};
-			}
-		}
-		zones.push(zone);
-		$('#details').appendChild(tr);
-	}
-
+	$('#details').innerHTML = html + '</tr>';
 	$('#results').style.opacity = 1;
-	$('#one-shot').textContent = zones[0];
-	if (zones.length < 2 || zones[1].startsWith('BW')) {
+	$('#one-shot').textContent = stats[0].zone;
+
+	if (stats.length < 2 || stats[1].zone.startsWith('BW')) {
 		if ($('#zone').value == 200) {
 			$('#result').textContent = 'You should definitely farm on BW200'
 			$('#comment').textContent = 'Good luck with the Spire!';
@@ -304,56 +286,25 @@ function display(stats) {
 		return;
 	}
 
-	let displayStance = $('#zone').value >= 60;
-	let bestZone = best.zone + (displayStance ? ' in ' + best.stance : '');
-	let secondBestZone = second.zone + (displayStance ? ' in ' + second.stance : '');
-	let ratio = best.value / second.value;
+	if (show_stance) {
+		best.overall += ' in ' + best.stance;
+		best.second += ' in ' + best.second_stance;
+	}
+
 	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
-	let loot_diff = Math.ceil(max_loot * (1 - 1 / ratio));
+	let loot_diff = Math.ceil(max_loot * (1 - 1 / best.ratio));
 	let adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
-	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${bestZone}`;
+	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${best.overall}`;
 	if (loot_diff <= 1) {
-		$('#result').textContent += ` or ${secondBestZone}`;
+		$('#result').textContent += ` or ${best.second}`;
 		$('#comment').textContent = `They’re equally efficient.`;
 	} else {
-		$('#comment').textContent = loot_diff <= 6 && bestZone.startsWith('z') ?
-			`But ${secondBestZone} with ${loot_diff}% higher loot is better.` :
-			`It’s ${percentage(ratio)}% more efficient than ${secondBestZone}.`;
+		$('#comment').textContent = loot_diff <= 6 && best.overall.startsWith('z') ?
+			`But ${best.second} with ${loot_diff}% higher loot is better.` :
+			`It’s ${percentage(best.ratio)}% more efficient than ${best.second}.`;
 	}
-}
-
-function formatLevel(zone, zone_stats, stances) {
-	let best = false;
-	let bestStances = '';
-	for (let stance of stances) {
-		let stance_stats = zone_stats.stats[stance];
-		if (stance_stats.best) {
-			best = true;
-		}
-		if (stances.length > 1 && stance_stats.stanceBest) {
-			bestStances += stance + ' ';
-		}
-	}
-
-	let result = '<td class="align-right">';
-	if (best || bestStances.length > 0) {
-		result += '<b>';
-		result += bestStances;
-		result += best ? '' : '</b>';
-	}
-	result += zone + (best ? '</b>' : '')
-	result += '<td>' + prettify(zone_stats.loot);
-	return result;
-}
-
-function formatValue(stats) {
-	let result = '<td>' + stats.speed.toFixed(3);
-	result += '<td>' + (stats.stanceBest ? '<b>' : '');
-	result += prettify(stats.value);
-	result += stats.stanceBest ? '</b>' : '';
-	return result;
 }
 
 </script>

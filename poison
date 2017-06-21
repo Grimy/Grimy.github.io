@@ -1,0 +1,55 @@
+#!perl
+
+sub pick { $_[rand @_] }
+
+sub score {
+	my $effect = 0.01 * (1 + shift);
+	my $transfer = 0.01 * shift;
+	my $stacks = 0;
+	my $ticks = 0;
+
+	for (0..99) {
+		my $hp = 10000 * ($_ == 99 ? 2.9 : 0.5 + 0.008 * $_);
+
+		$hp *= $_ == 99 ? 2.9 : pick(1.5, 0.8, 1.2, 1.3, 1.5, 0.7, 1.3, 1.3, 1, 0.7, 0.8, 1.1);
+
+		while ($hp >= 1) {
+			++$ticks;
+			$hp -= 1 + $stacks;
+			$stacks += $effect;
+		}
+		$stacks *= $transfer;
+	}
+
+	return $ticks * 0.95 ** 20 + 10;
+}
+
+my $effect = 0;
+my $transfer = 0;
+my $score = score($effect, $transfer);
+
+sub show {
+	my $s = int shift;
+	my $m = int($s / 60); $s %= 60;
+	my $h = int($m / 60); $m %= 60;
+	printf "%02d / %02d (%02d:%02d:%02d)\n", $effect, $transfer, $h, $m, $s;
+}
+
+show score(-1, 0);
+
+while ($transfer <= 80) {
+	show $score;
+
+	my @scores = (score($effect + 1, $transfer), score($effect, $transfer + 1));
+	my @roi = map -log($_ / $score), @scores;
+	$roi[0] /= 4 * ($effect + 1);
+	$roi[1] /= 2 * ($transfer + 1);
+
+	if ($roi[1] > $roi[0]) {
+		$score = $scores[1];
+		++$transfer;
+	} else {
+		$score = $scores[0];
+		++$effect;
+	}
+}
