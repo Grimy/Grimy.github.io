@@ -128,9 +128,11 @@ function stats(g) {
 	copy.sort((a, b) => b.value - a.value);
 	best.overall = copy[0].zone;
 	best.stance = copy[0].stance;
-	best.second = copy[1].zone;
-	best.second_stance = copy[1].stance;
-	best.ratio = copy[0].value / copy[1].value;
+	if (copy[1]) {
+		best.second = copy[1].zone;
+		best.second_stance = copy[1].stance;
+		best.ratio = copy[0].value / copy[1].value;
+	}
 
 	return [stances, stats, best];
 }
