@@ -27,12 +27,6 @@
 	Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.
 </p>
 
-<p id=trillion-he class=ok style='display: none'>
-	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
-	The z400+ preset was improved! Coordinated is now valued for the extra health it gives, even if you can afford all coordinations.
-	Also check <a href='https://docs.google.com/spreadsheets/d/1Tc7uAPg3lm4owK-0CzUAxgPmRU0EqpNAJGDeZE5Ch-Y/edit?usp=sharing'>nsheetz’s calculator</a>.
-</p>
-
 <form class=flexbox action='javascript:display(optimize(parse_inputs()))'>
 	<fieldset class=box>
 		<legend>Inputs</legend>
@@ -291,7 +285,6 @@ function handle_paste(ev) {
 	$('#load-failed').style.display = game ? 'none' : 'block';
 	if (game) {
 		$('#bad-version').style.display = game.global.version <= 4.4 ? 'none' : 'block';
-		$('#trillion-he').style.display = game.global.totalHeliumEarned < 1e12 ? 'none' : 'block';
 		read_save(game);
 		display(optimize(parse_inputs()));
 	}

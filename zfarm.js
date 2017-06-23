@@ -40,9 +40,11 @@ function enemy_hp(g, zone, cell) {
 
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
 function simulate(zone, g) {
-	let buff = 0;
+	let titimp = 0;
 	let ok_dmg = 0;
 	let cell = 0;
+	let poison = 0;
+	let ice = 0;
 
 	for (let ticks = 0; ticks < max_ticks; ++cell) {
 
@@ -62,14 +64,22 @@ function simulate(zone, g) {
 		let turns = 0;
 		while (hp > 0) {
 			++turns;
-			let crit = rng() < g.cc ? g.cd : 1;
-			hp -= g.atk * (1 + g.range * rng()) * crit * (buff > ticks ? 2 : 1);
+			let damage = g.atk * (1 + g.range * rng());
+			damage *= rng() < g.cc ? g.cd : 1;
+			damage *= titimp > ticks ? 2 : 1;
+			damage *= 2 - pow(0.99, g.ice * ice);
+			hp -= poison + damage;
+			ice += g.ice ? 1 : 0;
+			poison += g.poison * damage;
 		}
 
 		ok_dmg = -hp * g.overkill;
 		ticks += (turns > 0) + (g.agility > 9) + ceil(turns * g.agility);
 		if (g.titimp && imp < 0.03 * max_rand)
-			buff = min(max(ticks, buff) + 300, ticks + 450);
+			titimp = min(max(ticks, titimp) + 300, ticks + 450);
+
+		poison = ceil(g.transfer * poison);
+		ice = ceil(g.transfer * ice);
 	}
 
 	return cell * 10 / max_ticks;
@@ -168,11 +178,14 @@ if (typeof window === 'undefined') {
 		import_chance: 0.15 * max_rand,
 		overkill: 0,
 		range: 0.2 / max_rand,
-		reducer: false,
-		scry: false,
+		reducer: true,
+		scry: true,
 		size: 30,
 		titimp: true,
 		zone: 127,
+		poison: 0,
+		ice: 0,
+		transfer: 0.01,
 	});
 	console.log(infos);
 	console.log(Date.now() - start);
