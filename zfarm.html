@@ -119,6 +119,11 @@ th:empty { visibility: hidden; }
 			Poison
 		</label>
 
+		<label title='Level of your Wind empowerment (or 0 if inactive)'>
+			<input type=text id=wind value=0 pattern='\d+'>
+			Wind
+		</label>
+
 		<label title='Level of your Ice empowerment (or 0 if inactive)'>
 			<input type=text id=ice value=0 pattern='\d+'>
 			Ice
@@ -230,6 +235,7 @@ function read_save(game) {
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = zone;
 	$('#poison').value = nature == 'Poison' ? game.empowerments.Poison.level : 0;
+	$('#wind').value = nature == 'Wind' ? game.empowerments.Wind.level : 0;
 	$('#ice').value = nature == 'Ice' ? game.empowerments.Ice.level : 0;
 	$('#transfer').value = game.empowerments[nature].retainLevel;
 }
@@ -262,7 +268,8 @@ const parse_inputs = () => ({
 	titimp: $('#titimp').checked,
 	zone: $('#zone').value | 0,
 	poison: $('#poison').value / 100,
-	ice: $('#ice').value | 0,
+	wind: $('#wind').value / 100,
+	ice: $('#ice').value / 100,
 	transfer: $('#transfer').value / 100,
 });
 

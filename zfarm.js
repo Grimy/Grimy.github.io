@@ -43,8 +43,8 @@ function simulate(zone, g) {
 	let titimp = 0;
 	let ok_dmg = 0;
 	let cell = 0;
-	let poison = 0;
-	let ice = 0;
+	let loot = 0;
+	let poison = 0, wind = 0, ice = 0;
 
 	for (let ticks = 0; ticks < max_ticks; ++cell) {
 
@@ -67,22 +67,25 @@ function simulate(zone, g) {
 			let damage = g.atk * (1 + g.range * rng());
 			damage *= rng() < g.cc ? g.cd : 1;
 			damage *= titimp > ticks ? 2 : 1;
-			damage *= 2 - pow(0.99, g.ice * ice);
-			hp -= poison + damage;
-			ice += g.ice ? 1 : 0;
-			poison += g.poison * damage;
+			damage *= 2 - pow(0.366, ice * g.ice);
+			hp -= damage + poison * g.poison;
+			poison += damage;
+			++ice;
 		}
 
+		wind = min(wind + turns, 200);
+		loot += 1 + wind * g.wind;
 		ok_dmg = -hp * g.overkill;
 		ticks += (turns > 0) + (g.agility > 9) + ceil(turns * g.agility);
 		if (g.titimp && imp < 0.03 * max_rand)
 			titimp = min(max(ticks, titimp) + 300, ticks + 450);
 
-		poison = ceil(g.transfer * poison);
-		ice = ceil(g.transfer * ice);
+		poison = ceil(g.transfer * poison) + 1;
+		wind = ceil(g.transfer * wind) + 1;
+		ice = ceil(g.transfer * ice) + 1;
 	}
 
-	return cell * 10 / max_ticks;
+	return loot * 10 / max_ticks;
 }
 
 function info(prefix, zone, loot, stances, g) {
@@ -169,24 +172,26 @@ if (typeof window === 'undefined') {
 	let start = Date.now();
 	let infos = stats({
 		agility: 10 * pow(0.95, 20),
-		attack: 2.5e37,
+		attack: 4e71,
 		biome: biomes.all.concat(biomes.gardens),
-		cc: 0.5 * max_rand,
-		cd: 5,
+		cc: 0.8 * max_rand,
+		cd: 10,
 		challenge: 1,
 		difficulty: 0.84,
 		import_chance: 0.15 * max_rand,
-		overkill: 0,
+		overkill: 30,
 		range: 0.2 / max_rand,
 		reducer: true,
 		scry: true,
 		size: 30,
 		titimp: true,
-		zone: 127,
+		zone: 246,
 		poison: 0,
+		wind: 100,
 		ice: 0,
-		transfer: 0.01,
+		transfer: 0.8,
 	});
 	console.log(infos);
+	console.log(infos[1][10].S);
 	console.log(Date.now() - start);
 }
