@@ -188,7 +188,6 @@ function read_save(game) {
 	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
 	let enemyHealth = 1;
 	let zone = game.global.world;
-	let nature = zone >= 236 ? ['Poison', 'Wind', 'Ice'][((zone - 236) / 5 | 0) % 3] : 'Wind';
 
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
 	attack *= 1 + 0.01 * game.global.achievementBonus;
@@ -227,6 +226,7 @@ function read_save(game) {
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
 	$('#difficulty').value = 80;
 	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
+	$('#imports').value = imps;
 	$('#overkill').value = game.portal.Overkill.level;
 	$('#range').value = maxFluct / minFluct;
 	$('#reducer').checked = game.talents.mapLoot.purchased;
@@ -234,10 +234,12 @@ function read_save(game) {
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = zone;
-	$('#poison').value = nature == 'Poison' ? game.empowerments.Poison.level : 0;
-	$('#wind').value = nature == 'Wind' ? game.empowerments.Wind.level : 0;
-	$('#ice').value = nature == 'Ice' ? game.empowerments.Ice.level : 0;
-	$('#transfer').value = game.empowerments[nature].retainLevel;
+
+	if (zone >= 236) {
+		let nature = ['Poison', 'Wind', 'Ice'][Math.ceil(zone / 5) % 3];
+		$('#' + nature.toLowerCase()).value = game.empowerments[nature].level;
+		$('#transfer').value = game.empowerments[nature].retainLevel;
+	}
 }
 
 function handle_paste(ev) {
