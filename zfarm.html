@@ -247,7 +247,7 @@ function handle_paste(ev) {
 	$('#load-failed').style.display = game ? 'none' : 'block';
 
 	if (game) {
-		$('#bad-version').style.display = game.global.version <= 4.4 ? 'none' : 'block';
+		$('#bad-version').style.display = game.global.version <= 4.41 ? 'none' : 'block';
 		read_save(game);
 		display(stats(parse_inputs()));
 	}
