@@ -277,14 +277,13 @@ function read_save(game) {
 	$('#venimp').checked = game.unlocks.imps.Venimp;
 	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
 	$('#dg').value = generated_housing(game);
-	// $('#dark').checked = game.options.menu.darkTheme.enabled == 2;
 }
 
 function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
 	$('#load-failed').style.display = game ? 'none' : 'block';
 	if (game) {
-		$('#bad-version').style.display = game.global.version <= 4.41 ? 'none' : 'block';
+		$('#bad-version').style.display = game.global.version <= 4.5 ? 'none' : 'block';
 		read_save(game);
 		display(optimize(parse_inputs()));
 	}

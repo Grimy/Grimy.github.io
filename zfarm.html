@@ -196,6 +196,25 @@ function read_save(game) {
 	attack *= 1 + 0.01 * game.global.totalSquaredReward;
 	attack /= [1, 0.5, 4, 0.5, 0.5][game.global.formation];
 
+	function mastery(name) {
+		return game.talents[name] && game.talents[name].purchased;
+	}
+
+	if (mastery('stillRowing2'))
+		attack *= 1 + 0.06 * game.global.spireRows;
+	
+	if (mastery('magmamancer')) {
+		let time = Math.floor((new Date().getTime() - game.global.zoneStarted) / 60000);
+		let bonus = Math.pow(1.2, Math.floor((time + 5) / 10)) - 1;
+		attack *= 1 + 3 * (1 - Math.pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
+	}
+
+	if (mastery('healthStrength')) {
+		let zone = Math.min(game.global.world, game.global.lastSpireCleared * 100 + 199);
+		attack *= 1 + 0.15 * (zone < 300 ? 0 : Math.floor((zone - 270) / 15));
+	}
+
+
 	if (challenge == "Daily") {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		enemyHealth *= 1 + 0.2 * daily('badHealth');
@@ -225,20 +244,21 @@ function read_save(game) {
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
 	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
 	$('#difficulty').value = 80;
-	$('#hyperspeed').checked = game.talents.hyperspeed.purchased;
+	$('#hyperspeed').checked = mastery('hyperspeed');
 	$('#imports').value = imps;
 	$('#overkill').value = game.portal.Overkill.level;
 	$('#range').value = maxFluct / minFluct;
-	$('#reducer').checked = game.talents.mapLoot.purchased;
-	$('#size').value = 27;
+	$('#reducer').checked = mastery('mapLoot');
+	$('#size').value = mastery('mapLoot2') ? 22 : 27;
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = zone;
 
 	if (zone >= 236) {
 		let nature = ['Poison', 'Wind', 'Ice'][Math.ceil(zone / 5) % 3];
-		$('#' + nature.toLowerCase()).value = game.empowerments[nature].level;
-		$('#transfer').value = game.empowerments[nature].retainLevel;
+		let diplomacy = mastery('nature3') ? 5 : 0;
+		$('#' + nature.toLowerCase()).value = game.empowerments[nature].level + diplomacy;
+		$('#transfer').value = game.empowerments[nature].retainLevel + diplomacy;
 	}
 }
 
@@ -247,7 +267,7 @@ function handle_paste(ev) {
 	$('#load-failed').style.display = game ? 'none' : 'block';
 
 	if (game) {
-		$('#bad-version').style.display = game.global.version <= 4.41 ? 'none' : 'block';
+		$('#bad-version').style.display = game.global.version <= 4.5 ? 'none' : 'block';
 		read_save(game);
 		display(stats(parse_inputs()));
 	}

@@ -1,9 +1,10 @@
 
 function $(str) { return document.querySelector(str); }
 
-$('#dark').disabled = true;
+$('#dark').disabled = !localStorage.getItem('dark');
 function switch_theme() {
-	$('#dark').disabled = !$('#dark').disabled;
+	let light = $('#dark').disabled = !$('#dark').disabled;
+	localStorage.setItem('dark', light ? '' : '1');
 }
 
 const suffixes = [
