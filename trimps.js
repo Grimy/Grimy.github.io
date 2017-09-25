@@ -17,14 +17,17 @@ function prettify(number) {
 	if (number < 10000)
 		return Math.round(number);
 	let unit = 0;
-	while (number > 1000)
-		number /= 1000, ++unit;
-	return number.toFixed((number < 10) + (number < 100)) + (suffixes[unit - 1] || `E${3 * unit}`);
+	while (number > 1000) {
+		number /= 1000;
+		++unit;
+	}
+	let digits = number == Math.floor(number) ? 0 : (number < 10) + (number < 100);
+	return number.toFixed(digits) + (suffixes[unit - 1] || `E${3 * unit}`);
 }
 
 function parse_suffixes(str) {
 	for (var i = suffixes.length; i > 0; --i)
-		str = str.replace(' ', '').replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`)
+		str = str.replace(' ', '').replace(new RegExp(suffixes[i - 1], 'i'), `E${3 * i}`);
 	return parseFloat(str);
 }
 
@@ -32,6 +35,6 @@ function parse_suffixes(str) {
 // at the given position (zone + cell).
 function enemy_atk(zone, cell) {
 	var amt = 5.5 * Math.sqrt(zone * Math.pow(3.27, zone)) - 1.1;
-	amt *= zone < 60 ? (3.1875 + .0595 * cell) : (4 + .09 * cell) * Math.pow(1.15, zone - 59);
+	amt *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * Math.pow(1.15, zone - 59);
 	return amt;
 }
