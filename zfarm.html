@@ -270,7 +270,15 @@ function handle_paste(ev) {
 		$('#bad-version').style.display = game.global.version <= 4.5 ? 'none' : 'block';
 		read_save(game);
 		display(stats(parse_inputs()));
+		for (let name of ['biome'])
+			localStorage.setItem(name, $('#' + name).value);
 	}
+}
+
+for (let name of ['biome']) {
+	let value = localStorage.getItem(name);
+	if (value)
+		$('#' + name).value = value;
 }
 
 const parse_inputs = () => ({

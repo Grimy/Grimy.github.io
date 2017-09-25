@@ -286,8 +286,17 @@ function handle_paste(ev) {
 		$('#bad-version').style.display = game.global.version <= 4.5 ? 'none' : 'block';
 		read_save(game);
 		display(optimize(parse_inputs()));
+		for (let name of ['weight-he', 'weight-atk', 'weight-hp', 'weight-ok', 'income'])
+			localStorage.setItem(name, $('#' + name).value);
 	}
 }
+
+for (let name of ['weight-he', 'weight-atk', 'weight-hp', 'weight-ok', 'income']) {
+	let value = localStorage.getItem(name);
+	if (value)
+		$('#' + name).value = value;
+}
+
 
 // TODO add checkboxes for Use Geneticist, Slow Done, Frugal Done, Sci V done
 const parse_inputs = () => ({
