@@ -26,7 +26,7 @@ th:empty { visibility: hidden; }
 	Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.
 </p>
 
-<form class=flexbox action='javascript:display(stats(parse_inputs()))'>
+<form class=flexbox action='javascript:main()'>
 	<fieldset class=box>
 		<legend>Inputs</legend>
 
@@ -262,6 +262,18 @@ function read_save(game) {
 	}
 }
 
+function main() {
+	display(stats(parse_inputs()));
+	for (let name of ['biome'])
+		localStorage.setItem(name, $('#' + name).value);
+}
+
+for (let name of ['biome']) {
+	let value = localStorage.getItem(name);
+	if (value)
+		$('#' + name).value = value;
+}
+
 function handle_paste(ev) {
 	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
 	$('#load-failed').style.display = game ? 'none' : 'block';
@@ -269,16 +281,8 @@ function handle_paste(ev) {
 	if (game) {
 		$('#bad-version').style.display = game.global.version <= 4.5 ? 'none' : 'block';
 		read_save(game);
-		display(stats(parse_inputs()));
-		for (let name of ['biome'])
-			localStorage.setItem(name, $('#' + name).value);
+		main();
 	}
-}
-
-for (let name of ['biome']) {
-	let value = localStorage.getItem(name);
-	if (value)
-		$('#' + name).value = value;
 }
 
 const parse_inputs = () => ({
