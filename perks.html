@@ -170,6 +170,7 @@ Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for
 <nav class=flexbox>
 	<a href=zfarm.html>zFarm</a>
 	<a href=perks.html class=active>Perky</a>
+	<a href=numax.html>NuMax</a>
 	<span class=filler></span>
 	<a onclick='switch_theme()'>Switch theme</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
@@ -281,15 +282,10 @@ function read_save(game) {
 
 function main() {
 	display(optimize(parse_inputs()));
-	for (let name of ['weight-he', 'weight-atk', 'weight-hp', 'weight-ok', 'income', 'pack', 'fixed'])
-		localStorage.setItem(name, $('#' + name).value);
+	store_cookies('weight-he weight-atk weight-hp weight-ok income pack fixed')
 }
 
-for (let name of ['weight-he', 'weight-atk', 'weight-hp', 'weight-ok', 'income', 'pack', 'fixed']) {
-	let value = localStorage.getItem(name);
-	if (value)
-		$('#' + name).value = value;
-}
+read_cookies('weight-he weight-atk weight-hp weight-ok income pack fixed');
 
 // TODO add checkboxes for Use Geneticist, Slow Done, Frugal Done, Sci V done
 const parse_inputs = () => ({

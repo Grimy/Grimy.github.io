@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<meta charset=UTF-8>
+<title>NuMax</title>
+<link href=blue.css rel=stylesheet>
+<link href=dark.css rel=stylesheet id=dark>
+<style>
+</style>
+
+<h1>Heirloom Optimizer</h1>
+
+<p id=load-failed class=ko style='display: none'>
+	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
+	Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.
+</p>
+
+<p id=bad-version class=ko style='display: none'>
+	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
+	Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.
+</p>
+
+<form class=flexbox action='javascript:main()'>
+	<fieldset class=box>
+		<legend>Inputs</legend>
+
+		<label title='Export your Trimps save and paste it here'>
+			<textarea id=save onfocus='this.value = ""' onpaste='handle_paste(event)'></textarea>
+			Import save
+		</label>
+
+		<label title='How much you value +1% Helium income.'>
+			<input type=text id=weight-he value=7>
+			Weight: Helium
+		</label>
+
+		<label title='How much you value +1% attack.'>
+			<input type=text id=weight-atk value=3>
+			Weight: Attack
+		</label>
+
+		<label title='How much you value +1% survivability (health and block).'>
+			<input type=text id=weight-hp value=1>
+			Weight: Health
+		</label>
+
+		<label>
+			<input type=text checked id=income value=1>
+			Devalue income
+		</label>
+
+		<button class=centered>Spend Nu</button>
+	</fieldset>
+
+	<fieldset id=results class=box style='opacity: 0'>
+	</fieldset>
+</form>
+
+<nav class=flexbox>
+	<a href=zfarm.html>zFarm</a>
+	<a href=perks.html>Perky</a>
+	<a href=numax.html class=active>NuMax</a>
+	<span class=filler></span>
+	<a onclick='switch_theme()'>Switch theme</a>
+	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
+	<a href='https://github.com/Grimy/Grimy.github.io/blob/master/numax.js'>View the source</a>
+	<a href='https://github.com/Grimy'>By Grimy</a>
+</nav>
+
+<script src=lz-string.js></script>
+<script src=trimps.js></script>
+<script src=numax.js></script>
+<script>
+"use strict";
+
+function read_save(game) {
+}
+
+function main() {
+	display(stats(parse_inputs()));
+	store_cookies('weight-he weight-atk weight-hp income')
+}
+
+read_cookies('weight-he weight-atk weight-hp income')
+
+const parse_inputs = () => ({
+	weight: {
+		helium: input('weight-he'),
+		attack: input('weight-atk'),
+		health: input('weight-hp'),
+		overkill: input('weight-ok'),
+	},
+});
+
+function display(results) {
+}
+
+</script>

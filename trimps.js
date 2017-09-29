@@ -1,11 +1,26 @@
 // trimps.js: some code common to Perky and zFarm
 
-function $(str) { return document.querySelector(str); }
+function $(str) {
+	return document.querySelector(str);
+}
 
 $('#dark').disabled = !localStorage.getItem('dark');
 function switch_theme() {
 	let light = $('#dark').disabled = !$('#dark').disabled;
 	localStorage.setItem('dark', light ? '' : '1');
+}
+
+function read_cookies(names) {
+	for (let name of names.split(' ')) {
+		value = localStorage.getItem(name);
+		if (value)
+			$('#' + name).value = value;
+	}
+}
+
+function store_cookies(name) {
+	for (let name of names.split(' '))
+		localStorage.setItem(name, $('#' + name).value);
 }
 
 function handle_paste(ev) {

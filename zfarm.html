@@ -164,6 +164,7 @@ th:empty { visibility: hidden; }
 <nav class=flexbox>
 	<a href=zfarm.html class=active>zFarm</a>
 	<a href=perks.html>Perky</a>
+	<a href=numax.html>NuMax</a>
 	<span class=filler></span>
 	<a onclick='switch_theme()'>Switch theme</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
@@ -264,15 +265,10 @@ function read_save(game) {
 
 function main() {
 	display(stats(parse_inputs()));
-	for (let name of ['biome'])
-		localStorage.setItem(name, $('#' + name).value);
+	store_cookies('biome');
 }
 
-for (let name of ['biome']) {
-	let value = localStorage.getItem(name);
-	if (value)
-		$('#' + name).value = value;
-}
+read_cookies('biome');
 
 const parse_inputs = () => ({
 	agility: 10 * Math.pow(.95, $('#agility').value) - $('#hyperspeed').checked,
