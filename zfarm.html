@@ -16,17 +16,9 @@ th:empty { visibility: hidden; }
 
 <h1>zFarm</h1>
 
-<p id=load-failed class=ko style='display: none'>
-	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
-	Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.
-</p>
+<p id=alert />
 
-<p id=bad-version class=ko style='display: none'>
-	<span class=badge onclick='this.parentNode.style.display = "none"'>×</span>
-	Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.
-</p>
-
-<form class=flexbox action='javascript:main()'>
+<form class=flexbox action='javascript:try_wrap(() =&gt; display(stats(parse_inputs())))'>
 	<fieldset class=box>
 		<legend>Inputs</legend>
 
@@ -36,7 +28,7 @@ th:empty { visibility: hidden; }
 		</label>
 
 		<label title='Biome of the maps you create'>
-			<select id=biome>
+			<select id=biome data-saved>
 				<option value=gardens>Garden</option>
 				<option value=mountain>Mountain</option>
 				<option value=depths>Depths</option>
@@ -56,8 +48,8 @@ th:empty { visibility: hidden; }
 			World zone
 		</label>
 
-		<a id=advanced class=centered href='#advanced'>Advanced options (you probably shouldn’t bother)</a>
-		<a class=centered href='#'>Hide advanced options</a>
+		<a id=advanced class=centered href='#advanced'>Manual input (auto-filled when pasting a save)</a>
+		<a class=centered href='#'>Hide manual input</a>
 
 		<label title='Check if you have unlocked the Scrying stance'>
 			<input type=checkbox checked id=scry>
@@ -166,6 +158,7 @@ th:empty { visibility: hidden; }
 	<a href=perks.html>Perky</a>
 	<span class=filler></span>
 	<a onclick='switch_theme()'>Switch theme</a>
+	<a href=changelog.html>Changelog</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/blob/master/zfarm.js'>View the source</a>
 	<a href='https://github.com/Grimy'>By Grimy</a>
@@ -196,22 +189,18 @@ function read_save(game) {
 	attack *= 1 + 0.01 * game.global.totalSquaredReward;
 	attack /= [1, 0.5, 4, 0.5, 0.5][game.global.formation];
 
-	function mastery(name) {
-		return game.talents[name] && game.talents[name].purchased;
-	}
-
-	if (mastery('stillRowing2'))
+	if (game.talents.stillRowing2)
 		attack *= 1 + 0.06 * game.global.spireRows;
 	
-	if (mastery('magmamancer')) {
-		let time = Math.floor((new Date().getTime() - game.global.zoneStarted) / 60000);
-		let bonus = Math.pow(1.2, Math.floor((time + 5) / 10)) - 1;
-		attack *= 1 + 3 * (1 - Math.pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
+	if (game.talents.magmamancer) {
+		let time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
+		let bonus = pow(1.2, floor((time + 5) / 10)) - 1;
+		attack *= 1 + 3 * (1 - pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
 	}
 
-	if (mastery('healthStrength')) {
-		let zone = Math.min(game.global.world, game.global.lastSpireCleared * 100 + 199);
-		attack *= 1 + 0.15 * (zone < 300 ? 0 : Math.floor((zone - 270) / 15));
+	if (game.talents.healthStrength) {
+		let zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
+		attack *= 1 + 0.15 * (zone < 300 ? 0 : floor((zone - 270) / 15));
 	}
 
 
@@ -222,7 +211,7 @@ function read_save(game) {
 		minFluct -= 0.09 * !!daily('minDamage') + 0.01 * daily('minDamage');
 		maxFluct += daily('maxDamage');
 		attack *= 1 - 0.09 * daily('weakness');
-		attack *= 1 + 0.1 * Math.ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
+		attack *= 1 + 0.1 * ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
 		if (zone % 2 == 1)
 			attack *= 1 - 0.02 * daily('oddTrimpNerf');
 		else
@@ -235,58 +224,35 @@ function read_save(game) {
 		maxFluct = 1.995;
 		minFluct = 0.005;
 	} else if (challenge == "Coordinate") {
-		enemyHealth = Math.pow(1.25, zone);
+		enemyHealth = pow(1.25, zone);
 	}
 
 	$('#agility').value = game.portal.Agility.level;
 	$('#attack').value = prettify(attack * minFluct);
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
-	$('#challenge').value = Math.round(100 * (enemyHealth - 1));
+	$('#challenge').value = round(100 * (enemyHealth - 1));
 	$('#difficulty').value = 80;
-	$('#hyperspeed').checked = mastery('hyperspeed');
+	$('#hyperspeed').checked = game.talents.hyperspeed;
 	$('#imports').value = imps;
 	$('#overkill').value = game.portal.Overkill.level;
 	$('#range').value = maxFluct / minFluct;
-	$('#reducer').checked = mastery('mapLoot');
-	$('#size').value = mastery('mapLoot2') ? 22 : 27;
+	$('#reducer').checked = game.talents.mapLoot;
+	$('#size').value = game.talents.mapLoot2 ? 22 : 27;
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = zone;
 
 	if (zone >= 236) {
-		let nature = ['Poison', 'Wind', 'Ice'][Math.ceil(zone / 5) % 3];
-		let diplomacy = mastery('nature3') ? 5 : 0;
+		let nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
+		let diplomacy = game.talents.nature3 ? 5 : 0;
 		$('#' + nature.toLowerCase()).value = game.empowerments[nature].level + diplomacy;
 		$('#transfer').value = game.empowerments[nature].retainLevel + diplomacy;
 	}
 }
 
-function main() {
-	display(stats(parse_inputs()));
-	for (let name of ['biome'])
-		localStorage.setItem(name, $('#' + name).value);
-}
-
-for (let name of ['biome']) {
-	let value = localStorage.getItem(name);
-	if (value)
-		$('#' + name).value = value;
-}
-
-function handle_paste(ev) {
-	let game = JSON.parse(LZString.decompressFromBase64(ev.clipboardData.getData("text/plain")));
-	$('#load-failed').style.display = game ? 'none' : 'block';
-
-	if (game) {
-		$('#bad-version').style.display = game.global.version <= 4.5 ? 'none' : 'block';
-		read_save(game);
-		main();
-	}
-}
-
 const parse_inputs = () => ({
-	agility: 10 * Math.pow(.95, $('#agility').value) - $('#hyperspeed').checked,
+	agility: 10 * pow(.95, $('#agility').value) - $('#hyperspeed').checked,
 	attack: parse_suffixes($('#attack').value.toLowerCase()),
 	biome: biomes.all.concat(biomes[$('#biome').value]),
 	cc: $('#cc').value / 100 * max_rand,
@@ -356,11 +322,11 @@ function display(results) {
 	}
 
 	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
-	let loot_diff = Math.ceil(max_loot * (1 - 1 / best.ratio));
+	let loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
 	let adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
-	$('#result').textContent = `You should ${adverbs[Math.min(loot_diff, 12)]} farm on ${best.overall}`;
+	$('#result').textContent = `You should ${adverbs[min(loot_diff, 12)]} farm on ${best.overall}`;
 	if (loot_diff <= 1) {
 		$('#result').textContent += ` or ${best.second}`;
 		$('#comment').textContent = `They’re equally efficient.`;

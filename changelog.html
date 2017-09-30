@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta charset=UTF-8>
+<title>Changelog</title>
+<link href=blue.css rel=stylesheet>
+<link href=dark.css rel=stylesheet>
+<style>
+	li { font-size: 1.2em }
+	h3 { margin: 0 1em }
+</style>
+<script>$('#dark').disabled = !localStorage.getItem('dark');</script>
+<div class='box' style='max-width: 1020px'>
+	<h1>Perky / zFarm updates</h1>
+	<h2>2.0 — 2017-09-30</h2>
+	<h3>Common</h3>
+	<ul>
+		<li>Added a changelog! Sorry for not doing that sooner.
+		<li>Scientific, engineering and alphabetic notations are now supported.
+		<li>Unexpected errors are now reported prominently, instead of silently displaying bogus results.
+		<li>Renamed “advanced options” to “manual input”. Everything in there is auto-filled when pasting a save.
+	</ul>
+	<h3>Perky</h3>
+	<ul>
+		<li>Generated housing estimation is now based on target zone instead of HZE (fixes <a href=https://www.reddit.com/r/Trimps/comments/739znc/using_the_dimensional_generator_makes_perky_want/>this bug</a>).
+		<li>Generated housing estimation is now much more accurate for late-game.
+		<li>Fixed a bug where the Spire preset would still recommend Looting and Resourceful.
+		<li>Improved the algorithm to limit over-spending on low-impact perks (Resourceful, Pheromones).
+		<li>Removed “Round Spire perks”. Rounding is now done automatically, so that perk levels always fit in 3 digits.
+		<li>Removed “Devalue income”. Perky now estimates how many equipment levels will be affordable and values income accordingly.
+		<li>Moved “Fixed perks” from the advanced options to the main options.
+		<li>“Fixed perks” now accepts abbreviated perk names, such as P2, looty II, OK, resi, and many others.
+		<li>Added two auto-filled inputs: “Production mod” and “Loot mod”. For metal² and trapper², Production mod should be set to 0.
+	</ul>
+</div>

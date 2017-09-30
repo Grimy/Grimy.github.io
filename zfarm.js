@@ -1,8 +1,5 @@
 // 2>&-; exec node "$0" "$@"
 
-// Copy these Math functions in our namespace
-const {min, max, sqrt, pow, log, floor, round, ceil} = Math;
-
 const max_ticks = 864000; // One day
 
 const biomes = {

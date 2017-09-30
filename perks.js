@@ -49,22 +49,21 @@ const base_cost = {
 const increment = {Toughness_II: 500, Power_II: 500, Motivation_II: 1e3, Carpentry_II: 10e3, Looting_II: 10e3};
 
 // Maximum levels for perks
-var cap;
+let cap;
 
 // Minimum levels for perks
-var must;
+let must;
 
-var perks = Object.keys(base_cost);
+let perks = Object.keys(base_cost);
 
 function optimize(params) {
 	"use strict";
 
-	let {he_left, zone, unlocks, fixed, pack, weight, climb, mod} = params;
-	while (he_left / pack / pack > 1e13)
-		pack *= 10;
-
-	// Copy these Math functions in our namespace
-	const {min, max, sqrt, pow, log, floor, round, ceil} = Math;
+	let {he_left, zone, unlocks, fixed, weight, climb, mod} = params;
+	let pack = {};
+	
+	for (let perk of unlocks)
+		pack[perk] = increment[perk] ? pow(10, max(0, floor(log(he_left) / log(100) - 4.2))) : 1;
 
 	// Total bonus from an additive perk. `x` is the percentage from each level.
 	const add = (perk, x) => 1 + level[perk] * x / 100;
@@ -73,11 +72,19 @@ function optimize(params) {
 	const mult = (perk, x) => pow(1 + x / 100, level[perk]);
 
 	const corruption_start = 181;
+	const max_tiers = zone / 5 + ((zone - 1) % 10 < 5);
 
-	function tiers(stat) {
-		let {cost, value, exp} = equip_total[stat];
-		let result = pow(income() * trimps() / (cost * mult('Artisanistry', -5)), exp) * value;
-		return pow(result, mod.income);
+	function equip(stat) {
+		let {cost, cost_exp, value, value_exp} = equip_total[stat];
+		let scaled_income = income() * trimps() / (cost * mult('Artisanistry', -5));
+		let levels = 1.136;
+		let tiers = log(1 + scaled_income * (cost_exp - 1)) / log(cost_exp);
+
+		if (tiers > max_tiers + 0.45) {
+			levels = log(1 + pow(cost_exp, tiers - max_tiers) * 0.2) / log(1.2);
+			tiers = max_tiers;
+		}
+		return value * levels * pow(value_exp, tiers);
 	}
 
 	// Amount of Helium awarded at the end of the given zone.
@@ -102,7 +109,7 @@ function optimize(params) {
 	// Compute the current cost of a perk, based on its current level.
 	function cost(perk) {
 		if (increment[perk])
-			return pack * (base_cost[perk] + increment[perk] * (level[perk] + (pack - 1) / 2));
+			return pack[perk] * (base_cost[perk] + increment[perk] * (level[perk] + (pack[perk] - 1) / 2));
 		else
 			return ceil(level[perk] / 2 + base_cost[perk] * mult(perk, 30));
 	}
@@ -110,7 +117,7 @@ function optimize(params) {
 	// Max population
 	function trimps() {
 		let carp = mult('Carpentry', 10) * add('Carpentry_II', 0.25);
-		let bonus = mod.housing + log(income() / base_income * carp / mult('Resourceful', -5));
+		let bonus = 3 + max(log(income() / base_income * carp / mult('Resourceful', -5)), 0);
 		let territory = add('Trumps', 20) * zone;
 		return 10 * (base_housing * bonus + territory) * carp * imp.taunt + mod.dg * carp;
 	}
@@ -125,29 +132,32 @@ function optimize(params) {
 	// exp: cost increase for each new level of the building
 	function building(cost, exp) {
 		cost *= 4 * mult('Resourceful', -5);
-		return log(income(true) * trimps() * (exp - 1) / cost + 1) / log(exp);
+		return log(1 + income(true) * trimps() * (exp - 1) / cost) / log(exp);
 	}
 
 	const moti = () => add('Motivation', 5) * add('Motivation_II', 1);
 	const looting = () => add('Looting', 5) * add('Looting_II', 0.25);
 
-	// Total resource gain per second
-	function income(wood) {
+	function income(ignore_prod) {
 		let storage = mod.storage * mult('Resourceful', -5) / add('Packrat', 20);
-		let prod = wood ? 0 : moti() * add('Meditation', 1) * 1.25;
-		let lmod = looting() * imp.magn / ticks();
-		let loot = base_loot * lmod * 1.083;
-		let chronojest = mod.chronojest * 0.75 * prod * lmod;
-		return 1800 * imp.whip * books * (prod + loot + chronojest) * (1 - storage);
+		let loot = looting() * imp.magn / ticks();
+		let prod = ignore_prod ? 0 : moti() * add('Meditation', 1) * mod.prod;
+		let chronojest = mod.chronojest * 0.75 * prod * loot;
+		return base_income * (prod + loot * mod.loot + chronojest) * (1 - storage);
 	}
+
+	// function mancers() {
+		// let tributes = building(10000, 1.05);
+		// let mancers = log(loot * pow(1.05, tributes) / 1e62) / log(1.01);
+		// return magma() ? 1 + 0.6 * (1 - pow(0.9999, mancers)) : 1;
+	// }
 
 	// Breed speed
 	function breed() {
-		let nurseries = pow(1.01, building(2e6, 1.06));
-		nurseries -= (2000 * pow(0.95, magma())) * (1 - pow(0.9, magma()));
-		let potency = pow(1.1, floor(zone / 5));
+		let nurseries = building(2e6, 1.06) / (1 + 0.1 * min(magma(), 20));
+		let potency = 0.00085 * pow(1.1, floor(zone / 5));
 		let traps = zone <= 90 ? add('Bait', 100) * mod.breed_timer / trimps() : 0;
-		return 0.00085 * nurseries * potency * add('Pheromones', 10) * imp.ven + traps;
+		return potency * pow(1.01, nurseries) * add('Pheromones', 10) * imp.ven + traps;
 	}
 
 	function group_size(ratio) {
@@ -180,7 +190,7 @@ function optimize(params) {
 
 	// Total attack
 	function attack() {
-		let attack = tiers('attack') * add('Power', 5) * add('Power_II', 1);
+		let attack = (6 + equip('attack')) * add('Power', 5) * add('Power_II', 1);
 		attack *= add('Relentlessness', 5 * add('Relentlessness', 30));
 		attack *= pow(1 + level.Siphonology, 0.1) * add('Range', 1);
 		attack *= add('Anticipation', 6);
@@ -192,13 +202,14 @@ function optimize(params) {
 	// TODO handle shieldblock
 	function block() {
 		let gyms = building(400, 1.185);
-		let trainers = (gyms * log(1.185) - log(gyms)) / log(1.1) + 25 - mystic;
+		let trainers = (gyms * log(1.185) - log(1 + gyms)) / log(1.1) + 25 - mystic;
 		return 6 * gyms * pow(1 + mystic / 100, gyms) * (1 + tacular * trainers);
 	}
 
 	// Total survivability (accounts for health and block)
 	function health() {
-		let health = tiers('health') * add('Toughness', 5) * mult('Resilience', 10) * add('Toughness_II', 1);
+		let health = (50 + equip('health')) * add('Toughness', 5) * add('Toughness_II', 1);
+		health *= mult('Resilience', 10);
 		if (!weight.breed) {
 			let target_speed = (pow(breed_factor(), 0.1 / mod.breed_timer) - 1) * 10;
 			let geneticists = log(breed() / target_speed) / -log(0.98);
@@ -222,9 +233,15 @@ function optimize(params) {
 
 	function score() {
 		let result = 0;
-		for (let i in weight)
-			if (weight[i] !== 0)
-				result += weight[i] * log(stats[i]());
+		for (let i in weight) {
+			if (!weight[i])
+				continue;
+			let stat = stats[i]();
+			if (!isFinite(stat))
+				throw Error(i + ' is ' + stat);
+			result += weight[i] * log(stat);
+		}
+
 		return result;
 	}
 
@@ -234,14 +251,14 @@ function optimize(params) {
 		let baseline = score();
 
 		for (let perk of unlocks) {
-			if (level[perk] === cap[perk] || cost(perk) > he_left)
+			if (capped(perk) || cost(perk) > he_left)
 				continue;
 			if (level[perk] < must[perk])
 				return perk;
 
-			level[perk] += increment[perk] ? pack : 1;
+			level[perk] += pack[perk];
 			let gain = score() - baseline;
-			level[perk] -= increment[perk] ? pack : 1;
+			level[perk] -= pack[perk];
 
 			let efficiency = gain / cost(perk);
 			if (efficiency > max) {
@@ -271,10 +288,11 @@ function optimize(params) {
 	cap = {Range: 10, Agility: 20, Relentlessness: 10, Meditation: 7, Anticipation: 10, Siphonology: 3, Overkill: 30};
 	must = {};
 
-	for (let item of fixed) {
-		let [perk, value] = item.split('=');
-		cap[perk] = parseInt(value);
-		must[perk] = parseInt(value);
+	for (let perk in fixed)
+		cap[perk] = must[perk] = fixed[perk];
+
+	function capped(perk) {
+		return cap[perk] && level[perk] >= cap[perk];
 	}
 
 	let imp = {};
@@ -285,21 +303,21 @@ function optimize(params) {
 	let slow = zone > 130;
 	let frugal_done = zone > 100 ? 1.28 : 1.2;
 	let books = pow(1.25, zone) * pow(frugal_done, max(zone - 59, 0));
-	let gigas = min(zone - 60, zone/2 - 25, zone/3 - 12, zone/5, zone/10 + 17, 39);
-	let base_housing = pow(1.25, min(zone / 2, 30) + mod.giga * max(0, 0|gigas));
+	let gigas = max(0, min(zone - 60, zone/2 - 25, zone/3 - 12, zone/5, zone/10 + 17, 39));
+	let base_housing = pow(1.25, min(zone / 2, 30) + gigas);
 	let mystic = floor(min(zone >= 25 && zone / 5, 9 + zone / 25, 15));
 	let tacular = (20 + zone - zone % 5) / 100;
-	let base_loot = 20.8 * (zone > 200 ? 1.2 : zone > 100 ? 1 : 0.7);
-	let base_income = income();
+	let base_income = 600 * imp.whip * books;
 	let base_helium = run_helium(zone);
 
+	mod.loot *= 20.8 * (0.7 + 0.3 * floor((zone + 1) / 101));
 	weight.breed = zone < 70 ? weight.health : 0;
 	weight.agility = 5;
 
 	// Precompute equipment ratios
 	const equip_total = {
-		attack: {cost: 0, value: 0, exp: 13},
-		health: {cost: 0, value: 0, exp: 14},
+		attack: {cost: 0, cost_exp: 0, value: 0, value_exp: 13},
+		health: {cost: 0, cost_exp: 0, value: 0, value_exp: 14},
 	};
 
 	for (let piece in equipment) {
@@ -311,26 +329,24 @@ function optimize(params) {
 	}
 
 	for (let stat in equip_total) {
-		equip_total[stat].exp /= 0.85;
-		equip_total[stat].cost *= 1.069;
-		equip_total[stat].value *= pow(1.19, 1 - 0.3 * equip_total[stat].exp);
-		equip_total[stat].exp /= (zone < 60 ? 57 : 53) * log(1.069) / log(1.19);
+		equip_total[stat].value_exp = pow(1.19, equip_total[stat].value_exp);
+		equip_total[stat].cost /= pow(1.069, 0.55);
+		equip_total[stat].cost_exp = pow(1.069, 0.85 * (zone < 60 ? 57 : 53));
 	}
 
 	// Main loop
-	let free = he_left / 2000;
-	let shitty = {Bait: true, Packrat: true, Trumps: true};
+	let free = {Bait: 1e7, Packrat: 1e7, Trumps: 1e8, Pheromones: 1e6, Resourceful: 1e6};
+	let best;
 
-	for (let best = 'Looting'; best; best = best_perk()) {
+	while ((best = best_perk())) {
 		let spent = 0;
-		while (spent < free) {
+		while (!capped(best) && spent < he_left / (free[best] || 1e4)) {
 			he_left -= cost(best);
 			spent += cost(best);
-			level[best] += increment[best] ? pack : 1;
-			if (level[best] == cap[best] || shitty[best])
-				break;
+			level[best] += pack[best];
+			if (level[best] == 1000 * pack[best])
+				pack[best] *= 10;
 		}
-		free = min(he_left / 10, free);
 	}
 
 	for (let perk in level)
@@ -355,8 +371,6 @@ if (typeof window === 'undefined') {
 			ven: true,
 			chronojest: 5,
 			breed_timer: 30,
-			giga: 1,
-			housing: 3,
 		}
 	}));
 }
