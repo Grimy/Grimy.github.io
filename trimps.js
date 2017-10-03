@@ -31,7 +31,7 @@ function show_alert(style, message) {
 		show_alert('ok', `Welcome to Trimps ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
 	}
 
-	document.querySelectorAll('[data-saved]').forEach((input) => {
+	[].slice.apply(document.querySelectorAll('[data-saved]')).forEach((input) => {
 		var value = localStorage.getItem(input.id);
 		if (value)
 			input.value = value;
