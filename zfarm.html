@@ -171,16 +171,16 @@ th:empty { visibility: hidden; }
 "use strict";
 
 function read_save(game) {
-	let imps = 0;
-	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
+	var imps = 0;
+	for (var imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
-	let crits = game.portal.Relentlessness.level;
-	let challenge = game.global.challengeActive;
-	let attack = game.global.soldierCurrentAttack;
-	let maxFluct = 1.2;
-	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
-	let enemyHealth = 1;
-	let zone = game.global.world;
+	var crits = game.portal.Relentlessness.level;
+	var challenge = game.global.challengeActive;
+	var attack = game.global.soldierCurrentAttack;
+	var maxFluct = 1.2;
+	var minFluct = 0.8 + 0.02 * game.portal.Range.level;
+	var enemyHealth = 1;
+	var zone = game.global.world;
 
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
 	attack *= 1 + 0.01 * game.global.achievementBonus;
@@ -193,19 +193,19 @@ function read_save(game) {
 		attack *= 1 + 0.06 * game.global.spireRows;
 	
 	if (game.talents.magmamancer) {
-		let time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
-		let bonus = pow(1.2, floor((time + 5) / 10)) - 1;
+		var time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
+		var bonus = pow(1.2, floor((time + 5) / 10)) - 1;
 		attack *= 1 + 3 * (1 - pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
 	}
 
 	if (game.talents.healthStrength) {
-		let zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
+		var zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
 		attack *= 1 + 0.15 * (zone < 300 ? 0 : floor((zone - 270) / 15));
 	}
 
 
 	if (challenge == "Daily") {
-		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
+		var daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		enemyHealth *= 1 + 0.2 * daily('badHealth');
 		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
 		minFluct -= 0.09 * !!daily('minDamage') + 0.01 * daily('minDamage');
@@ -244,14 +244,14 @@ function read_save(game) {
 	$('#zone').value = zone;
 
 	if (zone >= 236) {
-		let nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
-		let diplomacy = game.talents.nature3 ? 5 : 0;
+		var nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
+		var diplomacy = game.talents.nature3 ? 5 : 0;
 		$('#' + nature.toLowerCase()).value = game.empowerments[nature].level + diplomacy;
 		$('#transfer').value = game.empowerments[nature].retainLevel + diplomacy;
 	}
 }
 
-const parse_inputs = () => ({
+var parse_inputs = () => ({
 	agility: 10 * pow(.95, $('#agility').value) - $('#hyperspeed').checked,
 	attack: parse_suffixes($('#attack').value.toLowerCase()),
 	biome: biomes.all.concat(biomes[$('#biome').value]),
@@ -274,28 +274,28 @@ const parse_inputs = () => ({
 });
 
 function display(results) {
-	let [stances, stats, best] = results;
-	let show_stance = $('#zone').value >= 60;
-	let html = '';
+	var [stances, stats, best] = results;
+	var show_stance = $('#zone').value >= 60;
+	var html = '';
 
 	if (stances.length > 1) {
 		html += `<tr><th colspan=2>${stances.replace(/(?!$)/g, '<th colspan=2>')}</tr>`;
 	}
 	html += '<tr><th>Level<th>Base loot' + '<th>Cells/s<th>Total'.repeat(stances.length);
 
-	for (let zone_stats of stats) {
-		let zone = zone_stats.zone;
+	for (var zone_stats of stats) {
+		var zone = zone_stats.zone;
 		html += '</tr><tr><td class=align-right>';
 
-		for (let stance of stances)
+		for (var stance of stances)
 			if (zone == best[stance] && show_stance)
 				html += `<b>${stance}</b> `;
 
 		html += zone == best.overall ? `<b>${zone}</b>` : zone;
 		html += '<td>' + prettify(zone_stats.loot);
 
-		for (let stance of stances) {
-			let value = prettify(zone_stats[stance].value);
+		for (var stance of stances) {
+			var value = prettify(zone_stats[stance].value);
 			html += '<td>' + zone_stats[stance].speed.toFixed(3) + '<td>';
 			html += zone == best[stance] ? `<b>${value}</b>` : value;
 		}
@@ -321,9 +321,9 @@ function display(results) {
 		best.second += ' in ' + best.second_stance;
 	}
 
-	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
-	let loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
-	let adverbs = ["", "", " probably", " probably", " probably", " probably",
+	var max_loot = $('#biome').value == 'gardens' ? 185 : 160;
+	var loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
+	var adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
 	$('#result').textContent = `You should ${adverbs[min(loot_diff, 12)]} farm on ${best.overall}`;
