@@ -95,17 +95,6 @@ function optimize(params) {
 		return reward * pow(scientist_done ? 1.005 : 1, z);
 	}
 
-	// Total helium from a run up to the given zone
-	function run_helium(z) {
-		var result = 10 * zone_helium(zone);
-		for (var i = 21; i <= z; ++i) {
-			var corrupt = floor((i - corruption_start) / 3);
-			corrupt = corrupt < 0 ? 0 : min(corrupt + 2, 80);
-			result += zone_helium(i) * ((i == 200 ? 20 : 1) + corrupt * 0.15);
-		}
-		return result;
-	}
-
 	// Compute the current cost of a perk, based on its current level.
 	function cost(perk) {
 		if (increment[perk])
@@ -308,7 +297,7 @@ function optimize(params) {
 	var mystic = floor(min(zone >= 25 && zone / 5, 9 + zone / 25, 15));
 	var tacular = (20 + zone - zone % 5) / 100;
 	var base_income = 600 * imp.whip * books;
-	var base_helium = run_helium(zone);
+	var base_helium = pow(zone - 19, 2);
 
 	mod.loot *= 20.8 * (0.7 + 0.3 * floor((zone + 1) / 101));
 	weight.breed = zone < 70 ? weight.health : 0;
