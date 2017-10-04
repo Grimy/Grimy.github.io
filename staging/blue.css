@@ -1,0 +1,46 @@
+* { box-sizing: border-box }
+:focus { outline: none }
+::-moz-focus-inner { border: 0 }
+[title] { cursor: help }
+button, [onclick] { cursor: pointer }
+body { background: #ebf4fe; color: #00263b; margin: 0; font: 1.1em/140% sans-serif }
+
+legend { font-size: 1.3em; background: linear-gradient(#ebf4fe, white); color: #007bb3 }
+h1 { color: #005c87; text-align: center; margin: 2ex 0 0 0 }
+input[type=range], input[type=radio], input[type=checkbox] { position: relative; top: 3px }
+label { display: block; margin: 1ex 0 }
+input, select, textarea { background: inherit }
+input, select, textarea, button {
+	border: 1px solid rgba(0, 0, 0, 0.2); border-radius: 0.5ex;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
+	width: 50%; margin: 0 0.25em; padding: 0.5ex 0.5em;
+}
+
+input:focus, textarea:focus { border-color: #007bb3; box-shadow: 0 0 3px #007bb3 }
+button { font-weight: bold; line-height: 160%; margin-top: 1ex }
+input[disabled], textarea[disabled] { cursor: not-allowed }
+
+button, nav { font-size: 1.1em; background: #007bb3; color: white; border: 1px solid #005c87 }
+nav > a:focus, nav > a:hover, button:focus, button:hover { background: #006b9d }
+nav > a.active, nav > a:active, button:active { background: #005c87 }
+
+nav { padding: 0 5%; border-width: 1px 0 }
+nav > a { padding: 1ex 1em; font-size: 1.1em; text-align: center }
+nav > a { white-space: nowrap; color: inherit; text-decoration: none }
+
+.box { background: white; margin: 0 auto; padding: 2ex 2em }
+.box { border: 1px solid #007bb3; border-radius: 1ex; box-shadow: 2px 2px 6px -2px #007bb3 }
+
+.ok, .warning, .ko, .info { padding: 1ex 1em; margin: 1em 2ex; border: 1px solid #007bb3; border-radius: 0.5ex }
+.ok, .warning, .ko, .info { background: #ebf4fe; color: #005c87; fill: #007bb3 }
+.ok { filter: hue-rotate(270deg) }
+.warning { filter: hue-rotate(210deg) }
+.ko { filter: hue-rotate(150deg) }
+.badge { display: inline-block; padding: 3px 7px; font-weight: bold; line-height: 1; color: white; background: #777; margin-right: 1ex; border-radius: 1em }
+.flexbox { width: 100%; display: flex; flex-flow: row wrap; margin: 4ex 0 }
+.centered { display: block; clear: both; margin-left: auto; margin-right: auto }
+
+.tabs { position: relative }
+.tabs > :nth-child(1) { cursor: pointer; text-align: center; text-decoration: underline }
+.tabs > :nth-child(2) { position: absolute; clip: rect(0, 0, 0, 0) }
+.tabs > :nth-child(2):not(:checked) ~ * { display: none }
