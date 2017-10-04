@@ -1,1 +1,6 @@
-{"esversion": 6}
+{
+	"esversion": 6,
+	"trailing": true,
+	"latedef": true,
+	"loopfunc": true
+}

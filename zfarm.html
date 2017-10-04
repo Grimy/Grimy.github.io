@@ -4,14 +4,10 @@
 <link href=blue.css rel=stylesheet>
 <link href=dark.css rel=stylesheet id=dark>
 <style>
-#advanced { margin-bottom: 1ex }
-#advanced:not(:target) ~ a, #advanced:not(:target) ~ label, #advanced:target { display: none }
-fieldset { flex: 0 1 36em }
-table { border-collapse: collapse; text-align: center }
-table, th, td { border: 1px solid black; padding: 3px }
-table { width: 100%; }
-th:empty { visibility: hidden; }
-.align-right { text-align: right; padding-right: 1ex; }
+fieldset { flex: 0 0 36em }
+table { border-collapse: collapse; text-align: center; width: 100% }
+table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
+.align-right { text-align: right; padding-right: 1ex }
 </style>
 
 <h1>zFarm</h1>
@@ -48,8 +44,9 @@ th:empty { visibility: hidden; }
 			World zone
 		</label>
 
-		<a id=advanced class=centered href='#advanced'>Manual input (auto-filled when pasting a save)</a>
-		<a class=centered href='#'>Hide manual input</a>
+		<div class=tabs>
+		<label for=advanced>Toggle manual input</label>
+		<input type=checkbox id=advanced data-saved>
 
 		<label title='Check if you have unlocked the Scrying stance'>
 			<input type=checkbox checked id=scry>
@@ -135,6 +132,7 @@ th:empty { visibility: hidden; }
 			<input type=checkbox id=reducer>
 			Map Reducer?
 		</label>
+		</div>
 
 		<button class=centered>Recalculate</button>
 	</fieldset>
@@ -156,7 +154,7 @@ th:empty { visibility: hidden; }
 <nav class=flexbox>
 	<a href=zfarm.html class=active>zFarm</a>
 	<a href=perks.html>Perky</a>
-	<span class=filler></span>
+	<span class=centered></span>
 	<a onclick='switch_theme()'>Switch theme</a>
 	<a href=changelog.html>Changelog</a>
 	<a href='https://github.com/Grimy/Grimy.github.io/issues/new'>Report a bug</a>
@@ -171,16 +169,16 @@ th:empty { visibility: hidden; }
 "use strict";
 
 function read_save(game) {
-	var imps = 0;
-	for (var imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
+	let imps = 0;
+	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
-	var crits = game.portal.Relentlessness.level;
-	var challenge = game.global.challengeActive;
-	var attack = game.global.soldierCurrentAttack;
-	var maxFluct = 1.2;
-	var minFluct = 0.8 + 0.02 * game.portal.Range.level;
-	var enemyHealth = 1;
-	var zone = game.global.world;
+	let crits = game.portal.Relentlessness.level;
+	let challenge = game.global.challengeActive;
+	let attack = game.global.soldierCurrentAttack;
+	let maxFluct = 1.2;
+	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
+	let enemyHealth = 1;
+	let zone = game.global.world;
 
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
 	attack *= 1 + 0.01 * game.global.achievementBonus;
@@ -193,19 +191,19 @@ function read_save(game) {
 		attack *= 1 + 0.06 * game.global.spireRows;
 	
 	if (game.talents.magmamancer) {
-		var time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
-		var bonus = pow(1.2, floor((time + 5) / 10)) - 1;
+		let time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
+		let bonus = pow(1.2, floor((time + 5) / 10)) - 1;
 		attack *= 1 + 3 * (1 - pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
 	}
 
 	if (game.talents.healthStrength) {
-		var zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
+		let zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
 		attack *= 1 + 0.15 * (zone < 300 ? 0 : floor((zone - 270) / 15));
 	}
 
 
 	if (challenge == "Daily") {
-		var daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
+		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		enemyHealth *= 1 + 0.2 * daily('badHealth');
 		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
 		minFluct -= 0.09 * !!daily('minDamage') + 0.01 * daily('minDamage');
@@ -244,14 +242,14 @@ function read_save(game) {
 	$('#zone').value = zone;
 
 	if (zone >= 236) {
-		var nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
-		var diplomacy = game.talents.nature3 ? 5 : 0;
+		let nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
+		let diplomacy = game.talents.nature3 ? 5 : 0;
 		$('#' + nature.toLowerCase()).value = game.empowerments[nature].level + diplomacy;
 		$('#transfer').value = game.empowerments[nature].retainLevel + diplomacy;
 	}
 }
 
-var parse_inputs = () => ({
+const parse_inputs = () => ({
 	agility: 10 * pow(.95, $('#agility').value) - $('#hyperspeed').checked,
 	attack: parse_suffixes($('#attack').value.toLowerCase()),
 	biome: biomes.all.concat(biomes[$('#biome').value]),
@@ -274,28 +272,28 @@ var parse_inputs = () => ({
 });
 
 function display(results) {
-	var [stances, stats, best] = results;
-	var show_stance = $('#zone').value >= 60;
-	var html = '';
+	let [stances, stats, best] = results;
+	let show_stance = $('#zone').value >= 60;
+	let html = '';
 
 	if (stances.length > 1) {
 		html += `<tr><th colspan=2>${stances.replace(/(?!$)/g, '<th colspan=2>')}</tr>`;
 	}
 	html += '<tr><th>Level<th>Base loot' + '<th>Cells/s<th>Total'.repeat(stances.length);
 
-	for (var zone_stats of stats) {
-		var zone = zone_stats.zone;
+	for (let zone_stats of stats) {
+		let zone = zone_stats.zone;
 		html += '</tr><tr><td class=align-right>';
 
-		for (var stance of stances)
+		for (let stance of stances)
 			if (zone == best[stance] && show_stance)
 				html += `<b>${stance}</b> `;
 
 		html += zone == best.overall ? `<b>${zone}</b>` : zone;
 		html += '<td>' + prettify(zone_stats.loot);
 
-		for (var stance of stances) {
-			var value = prettify(zone_stats[stance].value);
+		for (let stance of stances) {
+			let value = prettify(zone_stats[stance].value);
 			html += '<td>' + zone_stats[stance].speed.toFixed(3) + '<td>';
 			html += zone == best[stance] ? `<b>${value}</b>` : value;
 		}
@@ -321,9 +319,9 @@ function display(results) {
 		best.second += ' in ' + best.second_stance;
 	}
 
-	var max_loot = $('#biome').value == 'gardens' ? 185 : 160;
-	var loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
-	var adverbs = ["", "", " probably", " probably", " probably", " probably",
+	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
+	let loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
+	let adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]
 
 	$('#result').textContent = `You should ${adverbs[min(loot_diff, 12)]} farm on ${best.overall}`;

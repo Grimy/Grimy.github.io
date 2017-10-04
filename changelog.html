@@ -10,6 +10,24 @@
 <script>$('#dark').disabled = !localStorage.getItem('dark');</script>
 <div class='box' style='max-width: 1020px'>
 	<h1>Perky / zFarm updates</h1>
+	<h2>2.1 — 2017-10-05<h2>
+	<h3>Common</h3>
+	<ul>
+		<li>Small graphical changes.
+		<li>Toggling manual inputs now works using cookies, instead of adding <tt>#advanced</tt> to the URL.
+	</ul>
+	<h3>Perky</h3>
+	<ul>
+		<li>Helium left over is now displayed.
+		<li>Added a “More Info” toggle, to display the cost and total spent on each perk.
+		<li>Added a “Share” button. <a href=http://bit.ly/2gcnfGc>Here’s my current setup!</a>
+		<li>“Fixed perks” can now be used to set maximums/minimums for perks, by using <tt>&lt;</tt> and <tt>&gt;</tt> instead of <tt>=</tt>.
+		<li>Bugfix: fixing a perk to 0 now works correctly.
+		<li>Bugfix: income was slightly overvalued late-game due to a math mistake.
+		<li>Bugfix: selecting the Spire preset then another one no longer messes up your options.
+		<li>Bugfix: extremely high helium no longer causes “Health is Infinity” errors (tested up to 1e100 He).
+		<li>Bugfix: compatibility with the Pale Moon browser.
+	</ul>
 	<h2>2.0 — 2017-09-30</h2>
 	<h3>Common</h3>
 	<ul>

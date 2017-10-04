@@ -1,19 +1,18 @@
 // trimps.js: some code common to Perky and zFarm
 
 // Copy these Math functions in our namespace
-var {abs, ceil, floor, log, max, min, pow, round, sqrt} = Math;
+const {abs, ceil, floor, log, max, min, pow, round, sqrt} = Math;
 
-function $(str) {
-	return document.querySelector(str);
-}
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [].slice.apply(document.querySelectorAll(selector));
 
 function remove(elem) {
 	elem.parentNode.removeChild(elem);
 }
 
 function switch_theme() {
-	var light = $('#dark').disabled = !$('#dark').disabled;
-	localStorage.setItem('dark', light ? '' : '1');
+	let light = $('#dark').disabled = !$('#dark').disabled;
+	localStorage.dark = light ? '' : '1';
 }
 
 function show_alert(style, message) {
@@ -25,19 +24,23 @@ function show_alert(style, message) {
 }
 
 (function init(version) {
-	$('#dark').disabled = !localStorage.getItem('dark');
-	if (localStorage.getItem('version') != version) {
-		localStorage.setItem('version', version);
+	$('#dark').disabled = !localStorage.dark;
+
+	if (localStorage.version != version) {
+		localStorage.version = version;
 		show_alert('ok', `Welcome to Trimps ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
 	}
 
-	[].slice.apply(document.querySelectorAll('[data-saved]')).forEach((input) => {
-		var value = localStorage.getItem(input.id);
-		if (value)
-			input.value = value;
-		input.onchange = () => localStorage.setItem(input.id, input.value);
+	$$('[data-saved]').forEach(field => {
+		if (field.type == 'checkbox') {
+			field.checked = localStorage[field.id] == 'true';
+			field.onchange = () => localStorage[field.id] = field.checked;
+		} else {
+			field.value = localStorage[field.id] || field.value;
+			field.onchange = () => localStorage[field.id] = field.value;
+		}
 	});
-})('2.0');
+})('2.1');
 
 function try_wrap(main) {
 	try {
@@ -54,8 +57,8 @@ function try_wrap(main) {
 }
 
 function handle_paste(ev) {
-	var save_string = ev.clipboardData.getData("text/plain").replace(/\s/g, '');
-	var game;
+	let save_string = ev.clipboardData.getData("text/plain").replace(/\s/g, '');
+	let game;
 
 	try {
 		game = JSON.parse(LZString.decompressFromBase64(save_string));
@@ -69,16 +72,16 @@ function handle_paste(ev) {
 	if (game.global.version > 4.5)
 		show_alert('ko', 'Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.');
 
-	localStorage.setItem('notation', game.options.menu.standardNotation.enabled);
+	localStorage.notation = game.options.menu.standardNotation.enabled;
 
-	for (var m in game.talents)
+	for (let m in game.talents)
 		game.talents[m] = game.talents[m].purchased;
 	read_save(game);
 
 	$('button').click();
 }
 
-var notations = [
+const notations = [
 	[],
 	'KMBTQaQiSxSpOcNoDcUdDdTdQadQidSxdSpdOdNdVUvDvTvQavQivSxvSpvOvNvTt'.split(/(?=[A-Z])/),
 	[],
@@ -92,41 +95,41 @@ function prettify(number) {
 	if (number < 10000)
 		return round(number);
 
-	if (localStorage.getItem('notation') == '0') // scientific
+	if (localStorage.notation == '0') // scientific
 		return number.toExponential(2).replace('+', '');
 
-	var unit = 0;
+	let unit = 0;
 	while (number >= 999.5) {
 		number /= 1000;
 		++unit;
 	}
 
-	var suffixes = notations[localStorage.getItem('notation')];
-	var suffix = unit > suffixes.length ? `e${3 * unit}` : suffixes[unit - 1];
-	var precision = number == floor(number) ? 0 : (number < 10) + (number < 100);
+	let suffixes = notations[localStorage.notation || 1];
+	let suffix = unit > suffixes.length ? `e${3 * unit}` : suffixes[unit - 1];
+	let precision = number == floor(number) ? 0 : (number < 10) + (number < 100);
 	return number.toFixed(precision) + suffix;
-}
-
-function check_input(field) {
-	var ok = parse_suffixes(field.value) !== null;
-	var notation = localStorage.getItem('notation') == 3 ? 'alphabetic ' : '';
-	field.setCustomValidity(ok ? '' : `Invalid ${notation}number: ${field.value}`);
 }
 
 function parse_suffixes(str) {
 	str = str.replace(/[^\w.]/g, '');
 
-	var suffixes = notations[localStorage.getItem('notation') == 3 ? 3 : 1];
-	for (var i = suffixes.length; i > 0; --i)
+	let suffixes = notations[localStorage.notation == 3 ? 3 : 1];
+	for (let i = suffixes.length; i > 0; --i)
 		str = str.replace(new RegExp(suffixes[i - 1] + '$', 'i'), `E${3 * i}`);
 
 	return isFinite(str) ? parseFloat(str) : null;
 }
 
+function check_input(field) {
+	let ok = parse_suffixes(field.value) !== null;
+	let notation = localStorage.notation == 3 ? 'alphabetic ' : '';
+	field.setCustomValidity(ok ? '' : `Invalid ${notation}number: ${field.value}`);
+}
+
 // Base attack (before difficulty and imp modifiers) for an enemy
 // at the given position (zone + cell).
 function enemy_atk(zone, cell) {
-	var amt = 5.5 * sqrt(zone * pow(3.27, zone)) - 1.1;
+	let amt = 5.5 * sqrt(zone * pow(3.27, zone)) - 1.1;
 	amt *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * pow(1.15, zone - 59);
 	return amt;
 }
