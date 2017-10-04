@@ -191,7 +191,6 @@ function set_zone(zone) {
 }
 
 function spire_preset() {
-	set_zone(200);
 	$('#prod').value = '0E' + $('#prod').value;
 	$('#loot').value = '0E' + $('#loot').value;
 }
@@ -303,8 +302,8 @@ function read_save(game) {
 	$('#tauntimp').checked = game.unlocks.imps.Tauntimp;
 	$('#venimp').checked = game.unlocks.imps.Venimp;
 	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
-	$('#prod').value = prod;
-	$('#loot').value = loot;
+	$('#prod').value = prod.toFixed(4);
+	$('#loot').value = loot.toFixed(4);
 	$('#breed-timer').value = game.talents.patience ? 45 : 30;
 
 	if ($('[value=spire]').selected)
