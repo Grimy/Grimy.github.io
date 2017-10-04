@@ -281,7 +281,7 @@ function optimize(params) {
 		cap[perk] = must[perk] = fixed[perk];
 
 	function capped(perk) {
-		return cap[perk] && level[perk] >= cap[perk];
+		return cap[perk] !== undefined && level[perk] >= cap[perk];
 	}
 
 	var imp = {};
