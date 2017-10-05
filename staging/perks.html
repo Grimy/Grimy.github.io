@@ -33,12 +33,13 @@ fieldset { flex: 0 1 30em }
 		</label>
 
 		<label title='Check this when respeccing from the View Perks screen.'>
-			<input type=checkbox onchange='handle_respec(this.checked)' id=respec>
+			<input type=checkbox id=respec onchange='handle_respec(this.checked)'>
 			Mid-run respec
 		</label>
 
 		<label title='The base zone used in calculations. Set this to a few zone before your planned portalling zone, for example the zone on which you do your Void Maps.'>
-			<input type=text id=zone onchange='set_zone(this.value)' required pattern='\d{2,3}'>
+			<input type=text id=zone required pattern='\d{2,3}'
+			onchange='if (game) $("#dg").value = generated_housing(this.value / 2 + 115)'>
 			Target zone
 		</label>
 
@@ -171,11 +172,11 @@ Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for
 <script>
 "use strict";
 
-let old_game;
+let game;
 
 function validate_fixed() {
 	try {
-		parse_perks($('#fixed').value, []);
+		parse_perks($('#fixed').value, 'l>0');
 		$('#fixed').setCustomValidity('');
 	} catch (err) {
 		$('#fixed').setCustomValidity(err);
@@ -183,12 +184,6 @@ function validate_fixed() {
 }
 
 validate_fixed();
-
-function set_zone(zone) {
-	$('#zone').value = zone;
-	$('#weight-ok').parentNode.style.display = zone > 160 ? '' : 'none';
-	$('#dg').value = old_game ? generated_housing(old_game, zone / 2 + 115) : 0;
-}
 
 function spire_preset() {
 	$('#prod').value = '0E' + $('#prod').value;
@@ -223,11 +218,11 @@ function input(id) {
 }
 
 function handle_respec(respec) {
-	let owned = old_game ? old_game.resources.helium.owned : 0;
+	let owned = game ? game.resources.helium.owned : 0;
 	$('#helium').value = input('helium') + owned * (respec ? -1 : 1);
 }
 
-function generated_housing(game, max_zone) {
+function generated_housing(max_zone) {
 	let eff = 500e6 + 50e6 * game.generatorUpgrades.Efficiency.upgrades;
 	let capa = 3 + 0.4 * game.generatorUpgrades.Capacity.upgrades;
 	let max_fuel = game.permanentGeneratorUpgrades.Storage.owned ? capa * 1.5 : capa;
@@ -271,8 +266,8 @@ function generated_housing(game, max_zone) {
 	return floor(housing);
 }
 
-function read_save(game) {
-	old_game = game;
+function read_save(_game) {
+	game = _game;
 
 	let helium = game.global.heliumLeftover;
 	for (let perk in game.portal)
@@ -293,10 +288,16 @@ function read_save(game) {
 	}
 
 	if (!$('#zone').value || game.global.highestLevelCleared < 400)
-		set_zone(game.global.highestLevelCleared - 5);
+		$('#zone').value = game.global.highestLevelCleared - 5;
 
+	let unlocks = Object.keys(game.portal).filter(perk => !game.portal[perk].locked);
+	if (game.global.canRespecPerks)
+		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
+
+
+	$('#weight-ok').parentNode.style.display = game.portal.Overkill.locked ? 'none' : '';
 	$('#helium').value = helium + ($('#respec').checked ? 0 : game.resources.helium.owned);
-	$('#unlocks').value = Object.keys(game.portal).filter(perk => !game.portal[perk].locked).join(',');
+	$('#unlocks').value = unlocks.join(',');
 	$('#whipimp').checked = game.unlocks.imps.Whipimp;
 	$('#magnimp').checked = game.unlocks.imps.Magnimp;
 	$('#tauntimp').checked = game.unlocks.imps.Tauntimp;
@@ -313,7 +314,7 @@ function read_save(game) {
 const parse_inputs = () => ({
 	he_left: input('helium'),
 	zone: parseInt($('#zone').value),
-	perks: parse_perks($('#fixed').value, $('#unlocks').value.split(',')),
+	perks: parse_perks($('#fixed').value, $('#unlocks').value),
 	weight: {
 		helium: input('weight-he'),
 		attack: input('weight-atk'),
@@ -340,9 +341,9 @@ function display(results) {
 	$('#results').style.opacity = 1;
 	$('#info').innerText = localStorage.more ? 'Less info' : 'More info';
 	$('#he-left').innerHTML = prettify(he_left) + ' Helium Left Over';
-	$('#perks').innerHTML = perks.filter(p => p.cap >= 0).map(perk => {
+	$('#perks').innerHTML = perks.filter(p => !p.locked).map(perk => {
 		let {name, level, cap, spent} = perk;
-		let diff = old_game ? level - old_game.portal[perk.name].level : 0;
+		let diff = game ? level - game.portal[perk.name].level : 0;
 		let diff_text = diff ? ` (${diff > 0 ? '+' : '-'}${prettify(abs(diff))})` : '';
 		let style = diff > 0 ? 'adding' : diff < 0 ? 'remove' : level >= cap ? 'capped' : '';
 

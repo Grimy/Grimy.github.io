@@ -6,7 +6,7 @@ const mult = (perk, x) => pow(1 + x / 100, perk.level);
 
 function Perk(name, base_cost, increment, cap, free) {
 	return {
-		name, level: 0, pack: 1, cap, must: 0, spent: 0, free,
+		name, level: 0, pack: 1, cap, must: 0, spent: 0, free, locked: true,
 
 		// Compute the current cost of a perk, based on its current level.
 		cost: increment ? function() {
@@ -46,7 +46,12 @@ function parse_perks(fixed, unlocks) {
 		Perk('Looting',        1,     0,    Infinity, 1e4),
 	];
 
-	for (let item of fixed.split(/ *, */).filter(x => x)) {
+	if (!unlocks.match(/>/))
+		unlocks = unlocks.replace(/(?=,|$)/g, '>0');
+
+	let str = fixed + (fixed ? ',' : '') + unlocks;
+
+	for (let item of str.split(/ *, */).filter(x => x)) {
 		let m = item.match(/(.*) *([<=>])=? *(.*)/);
 		if (!m)
 			throw 'Enter a list of perk levels, such as “power=42, toughness=51”';
@@ -65,15 +70,12 @@ function parse_perks(fixed, unlocks) {
 		if (level === null)
 			throw `Invalid number: ${m[3]}.`;
 
+		matches[0].locked = false;
 		if (m[2] != '>')
 			matches[0].cap = level;
 		if (m[2] != '<')
 			matches[0].must = level;
 	}
-
-	for (let perk of perks)
-		if (unlocks.indexOf(perk.name) === -1)
-			perk.cap = -1;
 
 	return perks;
 }
@@ -268,10 +270,8 @@ function optimize(params) {
 		let baseline = score();
 
 		for (let perk of perks) {
-			if (perk.level >= perk.cap || perk.cost() > he_left)
+			if (perk.locked || perk.level >= perk.cap || perk.cost() > he_left)
 				continue;
-			if (perk.level < perk.must)
-				return perk;
 
 			perk.level += perk.pack;
 			let gain = score() - baseline;
@@ -294,11 +294,11 @@ function optimize(params) {
 	// Main loop
 	for (let best; (best = best_perk()); ) {
 		let spent = 0;
-		while (best.level < best.cap && spent < he_left / best.free) {
+		while (best.level < best.cap && (best.level < best.must || spent < he_left / best.free)) {
 			he_left -= best.cost();
 			spent += best.cost();
 			best.level += best.pack;
-			if (best.level === 1000 * best.pack)
+			if (best.level == 1000 * best.pack)
 				best.pack *= 10;
 		}
 		best.spent += spent;

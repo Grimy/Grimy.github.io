@@ -92,6 +92,9 @@ const notations = [
 ];
 
 function prettify(number) {
+	if (number < 0)
+		return '-' + prettify(-number);
+
 	if (number < 10000)
 		return round(number);
 

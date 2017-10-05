@@ -189,7 +189,7 @@ function read_save(game) {
 
 	if (game.talents.stillRowing2)
 		attack *= 1 + 0.06 * game.global.spireRows;
-	
+
 	if (game.talents.magmamancer) {
 		let time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
 		let bonus = pow(1.2, floor((time + 5) / 10)) - 1;
