@@ -67,7 +67,7 @@ function parse_perks(fixed, unlocks) {
 			throw `Unknown perk: ${m[1]}.`;
 
 		let level = parse_suffixes(m[3]);
-		if (level === null)
+		if (!isFinite(level))
 			throw `Invalid number: ${m[3]}.`;
 
 		matches[0].locked = false;
@@ -230,8 +230,6 @@ function optimize(params) {
 				(pow(0.5 / (0.5 - fighting), 0.1 / mod.breed_timer) - 1) * 10 :
 				fighting / mod.breed_timer;
 			let geneticists = log(breed() / target_speed) / -log(0.98);
-			if (geneticists > 1e308)
-				console.log(ratio, available, required, fighting, breed_factor, target_speed, geneticists);
 			health *= pow(1.01, geneticists);
 		}
 

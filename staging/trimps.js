@@ -96,7 +96,7 @@ function prettify(number) {
 		return '-' + prettify(-number);
 
 	if (number < 10000)
-		return round(number);
+		return +number.toPrecision(4) + '';
 
 	if (localStorage.notation === '0') // scientific
 		return number.toExponential(2).replace('+', '');
@@ -109,22 +109,21 @@ function prettify(number) {
 
 	let suffixes = notations[localStorage.notation || 1];
 	let suffix = unit > suffixes.length ? `e${3 * unit}` : suffixes[unit - 1];
-	let precision = number === floor(number) ? 0 : (number < 10) + (number < 100);
-	return number.toFixed(precision) + suffix;
+	return +number.toPrecision(3) + suffix;
 }
 
 function parse_suffixes(str) {
-	str = str.replace(/[^\w.]/g, '');
+	str = str.replace(/\*.*|[^--9+a-z]/gi, '');
 
 	let suffixes = notations[localStorage.notation === '3' ? 3 : 1];
 	for (let i = suffixes.length; i > 0; --i)
 		str = str.replace(new RegExp(suffixes[i - 1] + '$', 'i'), `E${3 * i}`);
 
-	return isFinite(str) ? parseFloat(str) : null;
+	return +str;
 }
 
 function check_input(field) {
-	let ok = parse_suffixes(field.value) !== null;
+	let ok = isFinite(parse_suffixes(field.value));
 	let notation = localStorage.notation === '3' ? 'alphabetic ' : '';
 	field.setCustomValidity(ok ? '' : `Invalid ${notation}number: ${field.value}`);
 }

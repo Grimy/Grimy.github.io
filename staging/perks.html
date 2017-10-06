@@ -185,11 +185,6 @@ function validate_fixed() {
 
 validate_fixed();
 
-function spire_preset() {
-	$('#prod').value = '0E' + $('#prod').value;
-	$('#loot').value = '0E' + $('#loot').value;
-}
-
 function select_preset(name) {
 	let preset = {
 		early: [5, 4, 2, 0],
@@ -201,10 +196,11 @@ function select_preset(name) {
 	}[name];
 
 	if (name === 'spire') {
-		spire_preset();
+		$('#prod').value = '0*' + $('#prod').value;
+		$('#loot').value = '0*' + $('#loot').value;
 	} else {
-		$('#prod').value = $('#prod').value.replace(/^0E/, '');
-		$('#loot').value = $('#loot').value.replace(/^0E/, '');
+		$('#prod').value = $('#prod').value.replace('0*', '');
+		$('#loot').value = $('#loot').value.replace('0*', '');
 	}
 
 	$('#weight-he').value = preset[0];
@@ -278,7 +274,7 @@ function read_save(_game) {
 	         game.talents.turkimp2 ? 0.4 :
 	         game.talents.turkimp ? 0.3 : 0.25;
 	let prod = 1 + tt;
-	let loot = 1 + (tt / 3);
+	let loot = 1 + 0.333 * tt;
 
 	for (let mod of (game.global.StaffEquipped.mods || [])) {
 		if (mod[0] === 'MinerSpeed')
@@ -294,7 +290,6 @@ function read_save(_game) {
 	if (game.global.canRespecPerks)
 		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
 
-
 	$('#weight-ok').parentNode.style.display = game.portal.Overkill.locked ? 'none' : '';
 	$('#helium').value = helium + ($('#respec').checked ? 0 : game.resources.helium.owned);
 	$('#unlocks').value = unlocks.join(',');
@@ -303,12 +298,9 @@ function read_save(_game) {
 	$('#tauntimp').checked = game.unlocks.imps.Tauntimp;
 	$('#venimp').checked = game.unlocks.imps.Venimp;
 	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
-	$('#prod').value = prod.toFixed(4);
-	$('#loot').value = loot.toFixed(4);
+	$('#prod').value = ($('#prod').value.startsWith('0') ? '0*' : '') + prettify(prod);
+	$('#loot').value = ($('#loot').value.startsWith('0') ? '0*' : '') + prettify(loot);
 	$('#breed-timer').value = game.talents.patience ? 45 : 30;
-
-	if ($('[value=spire]').selected)
-		spire_preset();
 }
 
 const parse_inputs = () => ({
