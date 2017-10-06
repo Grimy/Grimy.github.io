@@ -49,10 +49,8 @@ function parse_perks(fixed, unlocks) {
 	if (!unlocks.match(/>/))
 		unlocks = unlocks.replace(/(?=,|$)/g, '>0');
 
-	let str = fixed + (fixed ? ',' : '') + unlocks;
-
-	for (let item of str.split(/ *, */).filter(x => x)) {
-		let m = item.match(/(.*) *([<=>])=? *(.*)/);
+	for (let item of (unlocks + ',' + fixed).split(/,/).filter(x => x)) {
+		let m = item.match(/(\S+) *([<=>])=?(.*)/);
 		if (!m)
 			throw 'Enter a list of perk levels, such as “power=42, toughness=51”';
 
@@ -194,7 +192,8 @@ function optimize(params) {
 	// Theoretical fighting group size (actual size is lower because of Coordinated)
 	function soldiers() {
 		let ratio = 1 + 0.25 * mult(Coordinated, -2);
-		let coords = log(trimps() / 3 / group_size[Coordinated.level]) / log(ratio);
+		let pop = (mod.trapper || trimps()) / 3;
+		let coords = log(pop / group_size[Coordinated.level]) / log(ratio);
 		let available = zone - 1 + (magma() ? 100 : 0);
 		return group_size[0] * pow(1.25, min(coords, available));
 	}
@@ -246,7 +245,7 @@ function optimize(params) {
 
 	const overkill = () => add(Overkill, 9000);
 
-	const stats = { agility, helium, attack, health, overkill, breed };
+	const stats = { agility, helium, attack, health, overkill, breed, trimps };
 
 	function score() {
 		let result = 0;
