@@ -140,7 +140,6 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 	<fieldset id=results class=box style='opacity: 0'>
 		<legend>Results</legend>
 		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
-		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
 		<table id=details></table>
 		<p>Warning: this calculator assumes that your trimps are alive
 		100% of the time. If this is not the case, you’ll want to farm slightly
@@ -162,13 +161,13 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 	<a href='https://github.com/Grimy'>By Grimy</a>
 </nav>
 
-<script src=lz-string.js></script>
+<script src=/lz-string.js></script>
 <script src=trimps.js></script>
 <script src=zfarm.js></script>
 <script>
 "use strict";
 
-function read_save(game) {
+function read_save() {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
@@ -189,7 +188,7 @@ function read_save(game) {
 
 	if (game.talents.stillRowing2)
 		attack *= 1 + 0.06 * game.global.spireRows;
-	
+
 	if (game.talents.magmamancer) {
 		let time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
 		let bonus = pow(1.2, floor((time + 5) / 10)) - 1;
@@ -201,8 +200,7 @@ function read_save(game) {
 		attack *= 1 + 0.15 * (zone < 300 ? 0 : floor((zone - 270) / 15));
 	}
 
-
-	if (challenge == "Daily") {
+	if (challenge === "Daily") {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		enemyHealth *= 1 + 0.2 * daily('badHealth');
 		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
@@ -210,18 +208,18 @@ function read_save(game) {
 		maxFluct += daily('maxDamage');
 		attack *= 1 - 0.09 * daily('weakness');
 		attack *= 1 + 0.1 * ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
-		if (zone % 2 == 1)
+		if (zone % 2 === 1)
 			attack *= 1 - 0.02 * daily('oddTrimpNerf');
 		else
 			attack *= 1 + 0.2 * daily('evenTrimpBuff');
-	} else if (challenge == "Toxicity" || challenge == "Balance" || challenge == "Meditate") {
+	} else if (challenge === "Toxicity" || challenge === "Balance" || challenge === "Meditate") {
 		enemyHealth = 2;
-	} else if (challenge == "Lead" && (zone % 2) == 1) {
+	} else if (challenge === "Lead" && (zone % 2) === 1) {
 		attack *= 1.5;
-	} else if (challenge == "Discipline") {
+	} else if (challenge === "Discipline") {
 		maxFluct = 1.995;
 		minFluct = 0.005;
-	} else if (challenge == "Coordinate") {
+	} else if (challenge === "Coordinate") {
 		enemyHealth = pow(1.25, zone);
 	}
 
@@ -286,25 +284,24 @@ function display(results) {
 		html += '</tr><tr><td class=align-right>';
 
 		for (let stance of stances)
-			if (zone == best[stance] && show_stance)
+			if (zone === best[stance] && show_stance)
 				html += `<b>${stance}</b> `;
 
-		html += zone == best.overall ? `<b>${zone}</b>` : zone;
+		html += zone === best.overall ? `<b>${zone}</b>` : zone;
 		html += '<td>' + prettify(zone_stats.loot);
 
 		for (let stance of stances) {
 			let value = prettify(zone_stats[stance].value);
 			html += '<td>' + zone_stats[stance].speed.toFixed(3) + '<td>';
-			html += zone == best[stance] ? `<b>${value}</b>` : value;
+			html += zone === best[stance] ? `<b>${value}</b>` : value;
 		}
 	}
 
 	$('#details').innerHTML = html + '</tr>';
 	$('#results').style.opacity = 1;
-	$('#one-shot').textContent = stats[0].zone;
 
 	if (stats.length < 2 || stats[1].zone.startsWith('BW')) {
-		if ($('#zone').value == 200) {
+		if ($('#zone').value === 200) {
 			$('#result').textContent = 'You should definitely farm on BW200'
 			$('#comment').textContent = 'Good luck with the Spire!';
 		} else {
@@ -319,7 +316,7 @@ function display(results) {
 		best.second += ' in ' + best.second_stance;
 	}
 
-	let max_loot = $('#biome').value == 'gardens' ? 185 : 160;
+	let max_loot = $('#biome').value === 'gardens' ? 185 : 160;
 	let loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
 	let adverbs = ["", "", " probably", " probably", " probably", " probably",
 		" probably", "", "", "", " really", " really", " definitely"]

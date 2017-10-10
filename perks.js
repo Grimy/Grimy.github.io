@@ -1,5 +1,3 @@
-// 2>&-; exec node "$0" "$@"
-
 // Total bonus from an additive perk. `x` is the percentage from each level.
 const add = (perk, x) => 1 + perk.level * x / 100;
 
@@ -8,7 +6,7 @@ const mult = (perk, x) => pow(1 + x / 100, perk.level);
 
 function Perk(name, base_cost, increment, cap, free) {
 	return {
-		name, level: 0, pack: 1, cap, must: 0, spent: 0, free,
+		name, level: 0, pack: 1, cap, must: 0, spent: 0, free, locked: true,
 
 		// Compute the current cost of a perk, based on its current level.
 		cost: increment ? function() {
@@ -48,8 +46,11 @@ function parse_perks(fixed, unlocks) {
 		Perk('Looting',        1,     0,    Infinity, 1e4),
 	];
 
-	for (let item of fixed.split(/ *, */).filter(x => x)) {
-		let m = item.match(/(.*) *([<=>])=? *(.*)/);
+	if (!unlocks.match(/>/))
+		unlocks = unlocks.replace(/(?=,|$)/g, '>0');
+
+	for (let item of (unlocks + ',' + fixed).split(/,/).filter(x => x)) {
+		let m = item.match(/(\S+) *([<=>])=?(.*)/);
 		if (!m)
 			throw 'Enter a list of perk levels, such as “power=42, toughness=51”';
 
@@ -64,18 +65,15 @@ function parse_perks(fixed, unlocks) {
 			throw `Unknown perk: ${m[1]}.`;
 
 		let level = parse_suffixes(m[3]);
-		if (level === null)
+		if (!isFinite(level))
 			throw `Invalid number: ${m[3]}.`;
 
+		matches[0].locked = false;
 		if (m[2] != '>')
 			matches[0].cap = level;
 		if (m[2] != '<')
 			matches[0].must = level;
 	}
-
-	for (let perk of perks)
-		if (unlocks.indexOf(perk.name) == -1)
-			perk.cap = -1;
 
 	return perks;
 }
@@ -194,7 +192,8 @@ function optimize(params) {
 	// Theoretical fighting group size (actual size is lower because of Coordinated)
 	function soldiers() {
 		let ratio = 1 + 0.25 * mult(Coordinated, -2);
-		let coords = log(trimps() / 3 / group_size[Coordinated.level]) / log(ratio);
+		let pop = (mod.trapper || trimps()) / 3;
+		let coords = log(pop / group_size[Coordinated.level]) / log(ratio);
 		let available = zone - 1 + (magma() ? 100 : 0);
 		return group_size[0] * pow(1.25, min(coords, available));
 	}
@@ -230,25 +229,17 @@ function optimize(params) {
 				(pow(0.5 / (0.5 - fighting), 0.1 / mod.breed_timer) - 1) * 10 :
 				fighting / mod.breed_timer;
 			let geneticists = log(breed() / target_speed) / -log(0.98);
-			if (geneticists > 1e308)
-				console.log(ratio, available, required, fighting, breed_factor, target_speed, geneticists);
 			health *= pow(1.01, geneticists);
 		}
 
 		return soldiers() * min(health / 60 + block(), health / 12);
 	}
 
-	function agility() {
-		return 1 / mult(Agility, -5);
-	}
+	const agility = () => 1 / mult(Agility, -5);
+	const helium = () => base_helium * looting() + 45;
+	const overkill = () => add(Overkill, 100);
 
-	function helium() {
-		return base_helium * looting() + 45;
-	}
-
-	const overkill = () => add(Overkill, 9000);
-
-	const stats = { agility, helium, attack, health, overkill, breed };
+	const stats = { agility, helium, attack, health, overkill, breed, trimps };
 
 	function score() {
 		let result = 0;
@@ -270,10 +261,8 @@ function optimize(params) {
 		let baseline = score();
 
 		for (let perk of perks) {
-			if (perk.level >= perk.cap || perk.cost() > he_left)
+			if (perk.locked || perk.level >= perk.cap || perk.cost() > he_left)
 				continue;
-			if (perk.level < perk.must)
-				return perk;
 
 			perk.level += perk.pack;
 			let gain = score() - baseline;
@@ -291,12 +280,13 @@ function optimize(params) {
 
 	mod.loot *= 20.8 * (0.7 + 0.3 * floor((zone + 1) / 101));
 	weight.breed = zone < 70 ? weight.health : 0;
-	weight.agility = 5;
+	weight.agility = (weight.helium + weight.attack) / 2;
+	weight.overkill = 0.1 * weight.helium + 0.01 * weight.attack;
 
 	// Main loop
 	for (let best; (best = best_perk()); ) {
 		let spent = 0;
-		while (best.level < best.cap && spent < he_left / best.free) {
+		while (best.level < best.cap && (best.level < best.must || spent < he_left / best.free)) {
 			he_left -= best.cost();
 			spent += best.cost();
 			best.level += best.pack;
@@ -310,26 +300,4 @@ function optimize(params) {
 		console.log(perk.name, '=', perk.level);
 
 	return [he_left, perks];
-}
-
-// When executing from the command-line
-if (typeof window === 'undefined') {
-	optimize({
-		he_left: parseFloat(process.argv[2]),
-		zone: 450,
-		weight: {helium: 5, attack: 4, health: 2, overkill: 0},
-		perks: parse_perks('trumps=0', {indexOf: _ => 0}),
-		mod: {
-			storage: 0.125,
-			dg: 0,
-			whip: true,
-			magn: true,
-			taunt: true,
-			ven: true,
-			chronojest: 5,
-			prod: 1,
-			loot: 1,
-			breed_timer: 30,
-		}
-	});
 }

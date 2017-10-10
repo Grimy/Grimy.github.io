@@ -1,5 +1,3 @@
-// 2>&-; exec node "$0" "$@"
-
 const max_ticks = 864000; // One day
 
 const biomes = {
@@ -46,7 +44,7 @@ function simulate(zone, g) {
 	for (let ticks = 0; ticks < max_ticks; ++cell) {
 
 		let imp, toughness;
-		if (cell % g.size == 99) {
+		if (cell % g.size === 99) {
 			imp = max_rand;
 			toughness = 2.9;
 		} else {
@@ -117,7 +115,7 @@ function stats(g) {
 		stats.push(info('z', zone, 1, stances, g));
 	}
 
-	if (max_zone > 120 && max_zone % 15 >= 5 && g.biome.length == 14) {
+	if (max_zone > 120 && max_zone % 15 >= 5 && g.biome.length === 14) {
 		let bw = Object.assign({}, g);
 		bw.size = 100;
 		bw.difficulty = 2.6;
@@ -145,50 +143,4 @@ function stats(g) {
 	}
 
 	return [stances, stats, best];
-}
-
-function compareTo(zone_stats, bests) {
-	for (let stance in zone_stats) {
-		let value = zone_stats[stance].value;
-
-		if (!bests.best || value > bests.best.value) {
-			bests.second = bests.best;
-			bests.best = {stance: stance, value: value, zone_stats: zone_stats};
-		} else if (!bests.second || value > bests.second.value) {
-			bests.second = {stance: stance, value: value, zone_stats: zone_stats};
-		}
-
-		if (!bests.byStance[stance] || value > bests.byStance[stance].value) {
-			bests.byStance[stance] = {value: value, zone_stats: zone_stats};
-		}
-	}
-}
-
-// When executing from the command-line
-if (typeof window === 'undefined') {
-	let start = Date.now();
-	let infos = stats({
-		agility: 10 * pow(0.95, 20),
-		attack: 4e71,
-		biome: biomes.all.concat(biomes.gardens),
-		cc: 0.8 * max_rand,
-		cd: 10,
-		challenge: 1,
-		difficulty: 0.84,
-		import_chance: 0.15 * max_rand,
-		overkill: 30,
-		range: 0.2 / max_rand,
-		reducer: true,
-		scry: true,
-		size: 30,
-		titimp: true,
-		zone: 246,
-		poison: 0,
-		wind: 100,
-		ice: 0,
-		transfer: 0.8,
-	});
-	console.log(infos);
-	console.log(infos[1][10].S);
-	console.log(Date.now() - start);
 }
