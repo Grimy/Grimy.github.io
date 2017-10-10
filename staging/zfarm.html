@@ -140,7 +140,6 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 	<fieldset id=results class=box style='opacity: 0'>
 		<legend>Results</legend>
 		<p style='font-size: 1.1em'><b id=result></b>. <span id=comment></span>
-		<p>The highest zone where you one-shot everything is <b id=one-shot></b>.
 		<table id=details></table>
 		<p>Warning: this calculator assumes that your trimps are alive
 		100% of the time. If this is not the case, you’ll want to farm slightly
@@ -200,7 +199,6 @@ function read_save() {
 		let zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
 		attack *= 1 + 0.15 * (zone < 300 ? 0 : floor((zone - 270) / 15));
 	}
-
 
 	if (challenge === "Daily") {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
@@ -301,7 +299,6 @@ function display(results) {
 
 	$('#details').innerHTML = html + '</tr>';
 	$('#results').style.opacity = 1;
-	$('#one-shot').textContent = stats[0].zone;
 
 	if (stats.length < 2 || stats[1].zone.startsWith('BW')) {
 		if ($('#zone').value === 200) {

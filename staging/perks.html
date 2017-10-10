@@ -46,7 +46,7 @@ fieldset { flex: 2 0 320px }
 		</label>
 
 		<label title='Suggested weights far various stages of the game.'>
-			<select onchange='select_preset(this.value)'>
+			<select id=preset onchange='select_preset(this.value)'>
 				<option value=pick>
 				<option disabled>— Normal progression —
 				<option value=early>z1–59
@@ -312,7 +312,7 @@ function read_save() {
 
 	if (!localStorage['weight-he'] && !localStorage['weight-atk'] && !localStorage['weight-hp']) {
 		let zone = game.global.highestLevelCleared;
-		let option = $$('option').filter(x => x.innerText.match(/\d+$/) >= zone)[0];
+		let option = $$('#preset > *').filter(x => x.innerText.match(/\d+$/) >= zone)[0];
 		option.selected = true;
 		select_preset(option.value);
 	}
@@ -333,9 +333,19 @@ function read_save() {
 	$('#breed-timer').value = game.talents.patience ? 45 : 30;
 }
 
+function check_zone_preset(zone, preset) {
+	let max_zone = game ? game.global.highestLevelCleared : 999;
+
+	if ((preset.match(/trimp|coord/) && zone >= max_zone / 2)
+			|| (preset === 'trapper' && zone >= max_zone - 40))
+		show_alert('warning', 'Your target zone seems too high for this c², try lowering it.');
+
+	return zone;
+}
+
 const parse_inputs = () => ({
 	he_left: input('helium'),
-	zone: parseInt($('#zone').value),
+	zone: check_zone_preset(parseInt($('#zone').value), $('#preset').value),
 	perks: parse_perks($('#fixed').value, $('#unlocks').value),
 	weight: {
 		helium: input('weight-he'),
