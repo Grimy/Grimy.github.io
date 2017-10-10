@@ -56,7 +56,7 @@ fieldset { flex: 2 0 320px }
 				<option value=magma>z230–280
 				<option value=z280>z280–400
 				<option value=z400>z400–450
-				<option value=z450>z450—999
+				<option value=z450>z450+
 				<option disabled>— Special-purpose presets —
 				<option value=spire>Spire respec
 				<option value=scientist>Scientist challenge
@@ -311,8 +311,11 @@ function read_save() {
 		$('#zone').value = game.global.highestLevelCleared - 5;
 
 	if (!localStorage['weight-he'] && !localStorage['weight-atk'] && !localStorage['weight-hp']) {
-		let zone = game.global.highestLevelCleared;
-		let option = $$('#preset > *').filter(x => x.innerText.match(/\d+$/) >= zone)[0];
+		let option;
+		$$('#preset > *').forEach(function (x) {
+			if (parseInt(x.innerText.replace('z', '')) < game.global.highestLevelCleared)
+				option = x;
+		});
 		option.selected = true;
 		select_preset(option.value);
 	}
