@@ -313,7 +313,7 @@ function read_save() {
 	if (!localStorage['weight-he'] && !localStorage['weight-atk'] && !localStorage['weight-hp']) {
 		let option;
 		$$('#preset > *').forEach(function (x) {
-			if (parseInt(x.innerText.replace('z', '')) < game.global.highestLevelCleared)
+			if (parseInt(x.innerHTML.replace('z', '')) < game.global.highestLevelCleared)
 				option = x;
 		});
 		option.selected = true;
