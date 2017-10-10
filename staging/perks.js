@@ -235,15 +235,9 @@ function optimize(params) {
 		return soldiers() * min(health / 60 + block(), health / 12);
 	}
 
-	function agility() {
-		return 1 / mult(Agility, -5);
-	}
-
-	function helium() {
-		return base_helium * looting() + 45;
-	}
-
-	const overkill = () => add(Overkill, 9000);
+	const agility = () => 1 / mult(Agility, -5);
+	const helium = () => base_helium * looting() + 45;
+	const overkill = () => add(Overkill, 100);
 
 	const stats = { agility, helium, attack, health, overkill, breed, trimps };
 
@@ -286,7 +280,8 @@ function optimize(params) {
 
 	mod.loot *= 20.8 * (0.7 + 0.3 * floor((zone + 1) / 101));
 	weight.breed = zone < 70 ? weight.health : 0;
-	weight.agility = 5;
+	weight.agility = (weight.helium + weight.attack) / 2;
+	weight.overkill = 0.1 * weight.helium + 0.01 * weight.attack;
 
 	// Main loop
 	for (let best; (best = best_perk()); ) {

@@ -4,10 +4,10 @@
 <link href=blue.css rel=stylesheet>
 <link href=dark.css rel=stylesheet id=dark>
 <style>
-#results { flex: 0 1 57rem; margin: 0 auto; white-space: nowrap }
+#results { flex: 2 0 640px; margin: 0 auto; white-space: nowrap }
 #details > * { flex: 1 0; align-self: center; margin: 0 1em }
 #perks { justify-content: center }
-fieldset { flex: 0 1 30em }
+fieldset { flex: 2 0 320px }
 .perk { width: 20%; text-align: center; overflow: hidden }
 .perk { border: 1px solid black; margin: -1px; padding: 0.6ex 0 0.4ex 0 }
 .perk { box-shadow: inset 0 0 1px white, 1px 1px 2px #000; font-size: 1.05rem }
@@ -24,6 +24,8 @@ fieldset { flex: 0 1 30em }
 <p id=alert></p>
 
 <form class=flexbox action='javascript:try_wrap(function() {display(optimize(parse_inputs()))})'>
+	<div class=filler></div>
+
 	<fieldset class=box>
 		<legend>Inputs</legend>
 
@@ -54,7 +56,7 @@ fieldset { flex: 0 1 30em }
 				<option value=magma>z230–280
 				<option value=z280>z280–400
 				<option value=z400>z400–450
-				<option value=z450>z450+
+				<option value=z450>z450—999
 				<option disabled>— Special-purpose presets —
 				<option value=spire>Spire respec
 				<option value=scientist>Scientist challenge
@@ -81,11 +83,6 @@ fieldset { flex: 0 1 30em }
 		<label title='How much you value +1% survivability (health and block).'>
 			<input type=text id=weight-hp oninput='check_input(this)' data-saved>
 			Weight: Health
-		</label>
-
-		<label title='How much you value +1% overkill damage.'>
-			<input type=text id=weight-ok oninput='check_input(this)' data-saved>
-			Weight: Overkill
 		</label>
 
 		<label title='A list of perks that you don’t want to change, for example “power=42, carp=31”'>
@@ -157,6 +154,9 @@ Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for
 		<button type=submit class=centered>Optimize!</button>
 	</fieldset>
 
+	<div class=filler></div>
+	<div class=filler></div>
+
 	<div id=results style='opacity: 0'>
 		<div id=details class=flexbox>
 			<h2 id=he-left></h2>
@@ -165,6 +165,8 @@ Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for
 		</div>
 		<div id=perks class=flexbox></div>
 	</div>
+
+	<div class=filler></div>
 </form>
 
 <nav class=flexbox>
@@ -184,8 +186,6 @@ Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for
 <script>
 "use strict";
 
-let game;
-
 function validate_fixed() {
 	try {
 		parse_perks($('#fixed').value, 'l');
@@ -199,23 +199,23 @@ validate_fixed();
 
 function select_preset(name) {
 	let preset = {
-		pick:       [ '', '', '', ''],
-		early:      [  5,  4,  2,  0],
-		broken:     [  7,  3,  1,  0],
-		mid:        [ 16,  5,  1,  1],
-		corruption: [ 25,  7,  1,  2],
-		magma:      [ 35,  4,  3,  2],
-		z280:       [ 42,  6,  1,  2],
-		z400:       [ 88, 10,  1,  4],
-		z450:       [500, 50,  1,  5],
-		spire:      [  0,  1,  1,  0],
-		scientist:  [  0,  1,  3,  0],
-		carp:       [  0,  0,  0,  0],
-		trapper:    [  0,  7,  1,  0],
-		coord:      [  0, 40,  1,  0],
-		trimp:      [  0, 99,  1,  0],
-		metal:      [  0,  7,  1,  0],
-		c2:         [  0,  7,  1,  0],
+		pick:       [ '', '', ''],
+		early:      [  5,  4,  2],
+		broken:     [  7,  3,  1],
+		mid:        [ 16,  5,  1],
+		corruption: [ 25,  7,  1],
+		magma:      [ 35,  4,  3],
+		z280:       [ 42,  6,  1],
+		z400:       [ 88, 10,  1],
+		z450:       [500, 50,  1],
+		spire:      [  0,  1,  1],
+		scientist:  [  0,  1,  3],
+		carp:       [  0,  0,  0],
+		trapper:    [  0,  7,  1],
+		coord:      [  0, 40,  1],
+		trimp:      [  0, 99,  1],
+		metal:      [  0,  7,  1],
+		c2:         [  0,  7,  1],
 	}[name];
 
 	function special(regex, field, prefix) {
@@ -233,7 +233,6 @@ function select_preset(name) {
 	$('#weight-he').value = preset[0];
 	$('#weight-atk').value = preset[1];
 	$('#weight-hp').value = preset[2];
-	$('#weight-ok').value = preset[3];
 }
 
 function input(id) {
@@ -289,9 +288,7 @@ function generated_housing(max_zone) {
 	return floor(housing);
 }
 
-function read_save(_game) {
-	game = _game;
-
+function read_save() {
 	let helium = game.global.heliumLeftover;
 	for (let perk in game.portal)
 		helium += game.portal[perk].heliumSpent;
@@ -310,14 +307,20 @@ function read_save(_game) {
 			loot *= 1 + 0.01 * mod[1];
 	}
 
-	if (!$('#zone').value || game.global.highestLevelCleared < 400)
+	if (!localStorage.zone)
 		$('#zone').value = game.global.highestLevelCleared - 5;
 
+	if (!localStorage['weight-he'] && !localStorage['weight-atk'] && !localStorage['weight-hp']) {
+		let zone = game.global.highestLevelCleared;
+		let option = $$('option').filter(x => x.innerText.match(/\d+$/) >= zone)[0];
+		option.selected = true;
+		select_preset(option.value);
+	}
+
 	let unlocks = Object.keys(game.portal).filter(perk => !game.portal[perk].locked);
-	if (game.global.canRespecPerks)
+	if (!game.global.canRespecPerks)
 		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
 
-	$('#weight-ok').parentNode.style.display = game.portal.Overkill.locked ? 'none' : '';
 	$('#helium').value = helium + ($('#respec').checked ? 0 : game.resources.helium.owned);
 	$('#unlocks').value = unlocks.join(',');
 	$('#whipimp').checked = game.unlocks.imps.Whipimp;
@@ -338,7 +341,6 @@ const parse_inputs = () => ({
 		helium: input('weight-he'),
 		attack: input('weight-atk'),
 		health: input('weight-hp'),
-		overkill: input('weight-ok'),
 		trimps: $('[value=carp]').selected ? 1e6 : 0,
 	},
 	mod: {
@@ -381,46 +383,5 @@ function toggle_info() {
 	$$('.perk').forEach(elem => elem.classList.toggle('more'));
 	$('#info').innerText = localStorage.more ? 'Less info' : 'More info';
 }
-
-function callback() {
-	let url = JSON.parse(this.responseText).data.url;
-	show_alert('ok', `Your share link is <a href=${url}>${url}`);
-}
-
-function create_share() {
-	let share_string = localStorage.notation + ':';
-	share_string += $$('input').map(field => field.value.replace(':', '')).join(':');
-	let url = location.href.replace(/[#?].*/, '');
-	url += '?' + LZString.compressToBase64(share_string);
-	url = 'https://api-ssl.bitly.com/v3/shorten?longUrl=' + encodeURIComponent(url);
-	url += '&login=grimy&apiKey=R_7ea82c1cec394d1ca5cf4da2a7f7ddd9';
-
-	let request = new XMLHttpRequest();
-	request.open('GET', url, true);
-	request.onload = callback;
-	request.send();
-}
-
-function exit_share() {
-	history.pushState({}, '', 'perks.html');
-	$('textarea').onclick = null;
-	$$('[data-saved]').forEach(field => field.value = localStorage[field.id] || field.value);
-}
-
-function load_share(str) {
-	let values = LZString.decompressFromBase64(str).split(':');
-	let notation = localStorage.notation;
-	localStorage.notation = values.shift();
-
-	$$('input').forEach(field => field.value = values.shift());
-	$('textarea').onclick = exit_share;
-
-	let inputs = parse_inputs();
-	localStorage.notation = notation || 1;
-	try_wrap(() => display(optimize(inputs)));
-}
-
-if (location.search)
-	load_share(location.search.substr(1));
 
 </script>

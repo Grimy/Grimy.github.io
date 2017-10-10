@@ -38,6 +38,7 @@ nav > a { white-space: nowrap; color: inherit; text-decoration: none }
 .ko { filter: hue-rotate(150deg) }
 .badge { display: inline-block; padding: 3px 7px; font-weight: bold; line-height: 1; color: white; background: #777; margin-right: 1ex; border-radius: 1em }
 .flexbox { width: 100%; display: flex; flex-flow: row wrap; margin: 4ex 0 }
+.filler { flex: 1 0 0 }
 .centered { display: block; clear: both; margin-left: auto; margin-right: auto }
 
 .tabs { position: relative }
