@@ -40,8 +40,7 @@ fieldset { flex: 2 0 320px }
 		</label>
 
 		<label title='The base zone used in calculations. Set this to a few zone before your planned portalling zone, for example the zone on which you do your Void Maps.'>
-			<input type=text id=zone required pattern='\d{2,3}'
-			onchange='if (game) $("#dg").value = generated_housing(this.value / 2 + 115)'>
+			<input type=text id=zone required pattern='\d{2,3}' onchange='if (game) update_dg()'>
 			Target zone
 		</label>
 
@@ -244,7 +243,8 @@ function handle_respec(respec) {
 	$('#helium').value = input('helium') + owned * (respec ? -1 : 1);
 }
 
-function generated_housing(max_zone) {
+function update_dg() {
+	let max_zone = $('#zone').value / 2 + 115;
 	let eff = 500e6 + 50e6 * game.generatorUpgrades.Efficiency.upgrades;
 	let capa = 3 + 0.4 * game.generatorUpgrades.Capacity.upgrades;
 	let max_fuel = game.permanentGeneratorUpgrades.Storage.owned ? capa * 1.5 : capa;
@@ -285,7 +285,8 @@ function generated_housing(max_zone) {
 
 	while (fuel >= burn)
 		tick(1);
-	return floor(housing);
+
+	$("#dg").value = floor(housing);
 }
 
 function read_save() {
@@ -324,6 +325,7 @@ function read_save() {
 	if (!game.global.canRespecPerks)
 		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
 
+	update_dg();
 	$('#helium').value = helium + ($('#respec').checked ? 0 : game.resources.helium.owned);
 	$('#unlocks').value = unlocks.join(',');
 	$('#whipimp').checked = game.unlocks.imps.Whipimp;
