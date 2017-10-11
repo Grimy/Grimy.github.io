@@ -218,10 +218,9 @@ function select_preset(name) {
 	}[name];
 
 	function special(regex, field, prefix) {
+		field.value = field.value.replace(prefix, '');
 		if (name.match(regex))
 			field.value = prefix + field.value;
-		else
-			field.value = field.value.replace(prefix, '');
 	}
 
 	special(/spire|metal|trapper|carp/, $('#prod'), '0*');
