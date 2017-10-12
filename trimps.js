@@ -34,10 +34,10 @@ function show_alert(style, message) {
 	$$('[data-saved]').forEach(field => {
 		if (field.type === 'checkbox') {
 			field.checked = localStorage[field.id] === 'true';
-			field.addEventListener('onchange', () => localStorage[field.id] = field.checked);
+			field.addEventListener('change', () => localStorage[field.id] = field.checked);
 		} else {
 			field.value = localStorage[field.id] || field.value;
-			field.addEventListener('onchange', () => localStorage[field.id] = field.value);
+			field.addEventListener('change', () => localStorage[field.id] = field.value);
 		}
 	});
 })('2.2');
