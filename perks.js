@@ -256,6 +256,10 @@ function optimize(params) {
 	}
 
 	function best_perk() {
+		for (let perk of perks)
+			if (perk.level < perk.must)
+				return perk;
+
 		let best;
 		let max = 0;
 		let baseline = score();
@@ -281,7 +285,7 @@ function optimize(params) {
 	mod.loot *= 20.8 * (0.7 + 0.3 * floor((zone + 1) / 101));
 	weight.breed = zone < 70 ? weight.health : 0;
 	weight.agility = (weight.helium + weight.attack) / 2;
-	weight.overkill = 0.1 * weight.helium + 0.01 * weight.attack;
+	weight.overkill = 0.25 * weight.attack * (2 - pow(0.9, weight.helium / weight.attack));
 
 	// Main loop
 	for (let best; (best = best_perk()); ) {
