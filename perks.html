@@ -226,7 +226,7 @@ function select_preset(name) {
 	special(/spire|metal|trapper|carp/, $('#prod'), '0*');
 	special(/spire|carp/, $('#loot'), '0*');
 	special(/spire/, $('#fixed'), 'overkill=0,');
-	special(/trimp|scientist/, $('#fixed'), 'coord=0,');
+	special(/scientist/, $('#fixed'), 'coord=0,');
 	special(/trapper/, $('#fixed'), 'phero=0,anti=0,');
 
 	$('#weight-he').value = preset[0];
@@ -361,7 +361,8 @@ const parse_inputs = () => ({
 	mod: {
 		storage: 0.125,
 		dg: input('dg'),
-		trapper: game && $('[value=trapper]').selected ? game.resources.trimps.owned : 0,
+		soldiers: game && $('[value=trapper]').selected ? game.resources.trimps.owned :
+		                  $('[value=trimp]').selected ? 1 : 0,
 		whip: $('#whipimp').checked,
 		magn: $('#magnimp').checked,
 		taunt: $('#tauntimp').checked,
