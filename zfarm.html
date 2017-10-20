@@ -186,6 +186,9 @@ function read_save() {
 	attack *= 1 + 0.01 * game.global.totalSquaredReward;
 	attack /= [1, 0.5, 4, 0.5, 0.5][game.global.formation];
 
+	if (game.global.sugarRush > 0)
+		attack *= floor(zone / 100);
+
 	if (game.talents.stillRowing2)
 		attack *= 1 + 0.06 * game.global.spireRows;
 
@@ -196,8 +199,8 @@ function read_save() {
 	}
 
 	if (game.talents.healthStrength) {
-		let zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
-		attack *= 1 + 0.15 * (zone < 300 ? 0 : floor((zone - 270) / 15));
+		let zz = min(zone, game.global.lastSpireCleared * 100 + 199);
+		attack *= 1 + 0.15 * (zz < 300 ? 0 : floor((zz - 270) / 15));
 	}
 
 	if (challenge === "Daily") {
