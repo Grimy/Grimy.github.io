@@ -23,25 +23,6 @@ function show_alert(style, message) {
 		</p>`;
 }
 
-(function init(version) {
-	$('#dark').disabled = !localStorage.dark;
-
-	if (localStorage.version != version) {
-		localStorage.version = version;
-		show_alert('ok', `Welcome to Trimps ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
-	}
-
-	$$('[data-saved]').forEach(field => {
-		if (field.type === 'checkbox') {
-			field.checked = localStorage[field.id] === 'true';
-			field.addEventListener('change', () => localStorage[field.id] = field.checked);
-		} else {
-			field.value = localStorage[field.id] || field.value;
-			field.addEventListener('change', () => localStorage[field.id] = field.value);
-		}
-	});
-})('2.2');
-
 // Copy of the Trimps save data
 let game;
 
@@ -169,5 +150,25 @@ function load_share(str) {
 	try_wrap(() => display(optimize(inputs)));
 }
 
-if (location.search)
-	load_share(location.search.substr(1));
+window.onload = function () {
+	version = '2.2';
+	$('#dark').disabled = !localStorage.dark;
+
+	if (localStorage.version != version) {
+		localStorage.version = version;
+		show_alert('ok', `Welcome to Trimps ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
+	}
+
+	if (location.search)
+		load_share(location.search.substr(1));
+
+	$$('[data-saved]').forEach(field => {
+		if (field.type === 'checkbox') {
+			field.checked = localStorage[field.id] === 'true';
+			field.addEventListener('change', () => localStorage[field.id] = field.checked);
+		} else {
+			field.value = localStorage[field.id] || field.value;
+			field.addEventListener('change', () => localStorage[field.id] = field.value);
+		}
+	});
+};
