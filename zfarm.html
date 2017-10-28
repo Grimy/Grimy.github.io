@@ -242,6 +242,10 @@ function read_save() {
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = zone;
 
+	$('#poison').value = 0;
+	$('#wind').value = 0;
+	$('#ice').value = 0;
+
 	if (zone >= 236) {
 		let nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
 		let diplomacy = game.talents.nature3 ? 5 : 0;
