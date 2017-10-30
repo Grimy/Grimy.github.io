@@ -110,10 +110,12 @@ function optimize(params) {
 		cost: pow(1.069, 0.85 * (zone < 60 ? 57 : 53)),
 		attack: pow(1.19, 13),
 		health: pow(1.19, 14),
+		block: pow(1.19, 10),
 	};
 	const equip_cost = {
 		attack: 211 * (weight.attack + weight.health) / weight.attack,
 		health: 248 * (weight.attack + weight.health) / weight.health,
+		block:    5 * (weight.attack + weight.health) / weight.health,
 	};
 
 	// Number of ticks it takes to one-shot an enemy.
@@ -174,9 +176,8 @@ function optimize(params) {
 	// Breed speed
 	function breed() {
 		let nurseries = building(2e6, 1.06) / (1 + 0.1 * min(magma(), 20));
-		let potency = 0.00085 * pow(1.1, floor(zone / 5));
-		let traps = zone <= 90 ? add(Bait, 100) * mod.breed_timer / trimps() : 0;
-		return potency * pow(1.01, nurseries) * add(Pheromones, 10) * imp.ven + traps;
+		let potency = 0.0085 * (zone >= 60 ? 0.1 : 1) * pow(1.1, floor(zone / 5));
+		return potency * pow(1.01, nurseries) * add(Pheromones, 10) * imp.ven;
 	}
 
 	let group_size = [];
@@ -208,19 +209,26 @@ function optimize(params) {
 		return soldiers() * attack;
 	}
 
-	// Block per imp
-	function block() {
-		let gyms = building(400, 1.185);
-		let trainers = (gyms * log(1.185) - log(1 + gyms)) / log(1.1) + 25 - mystic;
-		return 0.04 * gyms * pow(1 + mystic / 100, gyms) * (1 + tacular * trainers);
-	}
-
 	// Total survivability (accounts for health and block)
 	function health() {
 		let health = (0.6 + equip('health')) * pow(0.8, magma());
 		health *= add(Toughness, 5) * add(Toughness_II, 1) * mult(Resilience, 10);
 
-		if (!weight.breed) {
+		// block
+		let gyms = building(400, 1.185);
+		let trainers = (gyms * log(1.185) - log(1 + gyms)) / log(1.1) + 25 - mystic;
+		let block = 0.04 * gyms * pow(1 + mystic / 100, gyms) * (1 + tacular * trainers);
+
+		// target number of attacks to survive
+		let attacks = 60;
+
+		if (zone < 70) { // no geneticists
+			// number of ticks needed to repopulate an army
+			let timer = log(1 + soldiers() * breed() / add(Bait, 100)) / log(1 + breed());
+			attacks = timer / ticks();
+		}
+
+		else { // no geneticists
 			let ratio = 1 + 0.25 * mult(Coordinated, -2);
 			let available = zone - 1 + (magma() ? 100 : 0);
 			let required = group_size[Coordinated.level] * pow(ratio, available);
@@ -232,14 +240,20 @@ function optimize(params) {
 			health *= pow(1.01, geneticists);
 		}
 
-		return soldiers() * min(health / 60 + block(), health / 12);
+		health /= attacks;
+		if (zone < 60)
+			block += equip('block');
+		else
+			block = min(block, 4 * health);
+
+		return soldiers() * (block + health);
 	}
 
 	const agility = () => 1 / mult(Agility, -5);
 	const helium = () => base_helium * looting() + 45;
 	const overkill = () => add(Overkill, 100);
 
-	const stats = { agility, helium, attack, health, overkill, breed, trimps };
+	const stats = { agility, helium, attack, health, overkill, trimps };
 
 	function score() {
 		let result = 0;
@@ -283,7 +297,6 @@ function optimize(params) {
 	}
 
 	mod.loot *= 20.8 * (0.7 + 0.3 * floor((zone + 1) / 101));
-	weight.breed = zone < 70 ? weight.health : 0;
 	weight.agility = (weight.helium + weight.attack) / 2;
 	weight.overkill = 0.25 * weight.attack * (2 - pow(0.9, weight.helium / weight.attack));
 
