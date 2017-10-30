@@ -156,7 +156,7 @@ window.onload = function () {
 
 	if (localStorage.version != version) {
 		localStorage.version = version;
-		show_alert('ok', `Welcome to Trimps ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
+		show_alert('ok', `Welcome to Trimps tools ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
 	}
 
 	if (location.search)
