@@ -31,7 +31,7 @@ function handle_paste(ev) {
 
 	try {
 		game = JSON.parse(LZString.decompressFromBase64(save_string));
-		if (game.global.version > 4.511)
+		if (game.global.version > 4.512)
 			show_alert('warning', 'Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.');
 	} catch (err) {
 		show_alert('ko', 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.');
