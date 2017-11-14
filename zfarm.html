@@ -308,8 +308,8 @@ function display(results) {
 	$('#results').style.opacity = 1;
 
 	if (stats.length < 2 || stats[1].zone.startsWith('BW')) {
-		if ($('#zone').value === 200) {
-			$('#result').textContent = 'You should definitely farm on BW200'
+		if ($('#zone').value % 100 === 0 && $('#zone').value > 100) {
+			$('#result').textContent = 'You should definitely farm on ' + stats[stats.length - 1].zone;
 			$('#comment').textContent = 'Good luck with the Spire!';
 		} else {
 			$('#result').textContent = 'You should really be pushing rather than farming';
