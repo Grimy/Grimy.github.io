@@ -182,7 +182,7 @@ function optimize(params) {
 
 	let group_size = [];
 
-	for (let coord = 0; coord < log(1 + he_left / 500e3) / log(1.3); ++coord) {
+	for (let coord = 0; coord <= log(1 + he_left / 500e3) / log(1.3); ++coord) {
 		let ratio = 1 + 0.25 * pow(0.98, coord);
 		let result = 1;
 		for (let i = 0; i < 100; ++i)
