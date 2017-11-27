@@ -217,14 +217,18 @@ function read_save() {
 		else
 			attack *= 1 + 0.2 * daily('evenTrimpBuff');
 	} else if (challenge === "Toxicity" || challenge === "Balance" || challenge === "Meditate") {
-		enemyHealth = 2;
-	} else if (challenge === "Lead" && (zone % 2) === 1) {
-		attack *= 1.5;
+		enemyHealth *= 2;
+	} else if (challenge === "Lead") {
+		if (zone % 2 == 1)
+			attack *= 1.5;
+		else
+			show_alert('warning', 'Are you <b>sure</b> you want to farm on an even Lead zone?');
+		enemyHealth *= 1 + 0.04 * game.challenges.Lead.stacks;
 	} else if (challenge === "Discipline") {
-		maxFluct = 1.995;
 		minFluct = 0.005;
+		maxFluct = 1.995;
 	} else if (challenge === "Coordinate") {
-		enemyHealth = pow(1.25, zone);
+		enemyHealth *= pow(1.25, zone);
 	} else if (challenge === "Life") {
 		enemyHealth *= 11;
 		attack *= 1 + 0.1 * game.challenges.Life.stacks;
