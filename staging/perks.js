@@ -130,7 +130,7 @@ function optimize(params) {
 		let storage = mod.storage * mult(Resourceful, -5) / add(Packrat, 20);
 		let loot = looting() * imp.magn / ticks();
 		let prod = ignore_prod ? 0 : moti() * add(Meditation, 1) * mod.prod;
-		let chronojest = mod.chronojest * 0.75 * prod * loot;
+		let chronojest = mod.chronojest * 0.1 * prod * loot;
 		return base_income * (prod + loot * mod.loot + chronojest) * (1 - storage);
 	}
 

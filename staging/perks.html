@@ -128,10 +128,9 @@ fieldset { flex: 2 0 320px }
 			Venimp
 		</label>
 
-		<label title='Multiplier for Chronoimp/Jestimp loot.
-Set to 0 if you haven’t unlocked these imps, 2 for Chrono, 3 for Jest or 5 for both.'>
-			<input type=text id=chronojest value=5 pattern='\d+'>
-			Chrono/Jest
+		<label title='Seconds of income per 100 cells cleared. This includes Chronoimp, Jestimp, and caches.'>
+			<input type=text id=chronojest value=42 pattern='\d+'>
+			Chronojest mod
 		</label>
 
 		<label title='Multiplier for production'>
@@ -290,24 +289,7 @@ function update_dg() {
 }
 
 function read_save() {
-	let helium = game.global.heliumLeftover;
-	for (let perk in game.portal)
-		helium += game.portal[perk].heliumSpent;
-
-	let tt = game.talents.turkimp4 ? 1 :
-	         game.talents.turkimp3 ? 0.6 :
-	         game.talents.turkimp2 ? 0.4 :
-	         game.talents.turkimp ? 0.3 : 0.25;
-	let prod = 1 + tt;
-	let loot = 1 + 0.333 * tt;
-
-	for (let mod of (game.global.StaffEquipped.mods || [])) {
-		if (mod[0] === 'MinerSpeed')
-			prod *= 1 + 0.01 * mod[1];
-		else if (mod[0] === 'metalDrop')
-			loot *= 1 + 0.01 * mod[1];
-	}
-
+	// Auto-fill for the lazy
 	if (!localStorage.zone)
 		$('#zone').value = game.global.highestLevelCleared - 5;
 
@@ -321,10 +303,34 @@ function read_save() {
 		select_preset(option.value);
 	}
 
+	// He / unlocks
+	let helium = game.global.heliumLeftover;
+	for (let perk in game.portal)
+		helium += game.portal[perk].heliumSpent;
+
 	let unlocks = Object.keys(game.portal).filter(perk => !game.portal[perk].locked);
 	if (!game.global.canRespecPerks)
 		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
 
+	// Income
+	let tt = game.talents.turkimp4 ? 1 :
+	         game.talents.turkimp3 ? 0.6 :
+	         game.talents.turkimp2 ? 0.4 :
+	         game.talents.turkimp ? 0.3 : 0.25;
+	let prod = 1 + tt;
+	let loot = 1 + 0.333 * tt;
+	let chronojest = 27 * game.unlocks.imps.Jestimp + 15 * game.unlocks.imps.Chronoimp;
+	let cache = zone < 60 ? 0 : zone < 90 ? 15 : zone < 150 ? 20 : zone < 170 ? 30 : 45;
+	chronojest += (game.talents.mapLoot2 ? 5 : 4) * cache;
+
+	for (let mod of (game.global.StaffEquipped.mods || [])) {
+		if (mod[0] === 'MinerSpeed')
+			prod *= 1 + 0.01 * mod[1];
+		else if (mod[0] === 'metalDrop')
+			loot *= 1 + 0.01 * mod[1];
+	}
+
+	// Fill the fields
 	update_dg();
 	$('#helium').value = helium + ($('#respec').checked ? 0 : game.resources.helium.owned);
 	$('#unlocks').value = unlocks.join(',');
@@ -332,9 +338,9 @@ function read_save() {
 	$('#magnimp').checked = game.unlocks.imps.Magnimp;
 	$('#tauntimp').checked = game.unlocks.imps.Tauntimp;
 	$('#venimp').checked = game.unlocks.imps.Venimp;
-	$('#chronojest').value = 3 * game.unlocks.imps.Jestimp + 2 * game.unlocks.imps.Chronoimp;
-	$('#prod').value = ($('#prod').value.startsWith('0') ? '0*' : '') + prettify(prod);
-	$('#loot').value = ($('#loot').value.startsWith('0') ? '0*' : '') + prettify(loot);
+	$('#chronojest').value = chronojest;
+	$('#prod').value = ($('#prod').value.startsWith('0*') ? '0*' : '') + prettify(prod);
+	$('#loot').value = ($('#loot').value.startsWith('0*') ? '0*' : '') + prettify(loot);
 	$('#breed-timer').value = game.talents.patience ? 45 : 30;
 }
 
