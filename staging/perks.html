@@ -233,10 +233,6 @@ function select_preset(name) {
 	$('#weight-hp').value = preset[2];
 }
 
-function input(id) {
-	return parse_suffixes($('#' + id).value);
-}
-
 function handle_respec(respec) {
 	let owned = game ? game.resources.helium.owned : 0;
 	$('#helium').value = input('helium') + owned * (respec ? -1 : 1);

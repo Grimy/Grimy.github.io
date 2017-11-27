@@ -96,6 +96,10 @@ function parse_suffixes(str) {
 	return +str;
 }
 
+function input(id) {
+	return parse_suffixes($('#' + id).value);
+}
+
 function check_input(field) {
 	let ok = isFinite(parse_suffixes(field.value));
 	let notation = localStorage.notation === '3' ? 'alphabetic ' : '';
