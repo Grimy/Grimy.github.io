@@ -307,9 +307,9 @@ function display(results) {
 	$('#details').innerHTML = html + '</tr>';
 	$('#results').style.opacity = 1;
 
-	if (stats.length < 2 || stats[1].zone.startsWith('BW')) {
+	if (stats.length < 2) {
 		if ($('#zone').value % 100 === 0 && $('#zone').value > 100) {
-			$('#result').textContent = 'You should definitely farm on ' + stats[stats.length - 1].zone;
+			$('#result').textContent = 'You should definitely farm on z' + ($('#zone').value - $('#reducer').checked);
 			$('#comment').textContent = 'Good luck with the Spire!';
 		} else {
 			$('#result').textContent = 'You should really be pushing rather than farming';

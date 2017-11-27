@@ -7,7 +7,6 @@ const biomes = {
 	mountain: [2, 1.4, 1.4],
 	forest: [1.2, 1.5],
 	depths: [1, 0.7, 1.4, 0.8],
-	bionic: [1.5, 0.8, 1.2, 1.3, 1.5],
 };
 
 let seed = 42;
@@ -113,15 +112,6 @@ function stats(g) {
 
 	for (let zone = max_os; zone <= max_zone; ++zone) {
 		stats.push(info('z', zone, 1, stances, g));
-	}
-
-	if (max_zone > 120 && max_zone % 15 >= 5 && g.biome.length === 14) {
-		let bw = Object.assign({}, g);
-		bw.size = 100;
-		bw.difficulty = 2.6;
-		bw.biome = biomes.all.concat(biomes.bionic);
-		let zone = 5 + (max_zone - max_zone % 15);
-		stats.push(info('BW', zone, 300 / 180, stances, bw));
 	}
 
 	let best = {};
