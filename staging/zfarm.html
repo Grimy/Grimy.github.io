@@ -224,6 +224,11 @@ function read_save() {
 		minFluct = 0.005;
 	} else if (challenge === "Coordinate") {
 		enemyHealth = pow(1.25, zone);
+	} else if (challenge === "Life") {
+		enemyHealth *= 11;
+		attack *= 1 + 0.1 * game.challenges.Life.stacks;
+	} else if (challenge === "Obliterated") {
+		enemyHealth *= pow(10, 12 + floor(zone / 10));
 	}
 
 	$('#agility').value = game.portal.Agility.level;
