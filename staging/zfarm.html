@@ -186,18 +186,21 @@ function read_save() {
 	attack *= 1 + 0.01 * game.global.totalSquaredReward;
 	attack /= [1, 0.5, 4, 0.5, 0.5][game.global.formation];
 
+	if (game.global.sugarRush > 0)
+		attack *= floor(zone / 100);
+
 	if (game.talents.stillRowing2)
 		attack *= 1 + 0.06 * game.global.spireRows;
 
 	if (game.talents.magmamancer) {
 		let time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
-		let bonus = pow(1.2, floor((time + 5) / 10)) - 1;
+		let bonus = pow(1.2, min(12, floor((time + 5) / 10))) - 1;
 		attack *= 1 + 3 * (1 - pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
 	}
 
 	if (game.talents.healthStrength) {
-		let zone = min(game.global.world, game.global.lastSpireCleared * 100 + 199);
-		attack *= 1 + 0.15 * (zone < 300 ? 0 : floor((zone - 270) / 15));
+		let zz = min(zone, game.global.lastSpireCleared * 100 + 199);
+		attack *= 1 + 0.15 * (zz < 300 ? 0 : floor((zz - 270) / 15));
 	}
 
 	if (challenge === "Daily") {
@@ -238,6 +241,10 @@ function read_save() {
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#zone').value = zone;
+
+	$('#poison').value = 0;
+	$('#wind').value = 0;
+	$('#ice').value = 0;
 
 	if (zone >= 236) {
 		let nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
@@ -301,8 +308,8 @@ function display(results) {
 	$('#results').style.opacity = 1;
 
 	if (stats.length < 2 || stats[1].zone.startsWith('BW')) {
-		if ($('#zone').value === 200) {
-			$('#result').textContent = 'You should definitely farm on BW200'
+		if ($('#zone').value % 100 === 0 && $('#zone').value > 100) {
+			$('#result').textContent = 'You should definitely farm on ' + stats[stats.length - 1].zone;
 			$('#comment').textContent = 'Good luck with the Spire!';
 		} else {
 			$('#result').textContent = 'You should really be pushing rather than farming';

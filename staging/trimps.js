@@ -23,25 +23,6 @@ function show_alert(style, message) {
 		</p>`;
 }
 
-(function init(version) {
-	$('#dark').disabled = !localStorage.dark;
-
-	if (localStorage.version != version) {
-		localStorage.version = version;
-		show_alert('ok', `Welcome to Trimps ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
-	}
-
-	$$('[data-saved]').forEach(field => {
-		if (field.type === 'checkbox') {
-			field.checked = localStorage[field.id] === 'true';
-			field.onchange = () => localStorage[field.id] = field.checked;
-		} else {
-			field.value = localStorage[field.id] || field.value;
-			field.onchange = () => localStorage[field.id] = field.value;
-		}
-	});
-})('2.2');
-
 // Copy of the Trimps save data
 let game;
 
@@ -50,7 +31,7 @@ function handle_paste(ev) {
 
 	try {
 		game = JSON.parse(LZString.decompressFromBase64(save_string));
-		if (game.global.version > 4.5)
+		if (game.global.version > 4.512)
 			show_alert('warning', 'Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.');
 	} catch (err) {
 		show_alert('ko', 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.');
@@ -77,7 +58,8 @@ const notations = [
 	("a b c d e f g h i j k l m n o p q r s t u v w x y z" +
 	" aa ab ac ad ae af ag ah ai aj ak al am an ao ap aq ar as at au av aw ax ay az" +
 	" ba bb bc bd be bf bg bh bi bj bk bl bm bn bo bp bq br bs bt bu bv bw bx by bz" +
-	" ca cb cc cd ce cf cg ch ci cj ck cl cm cn co cp cq cr cs ct cu cv cw cx").split(' ')
+	" ca cb cc cd ce cf cg ch ci cj ck cl cm cn co cp cq cr cs ct cu cv cw cx").split(' '),
+	'KMBTQaQiSxSpOcNoDcUdDdTdQadQidSxdSpdOdNdVUvDvTvQavQivSxvSpvOvNvTt'.split(/(?=[A-Z])/),
 ];
 
 function prettify(number) {
@@ -169,5 +151,25 @@ function load_share(str) {
 	try_wrap(() => display(optimize(inputs)));
 }
 
-if (location.search)
-	load_share(location.search.substr(1));
+window.onload = function () {
+	version = '2.2';
+	$('#dark').disabled = !localStorage.dark;
+
+	if (localStorage.version != version) {
+		localStorage.version = version;
+		show_alert('ok', `Welcome to Trimps tools ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
+	}
+
+	if (location.search)
+		load_share(location.search.substr(1));
+
+	$$('[data-saved]').forEach(field => {
+		if (field.type === 'checkbox') {
+			field.checked = localStorage[field.id] === 'true';
+			field.addEventListener('change', () => localStorage[field.id] = field.checked);
+		} else {
+			field.value = localStorage[field.id] || field.value;
+			field.addEventListener('change', () => localStorage[field.id] = field.value);
+		}
+	});
+};
