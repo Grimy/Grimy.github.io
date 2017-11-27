@@ -31,7 +31,7 @@ function handle_paste(ev) {
 
 	try {
 		game = JSON.parse(LZString.decompressFromBase64(save_string));
-		if (game.global.version > 4.512)
+		if (game.global.version > 4.6)
 			show_alert('warning', 'Your save is from a version of Trimps more recent than what this calculator supports. Results may be inaccurate.');
 	} catch (err) {
 		show_alert('ko', 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.');
@@ -155,13 +155,12 @@ function load_share(str) {
 }
 
 window.onload = function () {
-	version = '2.2';
+	version = '2.3';
 	$('#dark').disabled = !localStorage.dark;
 
-	if (localStorage.version != version) {
-		localStorage.version = version;
-		show_alert('ok', `Welcome to Trimps tools ${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
-	}
+	if (version > localStorage.version)
+		show_alert('ok', `Welcome to Trimps tools v${version}! See what’s new in the <a href=changelog.html>changelog</a>.`);
+	localStorage.version = version;
 
 	if (location.search)
 		load_share(location.search.substr(1));
