@@ -320,7 +320,7 @@ function read_save() {
 	let prod = 1 + tt;
 	let loot = 1 + 0.333 * tt;
 	let chronojest = 27 * game.unlocks.imps.Jestimp + 15 * game.unlocks.imps.Chronoimp;
-	let cache = zone < 60 ? 0 : zone < 90 ? 15 : zone < 150 ? 20 : zone < 170 ? 30 : 45;
+	let cache = zone < 60 ? 0 : zone < 85 ? 7 : zone < 160 ? 10 : zone < 185 ? 14 : 20;
 	chronojest += (game.talents.mapLoot2 ? 5 : 4) * cache;
 
 	for (let mod of (game.global.StaffEquipped.mods || [])) {
