@@ -48,8 +48,13 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 		<label for=advanced>Toggle manual input</label>
 		<input type=checkbox id=advanced data-saved>
 
+		<label title='Number of fragments you can spend on a map'>
+			<input type=text id=fragments oninput='check_input(this)'>
+			Fragments
+		</label>
+
 		<label title='Check if you have unlocked the Scrying stance'>
-			<input type=checkbox checked id=scry>
+			<input type=checkbox id=scry checked>
 			Unlocked S?
 		</label>
 
@@ -59,7 +64,7 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 		</label>
 
 		<label title='Check if you have unlocked the Titimp imp-ort'>
-			<input type=checkbox checked id=titimp>
+			<input type=checkbox id=titimp checked>
 			Unlocked titimp?
 		</label>
 
@@ -242,6 +247,7 @@ function read_save() {
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
 	$('#challenge').value = prettify(enemyHealth);
 	$('#difficulty').value = 80;
+	$('#fragments').value = game.resources.fragments;
 	$('#hyperspeed').checked = game.talents.hyperspeed;
 	$('#imports').value = imps;
 	$('#overkill').value = game.portal.Overkill.level;
