@@ -333,20 +333,16 @@ function display(results) {
 		best.second += ' in ' + best.second_stance;
 	}
 
-	let max_loot = $('#biome').value === 'gardens' ? 185 : 160;
-	let loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
-	let adverbs = ["", "", " probably", " probably", " probably", " probably",
-		" probably", "", "", "", " really", " really", " definitely"]
+	let percentage = (best.ratio - 1) * 100;
+	let adverb = ["", " probably", "", " really", " definitely"](min(floor(percentage / 2), 4));
 
-	$('#result').textContent = `You should ${adverbs[min(loot_diff, 12)]} farm on ${best.overall}`;
-	if (loot_diff <= 1) {
+	$('#result').textContent = `You should ${adverb} farm on ${best.overall}`;
+	if (percentage < 2)
 		$('#result').textContent += ` or ${best.second}`;
-		$('#comment').textContent = `They’re equally efficient.`;
-	} else {
-		$('#comment').textContent = loot_diff <= 6 && best.overall.startsWith('z') ?
-			`But ${best.second} with ${loot_diff}% higher loot is better.` :
-			`It’s ${percentage(best.ratio)}% more efficient than ${best.second}.`;
-	}
+
+	$('#comment').textContent = percentage < 2 ? `They’re equally efficient.` :
+		percentage < 4 ? `But ${best.second} is almost as good.` :
+		`It’s ${percentage.toFixed(1)}% more efficient than ${best.second}.`;
 }
 
 </script>

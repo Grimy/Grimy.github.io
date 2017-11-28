@@ -18,11 +18,6 @@ function rng() {
 	return seed;
 }
 
-// Converts a ratio (x1.15) into a percentage (+15%)
-function percentage(ratio) {
-	return ((ratio - 1) * 100).toFixed(1);
-}
-
 // Base HP (before imp modifiers) for an enemy at the given position (zone + cell).
 function enemy_hp(g, zone, cell) {
 	let amt = 14.3 * sqrt(zone * pow(3.265, zone)) - 12.1;
