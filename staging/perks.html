@@ -227,7 +227,6 @@ function select_preset(name) {
 	special(/spire|metal|trapper|carp/, $('#prod'), '0*');
 	special(/spire|carp/, $('#loot'), '0*');
 	special(/spire/, $('#fixed'), 'overkill=0,');
-	special(/nerfed/, $('#helium'), '1e8*');
 	special(/nerfed/, $('#fixed'), 'overkill=1,');
 	special(/scientist/, $('#fixed'), 'coord=0,');
 	special(/trapper/, $('#fixed'), 'phero=0,anti=0,');
@@ -358,7 +357,7 @@ function check_zone_preset(zone, preset) {
 }
 
 const parse_inputs = () => ({
-	he_left: input('helium'),
+	he_left: $('[value=nerfed]').selected ? 1e8 : input('helium'),
 	zone: check_zone_preset(parseInt($('#zone').value), $('#preset').value),
 	perks: parse_perks($('#fixed').value, $('#unlocks').value),
 	weight: {
