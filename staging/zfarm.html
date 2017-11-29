@@ -233,7 +233,8 @@ function read_save() {
 		minFluct = 0.005;
 		maxFluct = 1.995;
 	} else if (challenge === "Coordinate") {
-		enemyHealth *= pow(1.25, zone);
+		for (let i = 1; i < zone; ++i)
+			enemyHealth = ceil(1.25 * enemyHealth);
 	} else if (challenge === "Life") {
 		enemyHealth *= 11;
 		attack *= 1 + 0.1 * game.challenges.Life.stacks;
@@ -247,7 +248,7 @@ function read_save() {
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
 	$('#challenge').value = prettify(enemyHealth);
 	$('#difficulty').value = 80;
-	$('#fragments').value = game.resources.fragments;
+	$('#fragments').value = game.resources.fragments.owned;
 	$('#hyperspeed').checked = game.talents.hyperspeed;
 	$('#imports').value = imps;
 	$('#overkill').value = game.portal.Overkill.level;
@@ -340,7 +341,7 @@ function display(results) {
 	}
 
 	let percentage = (best.ratio - 1) * 100;
-	let adverb = ["", " probably", "", " really", " definitely"](min(floor(percentage / 2), 4));
+	let adverb = ["", " probably", "", " really", " definitely"][min(floor(percentage / 2), 4)];
 
 	$('#result').textContent = `You should ${adverb} farm on ${best.overall}`;
 	if (percentage < 2)
