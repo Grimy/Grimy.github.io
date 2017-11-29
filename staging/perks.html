@@ -23,7 +23,7 @@ fieldset { flex: 2 0 320px }
 
 <p id=alert></p>
 
-<form class=flexbox action='javascript:try_wrap(function() {display(optimize(parse_inputs()))})'>
+<form class=flexbox action='javascript:try_wrap(main)'>
 	<div class=filler></div>
 
 	<fieldset class=box>
@@ -233,9 +233,7 @@ function select_preset(name) {
 	special(/scientist/, $('#fixed'), 'coord=0,');
 	special(/trapper/, $('#fixed'), 'phero=0,anti=0,');
 
-	$('#weight-he').value = preset[0];
-	$('#weight-atk').value = preset[1];
-	$('#weight-hp').value = preset[2];
+	[$('#weight-he').value, $('#weight-atk').value, $('#weight-hp').value] = preset;
 }
 
 function handle_respec(respec) {
@@ -345,35 +343,21 @@ function read_save() {
 	$('#breed-timer').value = game.talents.patience ? 45 : 30;
 }
 
-function check_zone_preset(zone, preset) {
-	let max_zone = game ? game.global.highestLevelCleared : 999;
-
-	if ((preset.match(/trimp|coord/) && zone >= max_zone / 2)
-			|| (preset === 'trapper' && zone >= max_zone - 40))
-		show_alert('warning', 'Your target zone seems too high for this c², try lowering it.');
-
-	if (preset.match(/spire|nerfed/))
-		return 200;
-
-	return zone;
-}
-
-const parse_inputs = () => ({
-	he_left: $('[value=nerfed]').selected ? 1e8 : input('helium'),
-	zone: check_zone_preset(parseInt($('#zone').value), $('#preset').value),
+const parse_inputs = (preset) => ({
+	he_left: preset == 'nerfed' ? 1e8 : input('helium'),
+	zone: preset == 'nerfed' ? 200 : parseInt($('#zone').value),
 	perks: parse_perks($('#fixed').value, $('#unlocks').value),
 	weight: {
 		helium: input('weight-he'),
 		attack: input('weight-atk'),
 		health: input('weight-hp'),
-		trimps: $('[value=carp]').selected ? 1e6 : 0,
+		trimps: preset == 'carp' ? 1e6 : 0,
 	},
 	mod: {
 		storage: 0.125,
 		dg: input('dg'),
-		soldiers: game && $('[value=trapper]').selected ? game.resources.trimps.owned :
-		                  $('[value=trimp]').selected ? 1 : 0,
-		tent_city: $('[value=tent]').selected,
+		soldiers: preset == 'trapper' ? game.resources.trimps.owned : preset == 'trimp',
+		tent_city: preset == 'tent',
 		whip: $('#whipimp').checked,
 		magn: $('#magnimp').checked,
 		taunt: $('#tauntimp').checked,
@@ -403,6 +387,27 @@ function display(results) {
 			+ `Price: ${level >= cap ? '∞' : prettify(perk.cost())}<br>`
 			+ `Spent: ${prettify(spent)}</span></div>`;
 	}).join('');
+}
+
+function main() {
+	let preset = $('#preset').value;
+
+	if (preset == 'trapper' && (!game || game.global.challengeActive != 'Trapper')) {
+		show_alert('ko', 'This preset requires a save currently running Trapper². Start a new run using “Trapper² (initial)”, export, and try again.');
+		return;
+	}
+
+	let inputs = parse_inputs(preset);
+	let max_zone = game ? game.global.highestLevelCleared : 999;
+
+	if ((preset.match(/trimp|coord/) && inputs.zone >= max_zone / 2)
+			|| (preset === 'trapper' && inputs.zone >= max_zone - 40))
+		show_alert('warning', 'Your target zone seems too high for this c², try lowering it.');
+
+	if (preset == 'spire' && game && game.global.world != 100 * (2 + game.global.lastSpireCleared));
+		show_alert('warning', 'This preset should only be used mid-run, when you’re done farming for the Spire.');
+
+	display(optimize(inputs));
 }
 
 function toggle_info() {

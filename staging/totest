@@ -1,11 +1,14 @@
 TODO:
-* trapper² checks
-* spire respec checks?
+* fragments!
 
 TOTEST:
 * perky normal compare
 * perky tent city preset
 * perky tent city trimps() accuracy
+* perky spire warning
+* perky spire no warning
+* perky trapper² warning
+* perky trapper² no warning
 * perky blank state
 * zfarm blank state
 * zfarm rejiggle attack breakpoints

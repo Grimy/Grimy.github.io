@@ -193,7 +193,7 @@ function optimize(params) {
 	// Theoretical fighting group size (actual size is lower because of Coordinated)
 	function soldiers() {
 		let ratio = 1 + 0.25 * mult(Coordinated, -2);
-		let pop = (mod.soldiers || trimps()) / 3;
+		let pop = mod.soldiers || trimps() / 3;
 		let coords = log(pop / group_size[Coordinated.level]) / log(ratio);
 		let available = zone - 1 + (magma() ? 100 : 0);
 		return group_size[0] * pow(1.25, min(coords, available));
