@@ -294,6 +294,11 @@ const parse_inputs = () => ({
 });
 
 function display(results) {
+	if (!results) {
+		show_alert('ko', 'Your attack is too low to farm anywhere.');
+		return;
+	}
+
 	let [stances, stats, best] = results;
 	let show_stance = $('#zone').value >= 60;
 	let html = '';

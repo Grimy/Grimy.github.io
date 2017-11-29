@@ -97,6 +97,9 @@ function info(prefix, zone, loot, stances, g) {
 
 // Computes looting efficiency based on the given game state.
 function stats(g) {
+	if (g.attack * 1000 < enemy_hp(g, 6, 0))
+		return false;
+
 	let max_os = 6;
 	while (g.attack >= max.apply(0, g.biome) * enemy_hp(g, max_os + 1, g.size - 1))
 		++max_os;
