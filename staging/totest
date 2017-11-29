@@ -1,23 +1,17 @@
-* zfarm lead even zone warning
-* zfarm lead stacks health
-* zfarm manual input challenge health
-* zfarm obliterated: z1, z9, z10
-* zfarm coordinated high zone
-* zfarm life health
-* zfarm life stacks attack
-* zfarm mmm attack
-* zfarm sih attack
-* zfarm spire message
-* standard notation input
-* standard notation output
-* hybrid notation input
-* hybrid notation output
+TODO:
+* trapper² checks
+* spire respec checks?
+
+TOTEST:
 * perky normal compare
-* perky nerfed select then paste
-* perky nerfed paste then select
+* perky tent city preset
+* perky tent city trimps() accuracy
 * perky blank state
 * zfarm blank state
-* perky early trapper
-* perky late trapper
+* zfarm rejiggle attack breakpoints
 * perky manual input trapper
-* import v4.5 save
+* zfarm natures pre-z236
+* zfarm natures post-z236
+* zfarm coordinate
+* zfarm low agility
+* zfarm hyperspeed 0/1/2
