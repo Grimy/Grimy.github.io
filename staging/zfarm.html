@@ -177,7 +177,7 @@ function read_save() {
 	let nature = game.empowerments[['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3]];
 	let diplomacy = game.talents.nature3 ? 5 : 0;
 	let speed = 10 * pow(0.95, game.portal.Agility.level) - game.talents.hyperspeed;
-	speed += game.talents.hyperspeed2 && zone <= ceil(game.global.highestLevelCleared / 2);
+	speed -= game.talents.hyperspeed2 && zone <= ceil(game.global.highestLevelCleared / 2);
 
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
 	attack *= 1 + 0.01 * game.global.achievementBonus;
@@ -240,7 +240,7 @@ function read_save() {
 	$('#challenge').value = prettify(enemyHealth);
 	$('#coordinate').checked = challenge === "Coordinate";
 	$('#difficulty').value = perfect ? 75 : 80;
-	$('#fragments').value = game.resources.fragments.owned;
+	$('#fragments').value = prettify(game.resources.fragments.owned);
 	$('#imports').value = imps;
 	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
 	$('#overkill').value = game.portal.Overkill.level;
@@ -336,20 +336,20 @@ function display(results) {
 	$('#details').innerHTML = html + '</tr>';
 	$('#results').style.opacity = 1;
 
-	if (stats.length < 2) {
+	if (show_stance) {
+		best.overall += ' in ' + best.stance;
+		best.second += ' in ' + best.second_stance;
+	}
+
+	if (stats.length == 1) {
 		if ($('#zone').value % 100 === 0 && $('#zone').value > 100) {
-			$('#result').textContent = 'You should definitely farm on z' + ($('#zone').value - $('#reducer').checked);
+			$('#result').textContent = 'You should definitely farm on ' + best.overall;
 			$('#comment').textContent = 'Good luck with the Spire!';
 		} else {
 			$('#result').textContent = 'You should really be pushing rather than farming';
 			$('#comment').textContent = '';
 		}
 		return;
-	}
-
-	if (show_stance) {
-		best.overall += ' in ' + best.stance;
-		best.second += ' in ' + best.second_stance;
 	}
 
 	let percentage = (best.ratio - 1) * 100;

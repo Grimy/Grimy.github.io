@@ -404,8 +404,8 @@ function main() {
 			|| (preset === 'trapper' && inputs.zone >= max_zone - 40))
 		show_alert('warning', 'Your target zone seems too high for this c², try lowering it.');
 
-	if (preset == 'spire' && game && game.global.world != 100 * (2 + game.global.lastSpireCleared));
-		show_alert('warning', 'This preset should only be used mid-run, when you’re done farming for the Spire.');
+	if (preset == 'spire' && game && game.global.world != 100 * (2 + game.global.lastSpireCleared))
+		show_alert('warning', 'This preset is meant to be used mid-run, when you’re done farming for the Spire.');
 
 	display(optimize(inputs));
 }

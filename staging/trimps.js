@@ -33,7 +33,7 @@ function show_alert(style, message) {
 
 function create_share(callback) {
 	let share_string = localStorage.notation + ':';
-	share_string += $$('input').map(field => field.value.replace(':', '')).join(':');
+	share_string += $$('input,select').map(field => field.value.replace(':', '')).join(':');
 	let long_url = location.href.replace(/[#?].*/, '');
 	long_url += '?' + LZString.compressToBase64(share_string);
 	let url = 'https://api-ssl.bitly.com/v3/shorten?longUrl=' + encodeURIComponent(long_url);
@@ -69,11 +69,11 @@ function exit_share() {
 function load_share(str) {
 	let values = LZString.decompressFromBase64(str).split(':');
 	let notation = localStorage.notation;
+	localStorage.notation = values.shift();
 
-	$$('input').forEach(field => field.value = values.shift());
+	$$('input,select').forEach(field => field.value = values.shift());
 	$('textarea').onclick = exit_share;
 
-	localStorage.notation = values.shift();
 	try_main();
 	localStorage.notation = notation || 1;
 }

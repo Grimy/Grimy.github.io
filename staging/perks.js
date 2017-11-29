@@ -137,9 +137,8 @@ function optimize(params) {
 	// Max population
 	const trimps = mod.tent_city ? () => {
 		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
-		let territory = add(Trumps, 20) * zone;
-		// return 10 * territory * carp * imp.taunt;
-		return 10 * (impt.taunt + territory * (imp.taunt - 1) * 111) * carp;
+		let territory = add(Trumps, 20);
+		return 10 * (imp.taunt + territory * (imp.taunt - 1) * 111) * carp;
 	} : () => {
 		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
 		let bonus = 3 + max(log(income() / base_income * carp / mult(Resourceful, -5)), 0);

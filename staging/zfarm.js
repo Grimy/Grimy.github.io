@@ -98,6 +98,7 @@ function zone_stats(zone, stances, g) {
 }
 
 function map_cost(mods, level) {
+	mods += level;
 	return mods * pow(1.14, mods) * level * pow(1.03 + level / 50000, level) / 42.75;
 }
 
@@ -106,22 +107,16 @@ function stats(g) {
 	let stats = [];
 	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
 
-	console.log(g.poison, g.wind, g.ice);
-	for (let extra = 0; extra <= 10; ++extra) {
-		console.log(extra, 'extra levels =', prettify(map_cost(44.98 + 10 * extra, g.zone)));
-	}
-
 	let extra = 0;
-	while (extra < 10 && g.fragments > map_cost(54.98 + 10 * extra, g.zone))
+	while (extra < 10 && g.fragments > map_cost(53.98 + 10 * extra, g.zone))
 		++extra;
 	extra = extra || -g.reducer;
-	console.log('can afford:', extra);
 
-	for (let zone = 1; zone <= g.zone + extra || !stats.length; ++zone) {
+	for (let zone = 1; zone <= g.zone + extra; ++zone) {
 		let ratio = g.attack / (max.apply(0, g.biome) * enemy_hp(g, zone, g.size - 1));
 		if (ratio < 0.001)
 			break;
-		if (ratio < 2 && zone >= 6)
+		if (zone >= 6 && (ratio < 2 || zone == g.zone + extra))
 			stats.push(zone_stats(zone, stances, g));
 		if (g.coordinate)
 			g.challenge = ceil(1.25 * g.challenge);
