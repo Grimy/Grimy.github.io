@@ -59,6 +59,7 @@ fieldset { flex: 2 0 320px }
 				<option disabled>— Special-purpose presets —
 				<option value=spire>Spire respec
 				<option value=nerfed>Nerfed feat
+				<option value=tent>Tent City feat
 				<option value=scientist>Scientist challenge
 				<option value=carp>Trapper² (initial)
 				<option value=trapper>Trapper² (respec)
@@ -209,6 +210,7 @@ function select_preset(name) {
 		z450:       [500, 50,  1],
 		spire:      [  0,  1,  1],
 		nerfed:     [  0,  4,  3],
+		tent:       [  5,  4,  3],
 		scientist:  [  0,  1,  3],
 		carp:       [  0,  0,  0],
 		trapper:    [  0,  7,  1],
@@ -371,6 +373,7 @@ const parse_inputs = () => ({
 		dg: input('dg'),
 		soldiers: game && $('[value=trapper]').selected ? game.resources.trimps.owned :
 		                  $('[value=trimp]').selected ? 1 : 0,
+		tent_city: $('[value=tent]').selected,
 		whip: $('#whipimp').checked,
 		magn: $('#magnimp').checked,
 		taunt: $('#tauntimp').checked,

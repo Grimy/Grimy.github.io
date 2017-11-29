@@ -135,12 +135,17 @@ function optimize(params) {
 	}
 
 	// Max population
-	function trimps() {
+	const trimps = mod.tent_city ? () => {
+		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
+		let territory = add(Trumps, 20) * zone;
+		// return 10 * territory * carp * imp.taunt;
+		return 10 * (impt.taunt + territory * (imp.taunt - 1) * 111) * carp;
+	} : () => {
 		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
 		let bonus = 3 + max(log(income() / base_income * carp / mult(Resourceful, -5)), 0);
 		let territory = add(Trumps, 20) * zone;
 		return 10 * (base_housing * bonus + territory) * carp * imp.taunt + mod.dg * carp;
-	}
+	};
 
 	function equip(stat) {
 		let cost = equip_cost[stat] * mult(Artisanistry, -5);
