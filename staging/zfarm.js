@@ -65,7 +65,7 @@ function simulate(zone, g) {
 		wind = min(wind + turns, 200);
 		loot += 1 + wind * g.wind;
 		ok_dmg = -hp * g.overkill;
-		ticks += (turns > 0) + (g.agility > 9) + ceil(turns * g.agility);
+		ticks += (turns > 0) + (g.speed > 9) + ceil(turns * g.speed);
 		if (g.titimp && imp < 0.03 * max_rand)
 			titimp = min(max(ticks, titimp) + 300, ticks + 450);
 
@@ -77,8 +77,9 @@ function simulate(zone, g) {
 	return loot * 10 / max_ticks;
 }
 
-function info(prefix, zone, loot, stances, g) {
-	result = { zone: prefix + zone, loot: loot * pow(1.25, zone), value: 0 };
+// Return efficiency stats for the given zone
+function zone_stats(zone, stances, g) {
+	result = { zone: 'z' + zone, loot: pow(1.25, zone), value: 0 };
 
 	for (let stance of stances) {
 		g.atk = g.attack * ({ X: 1, D: 4, S: 0.5 })[stance];
@@ -95,40 +96,20 @@ function info(prefix, zone, loot, stances, g) {
 	return result;
 }
 
-// Computes looting efficiency based on the given game state.
+// Return a list of efficiency stats for all sensible zones
 function stats(g) {
-	if (g.attack * 1000 < enemy_hp(g, 6, 0))
-		return false;
-
-	let max_os = 6;
-	while (g.attack >= max.apply(0, g.biome) * enemy_hp(g, max_os + 1, g.size - 1))
-		++max_os;
-
 	let stats = [];
-	let max_zone = min(max_os + 15, max(g.zone - g.reducer, max_os));
 	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
 
-	for (let zone = max_os; zone <= max_zone; ++zone) {
-		stats.push(info('z', zone, 1, stances, g));
+	for (let zone = 1; zone <= g.zone - g.reducer || !stats.length; ++zone) {
+		let ratio = g.attack / (max.apply(0, g.biome) * enemy_hp(g, zone, g.size - 1));
+		if (ratio < 0.001)
+			break;
+		if (ratio < 2 && zone >= 6)
+			stats.push(zone_stats(zone, stances, g));
+		if (g.coordinate)
+			g.challenge = ceil(1.25 * g.challenge);
 	}
 
-	let best = {};
-	let copy = stats.slice();
-
-	/* jshint loopfunc:true */
-	for (let stance of stances) {
-		copy.sort((a, b) => b[stance].value - a[stance].value);
-		best[stance] = copy[0].zone;
-	}
-
-	copy.sort((a, b) => b.value - a.value);
-	best.overall = copy[0].zone;
-	best.stance = copy[0].stance;
-	if (copy[1]) {
-		best.second = copy[1].zone;
-		best.second_stance = copy[1].stance;
-		best.ratio = copy[0].value / copy[1].value;
-	}
-
-	return [stances, stats, best];
+	return [stats, stances];
 }
