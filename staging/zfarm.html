@@ -14,7 +14,7 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 
 <p id=alert />
 
-<form class=flexbox action='javascript:try_wrap(() =&gt; display(stats(parse_inputs())))'>
+<form class=flexbox action='javascript:try_main()'>
 	<fieldset class=box>
 		<legend>Inputs</legend>
 
@@ -362,6 +362,10 @@ function display(results) {
 	$('#comment').textContent = percentage < 2 ? `They’re equally efficient.` :
 		percentage < 4 ? `But ${best.second} is almost as good.` :
 		`It’s ${percentage.toFixed(1)}% more efficient than ${best.second}.`;
+}
+
+function main() {
+	display(stats(parse_inputs()));
 }
 
 </script>

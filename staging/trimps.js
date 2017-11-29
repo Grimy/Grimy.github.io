@@ -3,6 +3,10 @@
 // Copy these Math functions in our namespace
 const {abs, ceil, floor, log, max, min, pow, round, sqrt} = Math;
 
+///
+// HTML manipulation utilities
+///
+
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [].slice.apply(document.querySelectorAll(selector));
 
@@ -23,31 +27,55 @@ function show_alert(style, message) {
 		</p>`;
 }
 
-// Copy of the Trimps save data
-let game;
+///
+// Creating/loading share links
+///
 
-function handle_paste(ev) {
-	let save_string = ev.clipboardData.getData("text/plain").replace(/\s/g, '');
+function create_share(callback) {
+	let share_string = localStorage.notation + ':';
+	share_string += $$('input').map(field => field.value.replace(':', '')).join(':');
+	let long_url = location.href.replace(/[#?].*/, '');
+	long_url += '?' + LZString.compressToBase64(share_string);
+	let url = 'https://api-ssl.bitly.com/v3/shorten?longUrl=' + encodeURIComponent(long_url);
+	url += '&login=grimy&apiKey=R_7ea82c1cec394d1ca5cf4da2a7f7ddd9';
 
+	callback = callback || (url => show_alert('ok', `Your share link is <a href=${url}>${url}`));
+	let request = new XMLHttpRequest();
+	request.open('GET', url, true);
+	request.onload = () => callback(JSON.parse(request.responseText).data.url || long_url);
+	request.send();
+}
+
+function try_main() {
 	try {
-		game = JSON.parse(LZString.decompressFromBase64(save_string));
-		let version = 4.6;
-		if (game.global.version > version)
-			show_alert('warning', `This calculator only supports up to v${version} of Trimps, but your save is from v${game.global.version}. Results may be inaccurate.`);
-		else if (game.global.version < version)
-			show_alert('ok', `Trimps v${version} is out! Your save is still on v${game.global.version}, so you should refresh the game’s page.`);
+		main();
 	} catch (err) {
-		show_alert('ko', 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.');
-		return;
+		console.log(err);
+		create_share(url => show_alert('ko',
+		`Oops! It’s not your fault, but something went wrong. You can go pester the dev on
+		<a href=https://github.com/Grimy/Grimy.github.io/issues/new>GitHub</a> or
+		<a href=https://www.reddit.com/message/compose/?to=Grimy_>Reddit</a>, he’ll fix it.
+		If you do, please include the following message:
+		<br><tt>${url} l${err.lineNumber || 0}c${err.columnNumber || 0} ${err}</tt>.`));
 	}
+}
 
-	localStorage.notation = game.options.menu.standardNotation.enabled;
+function exit_share() {
+	history.pushState({}, '', 'perks.html');
+	$('textarea').onclick = null;
+	$$('[data-saved]').forEach(field => field.value = localStorage[field.id] || field.value);
+}
 
-	for (let m in game.talents)
-		game.talents[m] = game.talents[m].purchased;
+function load_share(str) {
+	let values = LZString.decompressFromBase64(str).split(':');
+	let notation = localStorage.notation;
 
-	read_save();
-	$('button').click();
+	$$('input').forEach(field => field.value = values.shift());
+	$('textarea').onclick = exit_share;
+
+	localStorage.notation = values.shift();
+	try_main();
+	localStorage.notation = notation || 1;
 }
 
 ///
@@ -110,55 +138,33 @@ function check_input(field) {
 }
 
 ///
-// Creating/loading share links
+// Handling Trimps save data
 ///
 
-function create_share(callback) {
-	let share_string = localStorage.notation + ':';
-	share_string += $$('input').map(field => field.value.replace(':', '')).join(':');
-	let long_url = location.href.replace(/[#?].*/, '');
-	long_url += '?' + LZString.compressToBase64(share_string);
-	let url = 'https://api-ssl.bitly.com/v3/shorten?longUrl=' + encodeURIComponent(long_url);
-	url += '&login=grimy&apiKey=R_7ea82c1cec394d1ca5cf4da2a7f7ddd9';
+let game;
 
-	callback = callback || (url => show_alert('ok', `Your share link is <a href=${url}>${url}`));
-	let request = new XMLHttpRequest();
-	request.open('GET', url, true);
-	request.onload = () => callback(JSON.parse(request.responseText).data.url || long_url);
-	request.send();
-}
+function handle_paste(ev) {
+	let save_string = ev.clipboardData.getData("text/plain").replace(/\s/g, '');
 
-function exit_share() {
-	history.pushState({}, '', 'perks.html');
-	$('textarea').onclick = null;
-	$$('[data-saved]').forEach(field => field.value = localStorage[field.id] || field.value);
-}
-
-function try_wrap(main) {
 	try {
-		main();
+		game = JSON.parse(LZString.decompressFromBase64(save_string));
+		let version = 4.6;
+		if (game.global.version > version)
+			show_alert('warning', `This calculator only supports up to v${version} of Trimps, but your save is from v${game.global.version}. Results may be inaccurate.`);
+		else if (game.global.version < version)
+			show_alert('ok', `Trimps v${version} is out! Your save is still on v${game.global.version}, so you should refresh the game’s page.`);
 	} catch (err) {
-		console.log(err);
-		create_share(url => show_alert('ko',
-		`Oops! It’s not your fault, but something went wrong. You can go pester the dev on
-		<a href=https://github.com/Grimy/Grimy.github.io/issues/new>GitHub</a> or
-		<a href=https://www.reddit.com/message/compose/?to=Grimy_>Reddit</a>, he’ll fix it.
-		If you do, please include the following message:
-		<br><tt>${url} l${err.lineNumber || 0}c${err.columnNumber || 0} ${err}</tt>.`));
+		show_alert('ko', 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.');
+		return;
 	}
-}
 
-function load_share(str) {
-	let values = LZString.decompressFromBase64(str).split(':');
-	let notation = localStorage.notation;
-	localStorage.notation = values.shift();
+	localStorage.notation = game.options.menu.standardNotation.enabled;
 
-	$$('input').forEach(field => field.value = values.shift());
-	$('textarea').onclick = exit_share;
+	for (let m in game.talents)
+		game.talents[m] = game.talents[m].purchased;
 
-	let inputs = parse_inputs();
-	localStorage.notation = notation || 1;
-	try_wrap(() => display(optimize(inputs)));
+	read_save();
+	try_main();
 }
 
 window.onload = function () {
