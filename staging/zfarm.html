@@ -262,6 +262,7 @@ const parse_inputs = () => ({
 	challenge: input('challenge'),
 	coordinate: $('#coordinate').checked,
 	difficulty: $('#difficulty').value / 100,
+	fragments: input('fragments'),
 	import_chance: $('#imports').value * 0.03 * max_rand,
 	overkill: $('#overkill').value * 0.005,
 	range: ($('#range').value - 1) / max_rand,
@@ -272,9 +273,8 @@ const parse_inputs = () => ({
 	titimp: $('#titimp').checked,
 	transfer: $('#transfer').value / 100,
 	zone: $('#zone').value | 0,
-	poison: ceil(input('zone') / 5) % 3 == 0 ? $('#nature').value / 100 : 0,
-	wind:   ceil(input('zone') / 5) % 3 == 1 ? $('#nature').value / 100 : 0,
-	ice:    ceil(input('zone') / 5) % 3 == 2 ? $('#nature').value / 100 : 0,
+	poison: 0, wind: 0, ice: 0,
+	[['poison', 'wind', 'ice'][ceil(input('zone') / 5) % 3]]: $('#nature').value / 100,
 });
 
 // Return info about the best zone for each stance
@@ -324,7 +324,7 @@ function display(results) {
 				html += `<b>${stance}</b> `;
 
 		html += zone === best.overall ? `<b>${zone}</b>` : zone;
-		html += '<td>' + prettify(zone_stats.loot);
+		html += '<td>' + prettify(zone_stats.loot) + '%';
 
 		for (let stance of stances) {
 			let value = prettify(zone_stats[stance].value);

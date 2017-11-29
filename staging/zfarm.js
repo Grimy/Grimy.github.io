@@ -79,7 +79,8 @@ function simulate(zone, g) {
 
 // Return efficiency stats for the given zone
 function zone_stats(zone, stances, g) {
-	result = { zone: 'z' + zone, loot: pow(1.25, zone), value: 0 };
+	result = { zone: 'z' + zone, value: 0 };
+	result.loot = 100 * (zone < g.zone ? pow(0.8, g.zone - g.reducer - zone) : pow(1.1, zone - g.zone));
 
 	for (let stance of stances) {
 		g.atk = g.attack * ({ X: 1, D: 4, S: 0.5 })[stance];
@@ -96,12 +97,27 @@ function zone_stats(zone, stances, g) {
 	return result;
 }
 
+function map_cost(mods, level) {
+	return mods * pow(1.14, mods) * level * pow(1.03 + level / 50000, level) / 42.75;
+}
+
 // Return a list of efficiency stats for all sensible zones
 function stats(g) {
 	let stats = [];
 	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
 
-	for (let zone = 1; zone <= g.zone - g.reducer || !stats.length; ++zone) {
+	console.log(g.poison, g.wind, g.ice);
+	for (let extra = 0; extra <= 10; ++extra) {
+		console.log(extra, 'extra levels =', prettify(map_cost(44.98 + 10 * extra, g.zone)));
+	}
+
+	let extra = 0;
+	while (extra < 10 && g.fragments > map_cost(54.98 + 10 * extra, g.zone))
+		++extra;
+	extra = extra || -g.reducer;
+	console.log('can afford:', extra);
+
+	for (let zone = 1; zone <= g.zone + extra || !stats.length; ++zone) {
 		let ratio = g.attack / (max.apply(0, g.biome) * enemy_hp(g, zone, g.size - 1));
 		if (ratio < 0.001)
 			break;
