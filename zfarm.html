@@ -14,7 +14,7 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 
 <p id=alert />
 
-<form class=flexbox action='javascript:try_wrap(() =&gt; display(stats(parse_inputs())))'>
+<form class=flexbox action='javascript:try_main()'>
 	<fieldset class=box>
 		<legend>Inputs</legend>
 
@@ -35,7 +35,7 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 		</label>
 
 		<label title='Your minimum attack, in X, without the Titimp buff'>
-			<input type=text id=attack required>
+			<input type=text id=attack oninput='check_input(this)' required>
 			Min ATK
 		</label>
 
@@ -48,8 +48,13 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 		<label for=advanced>Toggle manual input</label>
 		<input type=checkbox id=advanced data-saved>
 
+		<label title='Number of fragments you can spend on a map'>
+			<input type=text id=fragments oninput='check_input(this)'>
+			Fragments
+		</label>
+
 		<label title='Check if you have unlocked the Scrying stance'>
-			<input type=checkbox checked id=scry>
+			<input type=checkbox id=scry checked>
 			Unlocked S?
 		</label>
 
@@ -59,18 +64,23 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 		</label>
 
 		<label title='Check if you have unlocked the Titimp imp-ort'>
-			<input type=checkbox checked id=titimp>
+			<input type=checkbox id=titimp checked>
 			Unlocked titimp?
 		</label>
 
-		<label title='Bonus enemy health in maps, in percent'>
-			<input type=text id=challenge>
-			Challenge +health%
+		<label title='Enemy health multiplier in maps'>
+			<input type=text id=challenge oninput='check_input(this)' value=1>
+			Challenge health
 		</label>
 
-		<label title='Level of your Agility perk (max 20)'>
-			<input type=text id=agility value=20 pattern='1?\d|20'>
-			Agility
+		<label title='Check if you’re running Coordinate or Coordinate²'>
+			<input type=checkbox id=coordinate>
+			Coordinate
+		</label>
+
+		<label title='Attack speed, in ticks per attack'>
+			<input type=text id=speed value=3.585 pattern='[0-9.]+'>
+			Attack speed
 		</label>
 
 		<label title='Your max attack, divided by your min attack (usually 1.2, but can vary due to challenges)'>
@@ -103,29 +113,14 @@ table, th, td { border: 1px solid black; padding: 5px 3px 2px 3px }
 			Overkill
 		</label>
 
-		<label title='Level of your Poison empowerment (or 0 if inactive)'>
-			<input type=text id=poison value=0 pattern='\d+'>
-			Poison
+		<label title='Empowerment level of the currently active nature'>
+			<input type=text id=nature value=0 pattern='\d+'>
+			Nature
 		</label>
 
-		<label title='Level of your Wind empowerment (or 0 if inactive)'>
-			<input type=text id=wind value=0 pattern='\d+'>
-			Wind
-		</label>
-
-		<label title='Level of your Ice empowerment (or 0 if inactive)'>
-			<input type=text id=ice value=0 pattern='\d+'>
-			Ice
-		</label>
-
-		<label title='Stack transfer level of the currently active empowerment'>
+		<label title='Stack transfer level of the currently active nature'>
 			<input type=text id=transfer value=0 pattern='\d+'>
 			Transfer
-		</label>
-
-		<label title='Check if you have unlocked the Hyperspeed mastery'>
-			<input type=checkbox id=hyperspeed>
-			Hyperspeed?
 		</label>
 
 		<label title='Check if you have unlocked the Map Reducer mastery'>
@@ -174,10 +169,15 @@ function read_save() {
 	let crits = game.portal.Relentlessness.level;
 	let challenge = game.global.challengeActive;
 	let attack = game.global.soldierCurrentAttack;
-	let maxFluct = 1.2;
 	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
+	let maxFluct = 1.2;
 	let enemyHealth = 1;
 	let zone = game.global.world;
+	let perfect = game.global.highestLevelCleared >= 109;
+	let nature = game.empowerments[['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3]];
+	let diplomacy = game.talents.nature3 ? 5 : 0;
+	let speed = 10 * pow(0.95, game.portal.Agility.level) - game.talents.hyperspeed;
+	speed -= game.talents.hyperspeed2 && zone <= ceil(game.global.highestLevelCleared / 2);
 
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
 	attack *= 1 + 0.01 * game.global.achievementBonus;
@@ -193,17 +193,23 @@ function read_save() {
 		attack *= 1 + 0.06 * game.global.spireRows;
 
 	if (game.talents.magmamancer) {
-		let time = floor((new Date().getTime() - game.global.zoneStarted) / 60000);
+		let time = (new Date().getTime() - game.global.zoneStarted) / 60000;
 		let bonus = pow(1.2, min(12, floor((time + 5) / 10))) - 1;
 		attack *= 1 + 3 * (1 - pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
 	}
 
 	if (game.talents.healthStrength) {
-		let zz = min(zone, game.global.lastSpireCleared * 100 + 199);
-		attack *= 1 + 0.15 * (zz < 300 ? 0 : floor((zz - 270) / 15));
+		let effective_zone = min(zone, game.global.lastSpireCleared * 100 + 199);
+		let cells = effective_zone < 300 ? 0 : floor((effective_zone - 270) / 15);
+		attack *= 1 + 0.15 * cells;
 	}
 
-	if (challenge === "Daily") {
+	if (challenge === "Discipline") {
+		minFluct = 0.005;
+		maxFluct = 1.995;
+	} else if (challenge === "Balance" || challenge === "Meditate" || challenge === "Toxicity") {
+		enemyHealth *= 2;
+	} else if (challenge === "Daily") {
 		let daily = (mod) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		enemyHealth *= 1 + 0.2 * daily('badHealth');
 		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
@@ -211,79 +217,102 @@ function read_save() {
 		maxFluct += daily('maxDamage');
 		attack *= 1 - 0.09 * daily('weakness');
 		attack *= 1 + 0.1 * ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
-		if (zone % 2 === 1)
+		if (zone % 2 == 1)
 			attack *= 1 - 0.02 * daily('oddTrimpNerf');
 		else
 			attack *= 1 + 0.2 * daily('evenTrimpBuff');
-	} else if (challenge === "Toxicity" || challenge === "Balance" || challenge === "Meditate") {
-		enemyHealth = 2;
-	} else if (challenge === "Lead" && (zone % 2) === 1) {
-		attack *= 1.5;
-	} else if (challenge === "Discipline") {
-		maxFluct = 1.995;
-		minFluct = 0.005;
-	} else if (challenge === "Coordinate") {
-		enemyHealth = pow(1.25, zone);
+	} else if (challenge === "Life") {
+		enemyHealth *= 11;
+		attack *= 1 + 0.1 * game.challenges.Life.stacks;
+	} else if (challenge === "Lead") {
+		if (zone % 2 == 1)
+			attack *= 1.5;
+		else
+			show_alert('warning', 'Are you <b>sure</b> you want to farm on an even Lead zone?');
+		enemyHealth *= 1 + 0.04 * game.challenges.Lead.stacks;
+	} else if (challenge === "Obliterated") {
+		enemyHealth *= pow(10, 12 + floor(zone / 10));
 	}
 
-	$('#agility').value = game.portal.Agility.level;
 	$('#attack').value = prettify(attack * minFluct);
 	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
-	$('#challenge').value = round(100 * (enemyHealth - 1));
-	$('#difficulty').value = 80;
-	$('#hyperspeed').checked = game.talents.hyperspeed;
+	$('#challenge').value = prettify(enemyHealth);
+	$('#coordinate').checked = challenge === "Coordinate";
+	$('#difficulty').value = perfect ? 75 : 80;
+	$('#fragments').value = prettify(game.resources.fragments.owned);
 	$('#imports').value = imps;
+	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
 	$('#overkill').value = game.portal.Overkill.level;
-	$('#range').value = maxFluct / minFluct;
+	$('#range').value = +(maxFluct / minFluct).toPrecision(5);
 	$('#reducer').checked = game.talents.mapLoot;
-	$('#size').value = game.talents.mapLoot2 ? 22 : 27;
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
+	$('#size').value = game.talents.mapLoot2 ? 20 : perfect ? 25 : 27;
+	$('#speed').value = prettify(speed);
 	$('#titimp').checked = game.unlocks.imps.Titimp;
+	$('#transfer').value = zone >= 236 ? nature.retainLevel + diplomacy : 0;
 	$('#zone').value = zone;
-
-	$('#poison').value = 0;
-	$('#wind').value = 0;
-	$('#ice').value = 0;
-
-	if (zone >= 236) {
-		let nature = ['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3];
-		let diplomacy = game.talents.nature3 ? 5 : 0;
-		$('#' + nature.toLowerCase()).value = game.empowerments[nature].level + diplomacy;
-		$('#transfer').value = game.empowerments[nature].retainLevel + diplomacy;
-	}
 }
 
 const parse_inputs = () => ({
-	agility: 10 * pow(.95, $('#agility').value) - $('#hyperspeed').checked,
-	attack: parse_suffixes($('#attack').value.toLowerCase()),
+	attack: input('attack'),
 	biome: biomes.all.concat(biomes[$('#biome').value]),
 	cc: $('#cc').value / 100 * max_rand,
 	cd: 1 + $('#cd').value / 100,
-	challenge: 1 + $('#challenge').value / 100,
+	challenge: input('challenge'),
+	coordinate: $('#coordinate').checked,
 	difficulty: $('#difficulty').value / 100,
-	import_chance: $('#imports').value * .03 * max_rand,
-	overkill: $('#overkill').value * .005,
+	fragments: input('fragments'),
+	import_chance: $('#imports').value * 0.03 * max_rand,
+	overkill: $('#overkill').value * 0.005,
 	range: ($('#range').value - 1) / max_rand,
 	reducer: $('#reducer').checked,
 	scry: $('#scry').checked,
 	size: $('#size').value | 0,
+	speed: input('speed'),
 	titimp: $('#titimp').checked,
-	zone: $('#zone').value | 0,
-	poison: $('#poison').value / 100,
-	wind: $('#wind').value / 100,
-	ice: $('#ice').value / 100,
 	transfer: $('#transfer').value / 100,
+	zone: $('#zone').value | 0,
+	poison: 0, wind: 0, ice: 0,
+	[['poison', 'wind', 'ice'][ceil(input('zone') / 5) % 3]]: $('#nature').value / 100,
 });
 
+// Return info about the best zone for each stance
+function get_best(stats, stances) {
+	let best = {};
+
+	/* jshint loopfunc:true */
+	for (let stance of stances) {
+		stats.sort((a, b) => b[stance].value - a[stance].value);
+		best[stance] = stats[0].zone;
+	}
+
+	stats.sort((a, b) => b.value - a.value);
+	best.overall = stats[0].zone;
+	best.stance = stats[0].stance;
+	if (stats[1]) {
+		best.second = stats[1].zone;
+		best.second_stance = stats[1].stance;
+		best.ratio = stats[0].value / stats[1].value;
+	}
+
+	return best;
+}
+
 function display(results) {
-	let [stances, stats, best] = results;
+	let [stats, stances] = results;
+
+	if (stats.length === 0) {
+		show_alert('ko', 'Your attack is too low to farm anywhere.');
+		return;
+	}
+
+	let best = get_best(stats.slice(), stances);
 	let show_stance = $('#zone').value >= 60;
 	let html = '';
 
-	if (stances.length > 1) {
+	if (stances.length > 1)
 		html += `<tr><th colspan=2>${stances.replace(/(?!$)/g, '<th colspan=2>')}</tr>`;
-	}
 	html += '<tr><th>Level<th>Base loot' + '<th>Cells/s<th>Total'.repeat(stances.length);
 
 	for (let zone_stats of stats) {
@@ -295,7 +324,7 @@ function display(results) {
 				html += `<b>${stance}</b> `;
 
 		html += zone === best.overall ? `<b>${zone}</b>` : zone;
-		html += '<td>' + prettify(zone_stats.loot);
+		html += '<td>' + prettify(zone_stats.loot) + '%';
 
 		for (let stance of stances) {
 			let value = prettify(zone_stats[stance].value);
@@ -307,9 +336,14 @@ function display(results) {
 	$('#details').innerHTML = html + '</tr>';
 	$('#results').style.opacity = 1;
 
-	if (stats.length < 2 || stats[1].zone.startsWith('BW')) {
+	if (show_stance) {
+		best.overall += ' in ' + best.stance;
+		best.second += ' in ' + best.second_stance;
+	}
+
+	if (stats.length == 1) {
 		if ($('#zone').value % 100 === 0 && $('#zone').value > 100) {
-			$('#result').textContent = 'You should definitely farm on ' + stats[stats.length - 1].zone;
+			$('#result').textContent = 'You should definitely farm on ' + best.overall;
 			$('#comment').textContent = 'Good luck with the Spire!';
 		} else {
 			$('#result').textContent = 'You should really be pushing rather than farming';
@@ -318,25 +352,20 @@ function display(results) {
 		return;
 	}
 
-	if (show_stance) {
-		best.overall += ' in ' + best.stance;
-		best.second += ' in ' + best.second_stance;
-	}
+	let percentage = (best.ratio - 1) * 100;
+	let adverb = ["", " probably", "", " really", " definitely"][min(floor(percentage / 2), 4)];
 
-	let max_loot = $('#biome').value === 'gardens' ? 185 : 160;
-	let loot_diff = ceil(max_loot * (1 - 1 / best.ratio));
-	let adverbs = ["", "", " probably", " probably", " probably", " probably",
-		" probably", "", "", "", " really", " really", " definitely"]
-
-	$('#result').textContent = `You should ${adverbs[min(loot_diff, 12)]} farm on ${best.overall}`;
-	if (loot_diff <= 1) {
+	$('#result').textContent = `You should ${adverb} farm on ${best.overall}`;
+	if (percentage < 2)
 		$('#result').textContent += ` or ${best.second}`;
-		$('#comment').textContent = `They’re equally efficient.`;
-	} else {
-		$('#comment').textContent = loot_diff <= 6 && best.overall.startsWith('z') ?
-			`But ${best.second} with ${loot_diff}% higher loot is better.` :
-			`It’s ${percentage(best.ratio)}% more efficient than ${best.second}.`;
-	}
+
+	$('#comment').textContent = percentage < 2 ? `They’re equally efficient.` :
+		percentage < 4 ? `But ${best.second} is almost as good.` :
+		`It’s ${percentage.toFixed(1)}% more efficient than ${best.second}.`;
+}
+
+function main() {
+	display(stats(parse_inputs()));
 }
 
 </script>

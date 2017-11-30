@@ -55,7 +55,7 @@ function parse_perks(fixed, unlocks) {
 			throw 'Enter a list of perk levels, such as “power=42, toughness=51”';
 
 		let tier2 = m[1].match(/2$|II$/);
-		let name = m[1].replace(/[ _]?(2|II)/i, '').replace('Ok', 'O').replace('Looty', 'L');
+		let name = m[1].replace(/[ _]?(2|II)/i, '').replace(/^OK/i, 'O').replace(/^Looty/i, 'L');
 		let regex = new RegExp(`^${name}[a-z]*${tier2 ? '_II' : ''}$`, 'i');
 		let matches = perks.filter(p => p.name.match(regex));
 
@@ -130,17 +130,21 @@ function optimize(params) {
 		let storage = mod.storage * mult(Resourceful, -5) / add(Packrat, 20);
 		let loot = looting() * imp.magn / ticks();
 		let prod = ignore_prod ? 0 : moti() * add(Meditation, 1) * mod.prod;
-		let chronojest = mod.chronojest * 0.75 * prod * loot;
+		let chronojest = mod.chronojest * 0.1 * prod * loot;
 		return base_income * (prod + loot * mod.loot + chronojest) * (1 - storage);
 	}
 
 	// Max population
-	function trimps() {
+	const trimps = mod.tent_city ? () => {
+		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
+		let territory = add(Trumps, 20);
+		return 10 * (imp.taunt + territory * (imp.taunt - 1) * 111) * carp;
+	} : () => {
 		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
 		let bonus = 3 + max(log(income() / base_income * carp / mult(Resourceful, -5)), 0);
 		let territory = add(Trumps, 20) * zone;
 		return 10 * (base_housing * bonus + territory) * carp * imp.taunt + mod.dg * carp;
-	}
+	};
 
 	function equip(stat) {
 		let cost = equip_cost[stat] * mult(Artisanistry, -5);
@@ -193,7 +197,9 @@ function optimize(params) {
 	// Theoretical fighting group size (actual size is lower because of Coordinated)
 	function soldiers() {
 		let ratio = 1 + 0.25 * mult(Coordinated, -2);
-		let pop = mod.soldiers || trimps() / 3;
+		let pop = (mod.soldiers || trimps()) / 3;
+		if (mod.soldiers > 1)
+			pop += 36000 * add(Bait, 100);
 		let coords = log(pop / group_size[Coordinated.level]) / log(ratio);
 		let available = zone - 1 + (magma() ? 100 : 0);
 		return group_size[0] * pow(1.25, min(coords, available));
