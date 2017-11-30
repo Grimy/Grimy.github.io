@@ -355,7 +355,7 @@ const parse_inputs = (preset) => ({
 	},
 	mod: {
 		storage: 0.125,
-		dg: input('dg'),
+		dg: preset == 'nerfed' ? 0 : input('dg'),
 		soldiers: preset == 'trapper' ? game.resources.trimps.owned : preset == 'trimp',
 		tent_city: preset == 'tent',
 		whip: $('#whipimp').checked,
