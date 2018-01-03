@@ -239,7 +239,7 @@ function read_save() {
 	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
 	$('#challenge').value = prettify(enemyHealth);
 	$('#coordinate').checked = challenge === "Coordinate";
-	$('#difficulty').value = perfect ? 75 : 80;
+	$('#difficulty').value = (perfect ? 75 : 80) + (challenge === "Mapocalypse" ? 300 : 0);
 	$('#fragments').value = prettify(game.resources.fragments.owned);
 	$('#imports').value = imps;
 	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
