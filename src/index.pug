@@ -1,0 +1,27 @@
+doctype html
+meta(charset='UTF-8')
+link(href='blue.css' rel='stylesheet')
+link(href='dark.css' rel='stylesheet' id='dark')
+script(src='lz-string.js')
+
+block meta
+  - title = 'Index'
+  script(src='trimps.js')
+
+title= title
+h1= title
+p#alert
+
+block content
+  body
+    | Nothing to see, here
+
+nav.flexbox
+  a(href='zfarm.html' class={active: title=='zFarm'}) zFarm
+  a(href='perks.html' class={active: title=='Perky'}) Perky
+  span.centered
+  a(onclick='switch_theme()') Switch theme
+  a(href='changelog.html') Changelog
+  a(href='https://github.com/Grimy/Grimy.github.io/issues/new') Report a bug
+  a(href='https://github.com/Grimy/majig/') View the source
+  a(href='https://github.com/Grimy') By Grimy

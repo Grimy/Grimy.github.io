@@ -1,8 +1,0 @@
-soldiers * breed**x + bait*(breed**x - 1) / (breed - 1) = 3*soldiers
-soldiers * breed**x + bait*breed**x / (breed - 1) - bait / (breed - 1) = 3*soldiers
-soldiers * breed**x + bait*breed**x / (breed - 1) = 3*soldiers + bait / (breed - 1)  
-breed**x *=  3*soldiers + bait / (breed - 1)
-breed**x = (3*soldiers + bait / (breed - 1)) / (soldiers + bait / (breed - 1))
-breed**x = 1 + 2*soldiers / (bait / (breed - 1))
-breed**x = 1 + Soldiers * (breed - 1) / bait
-x = log(1 + Soldiers * (breed - 1) / bait) / log(breed)

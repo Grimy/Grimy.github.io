@@ -1,0 +1,95 @@
+extends index.pug
+
+block meta
+  - title = 'zFarm'
+  script(src='zfarm.js')
+
+block content
+  form.flexbox(action='javascript:main()')
+    fieldset.box(style='flex: 0 0 36em')
+      legend Inputs
+      label(title='Export your Trimps save and paste it here')
+        textarea#save(onfocus='this.value = ""' onpaste='handle_paste(event, read_save, main)')
+        | Import save
+      label(title='Biome of the maps you create')
+        select#biome(data-saved='')
+          option(value='gardens') Garden
+          option(value='mountain') Mountain
+          option(value='depths') Depths
+          option(value='forest') Forest
+          option(value='sea') Sea
+        | Biome
+      label(title='Your minimum attack, in X, without the Titimp buff')
+        input#attack(type='text' oninput='check_input(this)' required)
+        | Min ATK
+      label(title='Your current world zone')
+        input#zone(type='text' required pattern='\\d+')
+        | World zone
+      .tabs
+        label(for='advanced') Toggle manual input
+        input#advanced(type='checkbox' data-saved='')
+        label(title='Number of fragments you can spend on a map')
+          input#fragments(type='text' oninput='check_input(this)')
+          | Fragments
+        label(title='Check if you have unlocked the Scrying stance')
+          input#scry(type='checkbox' checked='')
+          | Unlocked S?
+        label(title='Total number of map imp-orts you have unlocked')
+          input#imports(type='text' value='5' pattern='[0-5]')
+          | Map imp-orts
+        label(title='Check if you have unlocked the Titimp imp-ort')
+          input#titimp(type='checkbox' checked='')
+          | Unlocked titimp?
+        label(title='Enemy health multiplier in maps')
+          input#challenge(type='text' oninput='check_input(this)' value='1')
+          | Challenge health
+        label(title='Check if you’re running Coordinate or Coordinate²')
+          input#coordinate(type='checkbox')
+          | Coordinate
+        label(title='Attack speed, in ticks per attack')
+          input#speed(type='text' value='3.585' pattern='[0-9.]+')
+          | Attack speed
+        label(title='Your max attack, divided by your min attack (usually 1.2, but can vary due to challenges)')
+          input#range(type='text' value='1.2')
+          | Attack range (max/min)
+        label(title='Critical hit chance, as displayed in the damage breakdown (max 80)')
+          input#cc(type='text' value='50' pattern='[0-9.]+')
+          | Crit chance
+        label(title='Bonus critical damage, as displayed in the damage breakdown')
+          input#cd(type='text' value='400')
+          | Crit damage%
+        label(title='Average size of the maps you create')
+          input#size(type='text' value='27' pattern='\\d\\d')
+          | Map size
+        label(title='Average difficulty of the maps you create')
+          input#difficulty(type='text' value='80' pattern='\\d+')
+          | Map difficulty%
+        label(title='Level of your Overkill perk (max 30)')
+          input#overkill(type='text' value='0' pattern='[12]?\\d|30')
+          | Overkill
+        label(title='Maximum number of cells you can overkill')
+          input#ok_spread(type='text' value='1' pattern='[123]')
+          | Overkill spread
+        label(title='Empowerment level of the currently active nature')
+          input#nature(type='text' value='0' pattern='\\d+')
+          | Nature
+        label(title='Stack transfer level of the currently active nature')
+          input#transfer(type='text' value='0' pattern='\\d+')
+          | Transfer
+        label(title='Check if you have unlocked the Map Reducer mastery')
+          input#reducer(type='checkbox')
+          | Map Reducer?
+      button.centered Recalculate
+
+    fieldset#results.box(style='opacity: 0; flex: 0 0 36em')
+      legend Results
+      p(style='font-size: 1.1em') #[b#result]. #[span#comment]
+      table#details
+      p
+        | Warning: this calculator assumes that your trimps are alive
+        | 100% of the time. If this is not the case, you’ll want to farm slightly
+        | lower than what it suggests.
+      p
+        | Note: the displayed loot values don’t account for special imps, looting perks and staffs.
+        | As such, your actual loot will be much higher. However, these factors affect all maps in the
+        | same way, and don’t affect the choice of map.
