@@ -252,6 +252,14 @@ function enemy_hp(g: any, zone: number, cell: number) {
 	return g.difficulty * g.challenge * amt;
 }
 
+function enemy_atk(zone: number, cell: number) {
+	let amt = 5.5 * sqrt(zone * pow(3.27, zone)) - 1.1;
+	amt *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * pow(1.15, zone - 59);
+	// if (g.zone >= 230)
+	amt *= round(50 * pow(1.05, floor(zone / 6 - 25))) / 10;
+	return amt;
+}
+
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
 function simulate(g: any, zone: number) {
 	let titimp = 0;

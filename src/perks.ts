@@ -239,6 +239,8 @@ function parse_inputs() {
 	if (preset == 'spire') {
 		result.mod.prod = result.mod.loot = 0;
 		result.perks.Overkill.cap = 0;
+		if (game)
+			result.zone = game.global.world;
 	}
 
 	if (preset == 'carp') {
