@@ -632,7 +632,9 @@ function optimize(params: any) {
 	}
 
 	if (he_left < 0)
-		throw "You don’t have enough Helium to afford your Fixed Perks.";
+		throw (game && game.global.canRespecPerks) ?
+			"You don’t have enough Helium to afford your Fixed Perks." :
+			"You don’t have a respec available.";
 
 	// Main loop
 	for (let best; (best = best_perk()); ) {
