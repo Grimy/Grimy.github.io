@@ -262,8 +262,7 @@ function parse_inputs() {
 
 	let max_zone = game ? game.global.highestLevelCleared : 999;
 
-	if ((preset.match(/trimp|coord/) && result.zone >= max_zone / 2)
-			|| (preset === 'trapper' && result.zone >= max_zone - 40))
+	if (preset.match(/trimp|coord/) && result.zone >= max_zone / 2)
 		show_alert('warning', 'Your target zone seems too high for this c², try lowering it.');
 
 	if (preset == 'spire' && game && game.global.world != 100 * (2 + game.global.lastSpireCleared))
