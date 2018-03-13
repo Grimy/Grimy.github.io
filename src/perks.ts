@@ -89,10 +89,10 @@ function update_dg() {
 	let overclock = game.generatorUpgrades.Overclocker.upgrades;
 	overclock = overclock && (1 - 0.5 * pow(0.99, overclock - 1));
 	let burn = game.permanentGeneratorUpgrades.Slowburn.owned ? 0.4 : 0.5;
-	let cells = game.talents.magmaFlow ? 18 : 16;
-	let accel = game.talents.quickGen ? 1.03 : 1.02;
-	let hs2 = game.talents.hyperspeed2 ? (game.global.highestLevelCleared + 1) / 2 : 0;
-	let bs = 0.5*game.talents.blacksmith + 0.25*game.talents.blacksmith2 + 0.15*game.talents.blacksmith3;
+	let cells = mastery('magmaFlow') ? 18 : 16;
+	let accel = mastery('quickGen') ? 1.03 : 1.02;
+	let hs2 = mastery('hyperspeed2') ? (game.global.highestLevelCleared + 1) / 2 : 0;
+	let bs = 0.5*mastery('blacksmith') + 0.25*mastery('blacksmith2') + 0.15*mastery('blacksmith3');
 	bs *= game.global.highestLevelCleared + 1;
 	let housing = 0;
 	let fuel = 0;
@@ -152,18 +152,18 @@ function read_save() {
 		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
 
 	// Income
-	let tt = game.talents.turkimp4 ? 1 :
-	         game.talents.turkimp3 ? 0.6 :
-	         game.talents.turkimp2 ? 0.4 :
-	         game.talents.turkimp ? 0.3 : 0.25;
+	let tt = mastery('turkimp4') ? 1 :
+	         mastery('turkimp3') ? 0.6 :
+	         mastery('turkimp2') ? 0.4 :
+	         mastery('turkimp') ? 0.3 : 0.25;
 	let prod = 1 + tt;
 	let loot = 1 + 0.333 * tt;
 	let spires = min(floor((zone - 101) / 100), game.global.spiresCompleted);
-	loot *= zone < 100 ? 0.7 : 1 + (game.talents.stillRowing ? 0.3 : 0.2) * spires;
+	loot *= zone < 100 ? 0.7 : 1 + (mastery('stillRowing') ? 0.3 : 0.2) * spires;
 
 	let chronojest = 27 * game.unlocks.imps.Jestimp + 15 * game.unlocks.imps.Chronoimp;
 	let cache = zone < 60 ? 0 : zone < 85 ? 7 : zone < 160 ? 10 : zone < 185 ? 14 : 20;
-	chronojest += (game.talents.mapLoot2 ? 5 : 4) * cache;
+	chronojest += (mastery('mapLoot2') ? 5 : 4) * cache;
 
 	for (let mod of (game.global.StaffEquipped.mods || [])) {
 		if (mod[0] === 'MinerSpeed')
@@ -183,7 +183,7 @@ function read_save() {
 	$('#chronojest').value = prettify(chronojest);
 	$('#prod').value = prettify(prod);
 	$('#loot').value = prettify(loot);
-	$('#breed-timer').value = prettify(game.talents.patience ? 45 : 30);
+	$('#breed-timer').value = prettify(mastery('patience') ? 45 : 30);
 }
 
 function parse_inputs() {

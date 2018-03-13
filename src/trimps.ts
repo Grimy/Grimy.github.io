@@ -144,6 +144,12 @@ window.addEventListener('error', (ev) => {
 
 let game: any;
 
+function mastery(name: string) {
+	if (!game.talents[name])
+		throw "unknown mastery: " + name;
+	return game.talents[name].purchased;
+}
+
 function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => void) {
 	let save_string = ev.clipboardData.getData("text/plain").replace(/\s/g, '');
 
@@ -160,9 +166,6 @@ function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => voi
 
 	localStorage.notation = game.options.menu.standardNotation.enabled;
 
-	for (let m in game.talents)
-		game.talents[m] = game.talents[m].purchased;
-	
 	read_save();
 	main();
 }

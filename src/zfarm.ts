@@ -13,10 +13,10 @@ function read_save() {
 	let zone = game.global.world;
 	let perfect = game.global.highestLevelCleared >= 109;
 	let nature = game.empowerments[['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3]];
-	let diplomacy = game.talents.nature3 ? 5 : 0;
-	let speed = 10 * pow(0.95, game.portal.Agility.level) - game.talents.hyperspeed;
+	let diplomacy = mastery('nature3') ? 5 : 0;
+	let speed = 10 * pow(0.95, game.portal.Agility.level) - mastery('hyperspeed');
 
-	if (game.talents.hyperspeed2 && zone <= ceil(game.global.highestLevelCleared / 2))
+	if (mastery('hyperspeed2') && zone <= ceil(game.global.highestLevelCleared / 2))
 		--speed;
 
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
@@ -36,16 +36,16 @@ function read_save() {
 	if (game.global.sugarRush > 0)
 		attack *= floor(zone / 100);
 
-	if (game.talents.stillRowing2)
+	if (mastery('stillRowing2'))
 		attack *= 1 + 0.06 * game.global.spireRows;
 
-	if (game.talents.magmamancer) {
+	if (mastery('magmamancer')) {
 		let time = (new Date().getTime() - game.global.zoneStarted) / 60000;
 		let bonus = pow(1.2, min(12, floor((time + 5) / 10))) - 1;
 		attack *= 1 + 3 * (1 - pow(0.9999, game.jobs.Magmamancer.owned)) * bonus;
 	}
 
-	if (game.talents.healthStrength) {
+	if (mastery('healthStrength')) {
 		let effective_zone = min(zone, game.global.lastSpireCleared * 100 + 199);
 		let cells = effective_zone < 300 ? 0 : floor((effective_zone - 270) / 15);
 		attack *= 1 + 0.15 * cells;
@@ -93,9 +93,9 @@ function read_save() {
 	$('#ok_spread').value = prettify(level + prestige >= 13 ? 3 : level + prestige >= 10 ? 2 : 1);
 	$('#overkill').value = game.portal.Overkill.level;
 	$('#range').value = prettify(maxFluct / minFluct);
-	$('#reducer').checked = game.talents.mapLoot;
+	$('#reducer').checked = mastery('mapLoot');
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
-	$('#size').value = prettify(game.talents.mapLoot2 ? 20 : perfect ? 25 : 27);
+	$('#size').value = prettify(mastery('mapLoot2') ? 20 : perfect ? 25 : 27);
 	$('#speed').value = prettify(speed);
 	$('#titimp').checked = game.unlocks.imps.Titimp;
 	$('#transfer').value = zone >= 236 ? nature.retainLevel + diplomacy : 0;
