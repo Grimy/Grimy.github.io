@@ -87,6 +87,7 @@ function read_save() {
 	$('#challenge').value = prettify(enemyHealth);
 	$('#coordinate').checked = challenge === "Coordinate";
 	$('#difficulty').value = prettify((perfect ? 75 : 80) + (challenge === "Mapocalypse" ? 300 : 0));
+	$('#extra_zones').checked = game.global.highestLevelCleared >= 209;
 	$('#fragments').value = prettify(game.resources.fragments.owned);
 	$('#imports').value = prettify(imps);
 	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
@@ -110,6 +111,7 @@ const parse_inputs = () => ({
 	challenge: input('challenge'),
 	coordinate: $('#coordinate').checked,
 	difficulty: input('difficulty') / 100,
+	extra_zones: $('#extra_zones').checked,
 	fragments: input('fragments'),
 	import_chance: input('imports') * 0.03 * max_rand,
 	ok_spread: input('ok_spread'),
@@ -349,8 +351,9 @@ function stats(g: any) {
 	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
 
 	let extra = 0;
-	while (extra < 10 && g.fragments > map_cost(53.98 + 10 * extra, g.zone))
-		++extra;
+	if (g.extra_zones)
+		while (extra < 10 && g.fragments > map_cost(53.98 + 10 * extra, g.zone))
+			++extra;
 	extra = extra || -g.reducer;
 
 	for (let zone = 1; zone <= g.zone + extra; ++zone) {
