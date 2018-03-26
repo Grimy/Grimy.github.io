@@ -292,6 +292,11 @@ function display(results: any) {
 			+ `Price: ${level >= cap ? '∞' : prettify(perks[name].cost())}<br>`
 			+ `Spent: ${prettify(spent)}</span></div>`;
 	}).join('');
+
+	for (let name in perks)
+		perks[name] = perks[name].level;
+
+	$('#perkstring').innerText = LZString.compressToBase64(JSON.stringify(perks));
 }
 
 document.addEventListener("DOMContentLoaded", validate_fixed, false);
