@@ -282,8 +282,9 @@ function display(results: any) {
 		let diff = game ? level - game.portal[name].level : 0;
 		let diff_text = diff ? ` (${diff > 0 ? '+' : '-'}${prettify(abs(diff))})` : '';
 		let style = diff > 0 ? 'adding' : diff < 0 ? 'remove' : level >= cap ? 'capped' : '';
-		style += [' large', ' small', ' tiny'][game.options.menu.smallPerks.enabled];
-		let size = $('#perks').clientWidth / (5 + game.options.menu.smallPerks.enabled);
+		let perk_size = game ? game.options.menu.smallPerks.enabled : 0;
+		style += [' large', ' small', ' tiny'][perk_size];
+		let size = $('#perks').clientWidth / (5 + perk_size);
 		let level_text = size > 155 ? 'Level: ' : size > 135 ? 'Lv: ' : '';
 
 		return `<div class='perk ${style} ${localStorage.more}'>`
