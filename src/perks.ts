@@ -273,6 +273,10 @@ function parse_inputs() {
 
 function display(results: any) {
 	let [he_left, perks] = results;
+	let perk_size = game ? game.options.menu.smallPerks.enabled : 0;
+	let size = $('#perks').clientWidth / (5 + perk_size);
+	$('#test-text').innerText = `Level: ${prettify(12345678)} (+${prettify(1234567)})`;
+	let level_text = size > $('#test-text').clientWidth ? 'Level: ' : '';
 
 	$('#results').style.opacity = '1';
 	$('#info').innerText = localStorage.more ? 'Less info' : 'More info';
@@ -282,10 +286,7 @@ function display(results: any) {
 		let diff = game ? level - game.portal[name].level : 0;
 		let diff_text = diff ? ` (${diff > 0 ? '+' : '-'}${prettify(abs(diff))})` : '';
 		let style = diff > 0 ? 'adding' : diff < 0 ? 'remove' : level >= cap ? 'capped' : '';
-		let perk_size = game ? game.options.menu.smallPerks.enabled : 0;
 		style += [' large', ' small', ' tiny'][perk_size];
-		let size = $('#perks').clientWidth / (5 + perk_size);
-		let level_text = size > 155 ? 'Level: ' : size > 135 ? 'Lv: ' : '';
 
 		return `<div class='perk ${style} ${localStorage.more}'>`
 			+ `<b>${name.replace('_', ' ')}</b><br>`
