@@ -539,7 +539,7 @@ function optimize(params: any) {
 			attacks = timer / ticks();
 		}
 
-		else { // no geneticists
+		else { // geneticists
 			let ratio = 1 + 0.25 * mult(Coordinated, -2);
 			let available = zone - 1 + (magma() ? 100 : 0);
 			let required = group_size[Coordinated.level] * pow(ratio, available);
@@ -619,7 +619,7 @@ function optimize(params: any) {
 	weight.agility = (weight.helium + weight.attack) / 2;
 	weight.overkill = 0.25 * weight.attack * (2 - pow(0.9, weight.helium / weight.attack));
 
-	if (zone > 110 && mod.soldiers <= 1 && Bait.must == 0)
+	if (zone > 90 && mod.soldiers <= 1 && Bait.must == 0)
 		Bait.cap = 0;
 	
 	if (!Capable.must)
