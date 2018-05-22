@@ -106,17 +106,17 @@ function read_save() {
 const parse_inputs = () => ({
 	attack: input('attack'),
 	biome: biomes.all.concat(biomes[$('#biome').value]),
-	cc: input('cc') / 100 * max_rand,
+	cc: input('cc') / 100,
 	cd: 1 + input('cd') / 100,
 	challenge: input('challenge'),
 	coordinate: $('#coordinate').checked,
 	difficulty: input('difficulty') / 100,
 	extra_zones: $('#extra_zones').checked,
 	fragments: input('fragments'),
-	import_chance: input('imports') * 0.03 * max_rand,
+	import_chance: input('imports') * 0.03,
 	ok_spread: input('ok_spread'),
 	overkill: input('overkill') * 0.005,
-	range: (input('range') - 1) / max_rand,
+	range: input('range') - 1,
 	reducer: $('#reducer').checked,
 	scry: $('#scry').checked,
 	size: input('size'),
@@ -237,12 +237,12 @@ const biomes: {[key: string]: number[]} = {
 };
 
 let seed = 42;
-const max_rand = pow(2, 31);
+const rand_mult = pow(2, -31);
 function rng() {
 	seed ^= seed >> 11;
 	seed ^= seed << 8;
 	seed ^= seed >> 19;
-	return seed;
+	return seed * rand_mult;
 }
 
 // Base HP (before imp modifiers) for an enemy at the given position (zone + cell).
@@ -272,15 +272,8 @@ function simulate(g: any, zone: number) {
 
 	for (let ticks = 0; ticks < max_ticks; ++cell) {
 
-		let imp, toughness;
-		if (cell % g.size === 99) {
-			imp = max_rand;
-			toughness = 2.9;
-		} else {
-			imp = rng();
-			toughness = imp < g.import_chance ? 1 : g.biome[imp % g.biome.length];
-		}
-
+		let imp = rng();
+		let toughness = imp < g.import_chance ? 1 : g.biome[floor(imp * g.biome.length)];
 		let hp = toughness * enemy_hp(g, zone, cell % g.size);
 
 		if (cell % g.size !== 0 && ok_spread !== 0) {
@@ -305,7 +298,7 @@ function simulate(g: any, zone: number) {
 		loot += 1 + wind * g.wind;
 		ok_dmg = -hp * g.overkill;
 		ticks += +(turns > 0) + +(g.speed > 9) + ceil(turns * g.speed);
-		if (g.titimp && imp < 0.03 * max_rand)
+		if (g.titimp && imp < 0.03)
 			titimp = min(max(ticks, titimp) + 300, ticks + 450);
 
 		poison = ceil(g.transfer * poison) + 1;
@@ -349,6 +342,11 @@ function map_cost(mods: number, level: number) {
 function stats(g: any) {
 	let stats = [];
 	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
+
+	// handle megacrits
+	g.attack *= g.cc >= 1 ? g.cd * pow(4, floor(g.cc) - 1) : pow(4, floor(g.cc));
+	g.cd = floor(g.cc) ? 4 : g.cd;
+	g.cc -= floor(g.cc);
 
 	let extra = 0;
 	if (g.extra_zones)
