@@ -4,9 +4,10 @@ function read_save() {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
-	let crits = game.portal.Relentlessness.level;
 	let challenge = game.global.challengeActive;
 	let attack = game.global.soldierCurrentAttack;
+	let cc = 5 * game.portal.Relentlessness.level + game.heirlooms.Shield.critChance.currentBonus;
+	let cd = 100 + 30 * game.portal.Relentlessness.level + game.heirlooms.Shield.critDamage.currentBonus;
 	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
 	let maxFluct = 1.2;
 	let enemyHealth = 1;
@@ -58,16 +59,19 @@ function read_save() {
 		enemyHealth *= 2;
 	} else if (challenge === "Daily") {
 		let daily = (mod: string) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
-		enemyHealth *= 1 + 0.2 * daily('badHealth');
-		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
-		minFluct -= daily('minDamage') ? 0.09 + 0.01 * daily('minDamage') : 0;
-		maxFluct += daily('maxDamage');
-		attack *= 1 - 0.09 * daily('weakness');
-		attack *= 1 + 0.1 * ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
 		if (zone % 2 == 1)
 			attack *= 1 - 0.02 * daily('oddTrimpNerf');
 		else
 			attack *= 1 + 0.2 * daily('evenTrimpBuff');
+		attack *= 1 - 0.09 * daily('weakness');
+		attack *= 1 + 0.1 * ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
+		console.log(daily('trimpCritChanceDown'));
+		cc += 10 * daily('trimpCritChanceUp');
+		cc -= 10 * daily('trimpCritChanceDown');
+		minFluct -= daily('minDamage') ? 0.09 + 0.01 * daily('minDamage') : 0;
+		maxFluct += daily('maxDamage');
+		enemyHealth *= 1 + 0.2 * daily('badHealth');
+		enemyHealth *= 1 + 0.3 * daily('badMapHealth');
 	} else if (challenge === "Life") {
 		enemyHealth *= 11;
 		attack *= 1 + 0.1 * game.challenges.Life.stacks;
@@ -82,8 +86,8 @@ function read_save() {
 	}
 
 	$('#attack').value = prettify(attack * minFluct);
-	$('#cc').value = 5 * crits + game.heirlooms.Shield.critChance.currentBonus;
-	$('#cd').value = 100 + 30 * crits + game.heirlooms.Shield.critDamage.currentBonus;
+	$('#cc').value = cc;
+	$('#cd').value = cd;
 	$('#challenge').value = prettify(enemyHealth);
 	$('#coordinate').checked = challenge === "Coordinate";
 	$('#difficulty').value = prettify((perfect ? 75 : 80) + (challenge === "Mapocalypse" ? 300 : 0));
