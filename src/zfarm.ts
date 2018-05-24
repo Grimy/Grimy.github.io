@@ -4,10 +4,11 @@ function read_save() {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
+	let shield = game.heirlooms.Shield;
 	let challenge = game.global.challengeActive;
 	let attack = game.global.soldierCurrentAttack;
-	let cc = 5 * game.portal.Relentlessness.level + game.heirlooms.Shield.critChance.currentBonus;
-	let cd = 100 + 30 * game.portal.Relentlessness.level + game.heirlooms.Shield.critDamage.currentBonus;
+	let cc = 5 * game.portal.Relentlessness.level + shield.critChance.currentBonus;
+	let cd = 100 + 30 * game.portal.Relentlessness.level + shield.critDamage.currentBonus;
 	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
 	let maxFluct = 1.2;
 	let enemyHealth = 1;
@@ -97,6 +98,7 @@ function read_save() {
 	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
 	$('#ok_spread').value = prettify(level + prestige >= 13 ? 3 : level + prestige >= 10 ? 2 : 1);
 	$('#overkill').value = game.portal.Overkill.level;
+	$('#plaguebringer').value = shield.plaguebringer ? shield.plaguebringer.currentBonus : 0;
 	$('#range').value = prettify(maxFluct / minFluct);
 	$('#reducer').checked = mastery('mapLoot');
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
@@ -120,6 +122,7 @@ const parse_inputs = () => ({
 	import_chance: input('imports') * 0.03,
 	ok_spread: input('ok_spread'),
 	overkill: input('overkill') * 0.005,
+	plaguebringer: input('plaguebringer') * 0.01,
 	range: input('range') - 1,
 	reducer: $('#reducer').checked,
 	scry: $('#scry').checked,
@@ -271,7 +274,8 @@ function simulate(g: any, zone: number) {
 	let titimp = 0;
 	let cell = 0;
 	let loot = 0;
-	let ok_dmg = 0, ok_spread = 0;
+	let plague_damage = 0;
+	let ok_damage = 0, ok_spread = 0;
 	let poison = 0, wind = 0, ice = 0;
 
 	for (let ticks = 0; ticks < max_ticks; ++cell) {
@@ -280,10 +284,15 @@ function simulate(g: any, zone: number) {
 		let toughness = imp < g.import_chance ? 1 : g.biome[floor(imp * g.biome.length)];
 		let hp = toughness * enemy_hp(g, zone, cell % g.size);
 
-		if (cell % g.size !== 0 && ok_spread !== 0) {
-			hp -= ok_dmg;
-			--ok_spread;
+		if (cell % g.size !== 0) {
+			let base_hp = hp;
+			if (ok_spread !== 0) {
+				hp -= ok_damage;
+				--ok_spread;
+			}
+			hp = min(hp, max(base_hp * 0.05, hp - plague_damage));
 		}
+		plague_damage = 0;
 
 		let turns = 0;
 		while (hp > 0) {
@@ -296,18 +305,20 @@ function simulate(g: any, zone: number) {
 			hp -= damage + poison * g.poison;
 			poison += damage;
 			++ice;
+			if (hp > 0)
+				plague_damage += damage * g.plaguebringer;
 		}
 
 		wind = min(wind + turns, 200);
 		loot += 1 + wind * g.wind;
-		ok_dmg = -hp * g.overkill;
+		ok_damage = -hp * g.overkill;
 		ticks += +(turns > 0) + +(g.speed > 9) + ceil(turns * g.speed);
 		if (g.titimp && imp < 0.03)
 			titimp = min(max(ticks, titimp) + 300, ticks + 450);
 
-		poison = ceil(g.transfer * poison) + 1;
-		wind = ceil(g.transfer * wind) + 1;
-		ice = ceil(g.transfer * ice) + 1;
+		poison = ceil(g.transfer * (poison + plague_damage)) + 1;
+		wind = ceil(g.transfer * wind) + 1 + ceil((turns - 1) * g.plaguebringer);
+		ice = ceil(g.transfer * ice) + 1 + ceil((turns - 1) * g.plaguebringer);
 	}
 
 	return loot * 10 / max_ticks;
