@@ -517,6 +517,7 @@ function optimize(params: any) {
 		attack *= add(Relentlessness, 5 * add(Relentlessness, 30));
 		attack *= pow(1 + Siphonology.level, 0.1) * add(Range, 1);
 		attack *= add(Anticipation, 6);
+		attack *= fluffy.attack[Capable.level];
 		return soldiers() * attack;
 	}
 
@@ -560,17 +561,7 @@ function optimize(params: any) {
 		return soldiers() * (block + health);
 	}
 
-	// XP earned by Fluffy over the run
-	fluffy.base = 0;
-	for (let z = 301; z < zone; ++z)
-		fluffy.base += 50 * pow(1.015, z - 300);
-
-	function xp() {
-		let total = fluffy.base * add(Cunning, 25) * add(Curious, 60);
-		let cap = Capable.level == 10 ? Infinity : 1000 * pow(5, fluffy.prestige) * (mult(Capable, 300) - 1) / 3;
-		return max(1, min(total, cap - fluffy.xp) + min(total * 7, cap - fluffy.xp));
-	}
-
+	const xp = () => add(Cunning, 25) * add(Curious, 60);
 	const agility = () => 1 / mult(Agility, -5);
 	const helium = () => base_helium * looting() + 45;
 	const overkill = () => max(0.2, Overkill.level);
@@ -621,20 +612,33 @@ function optimize(params: any) {
 
 	if (zone > 90 && mod.soldiers <= 1 && Bait.must == 0)
 		Bait.cap = 0;
+
+	// Fluffy
+	fluffy.attack = [];
+	let potential = log(0.003 * fluffy.xp / pow(5, fluffy.prestige) + 1) / log(4);
+	for (let cap = 0; cap <= 10; ++cap) {
+		let level = min(floor(potential), cap);
+		let progress = level == cap ? 0 : (pow(4, potential - level) - 1) / 3;
+		fluffy.attack[cap] = 1 + pow(5, fluffy.prestige) * 0.1 * (level / 2 + progress) * (level + 1);
+	}
+
+	if (zone > 300 && weight.xp > 0) {
+		let ratio = 0.25;
+		while (Capable.level < Capable.cap && Capable.cost() < he_left * ratio) {
+			he_left -= Capable.cost();
+			Capable.spent += Capable.cost();
+			Capable.level++;
+			ratio = Capable.level <= floor(potential) ? 0.25 : 0.01;
+		}
+	}
 	
-	if (!Capable.must)
-		Capable.must = ceil(log(0.003 * fluffy.xp / pow(5, fluffy.prestige) + 1) / log(4));
-
-	// Dirty fix
-	Capable.must = min(Capable.must, 10, floor(log(he_left) / log(10) - 7.5));
-
 	for (let name in perks) {
 		let perk = perks[name];
 		while (perk.level < perk.must) {
 			let cost = perk.cost();
 			he_left -= cost;
-			perk.level += perk.pack;
 			perk.spent += cost;
+			perk.level += perk.pack;
 		}
 	}
 

@@ -29,10 +29,11 @@ function read_save() {
 	attack /= [1, 0.5, 4, 0.5, 0.5][game.global.formation];
 
 	// Fluffy
+	let cap = game.portal.Capable.level;
 	let prestige = game.global.fluffyPrestige;
-	let xp = log(0.003 * game.global.fluffyExp / pow(5, prestige) + 1) / log(4);
-	let level = min(floor(xp), game.portal.Capable.level);
-	let progress = level == game.portal.Capable.level ? 0 : (pow(4, xp - level) - 1) / 3;
+	let potential = log(0.003 * game.global.fluffyExp / pow(5, prestige) + 1) / log(4);
+	let level = min(floor(potential), cap);
+	let progress = level == cap ? 0 : (pow(4, potential - level) - 1) / 3;
 	attack *= 1 + pow(5, prestige) * 0.1 * (level / 2 + progress) * (level + 1);
 
 	if (game.global.sugarRush > 0)
