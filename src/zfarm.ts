@@ -21,6 +21,9 @@ function read_save() {
 	if (mastery('hyperspeed2') && zone <= ceil(game.global.highestLevelCleared / 2))
 		--speed;
 
+	let v48 = game.global.version >= 4.8;
+
+	attack *= 1 + 0.5 * game.jobs.Amalgamator.owned;
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
 	attack *= 1 + 0.01 * game.global.achievementBonus;
 	attack *= 1 + 0.2 * game.global.roboTrimpLevel;
@@ -38,6 +41,9 @@ function read_save() {
 
 	if (game.global.sugarRush > 0)
 		attack *= floor(zone / 100);
+
+	if (v48 && game.singleRunBonuses.sharpTrimps.owned)
+		attack *= 1.5;
 
 	if (mastery('stillRowing2'))
 		attack *= 1 + 0.06 * game.global.spireRows;
@@ -67,7 +73,6 @@ function read_save() {
 			attack *= 1 + 0.2 * daily('evenTrimpBuff');
 		attack *= 1 - 0.09 * daily('weakness');
 		attack *= 1 + 0.1 * ceil(daily('rampage') / 10) * (1 + daily('rampage') % 10);
-		console.log(daily('trimpCritChanceDown'));
 		cc += 10 * daily('trimpCritChanceUp');
 		cc -= 10 * daily('trimpCritChanceDown');
 		minFluct -= daily('minDamage') ? 0.09 + 0.01 * daily('minDamage') : 0;
@@ -99,7 +104,7 @@ function read_save() {
 	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
 	$('#ok_spread').value = prettify(level + prestige >= 13 ? 3 : level + prestige >= 10 ? 2 : 1);
 	$('#overkill').value = game.portal.Overkill.level;
-	$('#plaguebringer').value = shield.plaguebringer ? shield.plaguebringer.currentBonus : 0;
+	$('#plaguebringer').value = v48 ? shield.plaguebringer.currentBonus : 0;
 	$('#range').value = prettify(maxFluct / minFluct);
 	$('#reducer').checked = mastery('mapLoot');
 	$('#scry').checked = game.global.highestLevelCleared >= 180;
