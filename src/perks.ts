@@ -489,25 +489,35 @@ function optimize(params: any) {
 		return potency * pow(1.01, nurseries) * add(Pheromones, 10) * mod.ven;
 	}
 
+	// Number of Trimps sent at a time, pre-gators
 	let group_size: number[] = [];
 
 	for (let coord = 0; coord <= log(1 + he_left / 500e3) / log(1.3); ++coord) {
 		let ratio = 1 + 0.25 * pow(0.98, coord);
+		let available_coords = zone - 1 + (magma() ? 100 : 0);
 		let result = 1;
-		for (let i = 0; i < 100; ++i)
+		for (let i = 0; i < available_coords; ++i)
 			result = ceil(result * ratio);
-		group_size[coord] = result / pow(ratio, 100);
+		group_size[coord] = result;
 	}
 
-	// Theoretical fighting group size (actual size is lower because of Coordinated)
+	// Strength multiplier from coordinations
 	function soldiers() {
 		let ratio = 1 + 0.25 * mult(Coordinated, -2);
 		let pop = (mod.soldiers || trimps()) / 3;
 		if (mod.soldiers > 1)
 			pop += 36000 * add(Bait, 100);
-		let coords = log(pop / group_size[Coordinated.level]) / log(ratio);
-		let available = zone - 1 + (magma() ? 100 : 0);
-		return group_size[0] * pow(1.25, min(coords, available));
+		let unbought_coords = max(0, log(group_size[Coordinated.level] / pop) / log(ratio));
+		return group_size[0] * pow(1.25, -unbought_coords);
+	}
+
+	// Fracional number of Amalgamators expected
+	function gators() {
+		if ((game && game.global.version < 4.8) || zone < 230 || mod.soldiers > 1)
+			return 0;
+
+		let ooms = log(trimps() / group_size[Coordinated.level]) / log(10);
+		return max(0, (ooms - 7 + floor((zone - 215) / 100)) / 3);
 	}
 
 	// Total attack
@@ -518,6 +528,7 @@ function optimize(params: any) {
 		attack *= pow(1 + Siphonology.level, 0.1) * add(Range, 1);
 		attack *= add(Anticipation, 6);
 		attack *= fluffy.attack[Capable.level];
+		attack *= 1 + 0.5 * gators();
 		return soldiers() * attack;
 	}
 
@@ -541,15 +552,13 @@ function optimize(params: any) {
 		}
 
 		else { // geneticists
-			let ratio = 1 + 0.25 * mult(Coordinated, -2);
-			let available = zone - 1 + (magma() ? 100 : 0);
-			let required = group_size[Coordinated.level] * pow(ratio, available);
-			let fighting = min(required / trimps(), 1 / 3);
+			let fighting = min(group_size[Coordinated.level] / trimps(), 1 / 3);
 			let target_speed = fighting > 1e-9 ?
 				(pow(0.5 / (0.5 - fighting), 0.1 / mod.breed_timer) - 1) * 10 :
 				fighting / mod.breed_timer;
 			let geneticists = log(breed() / target_speed) / -log(0.98);
 			health *= pow(1.01, geneticists);
+			health *= pow(1.332, gators());
 		}
 
 		health /= attacks;
