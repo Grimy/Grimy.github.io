@@ -155,11 +155,12 @@ function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => voi
 
 	try {
 		game = JSON.parse(LZString.decompressFromBase64(save_string));
-		let version = 4.72;
-		if (game.global.version > version + 0.009)
-			show_alert('warning', `This calculator only supports up to v${version} of Trimps, but your save is from v${game.global.version}. Results may be inaccurate.`);
-		else if (game.global.version < version)
-			show_alert('ok', `Trimps v${version} is out! Your save is still on v${game.global.version}, so you should refresh the game’s page.`);
+		let min_version = 4.72;
+		let max_version = 4.8;
+		if (game.global.version > max_version + 0.009)
+			show_alert('warning', `This calculator only supports up to v${max_version} of Trimps, but your save is from v${game.global.version}. Results may be inaccurate.`);
+		else if (game.global.version < min_version)
+			show_alert('warning', `Trimps v${min_version} is out! Your save is still on v${game.global.version}, so you should refresh the game’s page.`);
 	} catch {
 		throw 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.';
 	}
