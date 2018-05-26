@@ -150,6 +150,19 @@ function mastery(name: string) {
 	return game.talents[name].purchased;
 }
 
+function toggle_spoilers() {
+	$$('[data-hide]').forEach((elem: HTMLElement) => {
+		elem.style.display = +localStorage.hze >= +elem.getAttribute('data-hide')! ? '' : 'none';
+	});
+}
+
+function set_hze(zone: number) {
+	if (!(+localStorage.hze > zone)) {
+		localStorage.hze = zone;
+		toggle_spoilers();
+	}
+}
+
 function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => void) {
 	let save_string = ev.clipboardData.getData("text/plain").replace(/\s/g, '');
 
@@ -166,11 +179,13 @@ function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => voi
 	}
 
 	localStorage.notation = game.options.menu.standardNotation.enabled;
+	set_hze(game.global.highestLevelCleared + 1);
 
 	read_save();
 	main();
 }
 
+document.addEventListener("DOMContentLoaded", toggle_spoilers);
 document.addEventListener("DOMContentLoaded", function () {
 	let version = '2.4';
 	if (version > localStorage.version)

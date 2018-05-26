@@ -31,12 +31,9 @@ block content
         label(title='Number of fragments you can spend on a map')
           input#fragments(type='text' oninput='check_input(this)')
           | Fragments
-        label(title='Check if you have unlocked Extra Zones at level 210')
-          input#extra_zones(type='checkbox' checked='')
-          | Extra Zones?
-        label(title='Check if you have unlocked the Scrying stance')
-          input#scry(type='checkbox' checked='')
-          | Unlocked S?
+        label(title='Your Highest Zone Ever')
+          input#hze(type='text' value='42' pattern='[0-9]+' onchange='set_hze(this.value)')
+          | HZE
         label(title='Total number of map imp-orts you have unlocked')
           input#imports(type='text' value='5' pattern='[0-5]')
           | Map imp-orts
@@ -55,7 +52,7 @@ block content
         label(title='Your max attack, divided by your min attack (usually 1.2, but can vary due to challenges)')
           input#range(type='text' value='1.2')
           | Attack range (max/min)
-        label(title='Critical hit chance, as displayed in the damage breakdown (max 80)')
+        label(title='Critical hit chance, as displayed in the damage breakdown')
           input#cc(type='text' value='50' pattern='[-0-9.]+')
           | Crit chance
         label(title='Bonus critical damage, as displayed in the damage breakdown')
@@ -67,22 +64,22 @@ block content
         label(title='Average difficulty of the maps you create')
           input#difficulty(type='text' value='80' pattern='\\d+')
           | Map difficulty%
-        label(title='Level of your Overkill perk (max 30)')
+        label(title='Level of your Overkill perk (max 30)' data-hide=170)
           input#overkill(type='text' value='0' pattern='[12]?\\d|30')
           | Overkill
-        label(title='Maximum number of cells you can overkill')
+        label(title='Maximum number of cells you can overkill' data-hide=301)
           input#ok_spread(type='text' value='1' pattern='[123]')
           | Overkill spread
-        label(title='The plaguebringer mod on your shield')
+        label(title='The plaguebringer mod on your shield' data-hide=500)
           input#plaguebringer(type='text' value='0' pattern='[0-9.]+')
           | Plaguebringer
-        label(title='Empowerment level of the currently active nature')
+        label(title='Empowerment level of the currently active nature' data-hide=236)
           input#nature(type='text' value='0' pattern='\\d+')
           | Nature
-        label(title='Stack transfer level of the currently active nature')
+        label(title='Stack transfer level of the currently active nature' data-hide=236)
           input#transfer(type='text' value='0' pattern='\\d+')
           | Transfer
-        label(title='Check if you have unlocked the Map Reducer mastery')
+        label(title='Check if you have unlocked the Map Reducer mastery' data-hide=181)
           input#reducer(type='checkbox')
           | Map Reducer?
       button.centered Recalculate

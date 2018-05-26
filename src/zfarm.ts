@@ -98,8 +98,8 @@ function read_save() {
 	$('#challenge').value = prettify(enemyHealth);
 	$('#coordinate').checked = challenge === "Coordinate";
 	$('#difficulty').value = prettify((perfect ? 75 : 80) + (challenge === "Mapocalypse" ? 300 : 0));
-	$('#extra_zones').checked = game.global.highestLevelCleared >= 209;
 	$('#fragments').value = prettify(game.resources.fragments.owned);
+	$('#hze').value = prettify(game.global.highestLevelCleared + 1);
 	$('#imports').value = prettify(imps);
 	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
 	$('#ok_spread').value = prettify(level + prestige >= 13 ? 3 : level + prestige >= 10 ? 2 : 1);
@@ -107,7 +107,6 @@ function read_save() {
 	$('#plaguebringer').value = v48 ? shield.plaguebringer.currentBonus : 0;
 	$('#range').value = prettify(maxFluct / minFluct);
 	$('#reducer').checked = mastery('mapLoot');
-	$('#scry').checked = game.global.highestLevelCleared >= 180;
 	$('#size').value = prettify(mastery('mapLoot2') ? 20 : perfect ? 25 : 27);
 	$('#speed').value = prettify(speed);
 	$('#titimp').checked = game.unlocks.imps.Titimp;
@@ -123,15 +122,14 @@ const parse_inputs = () => ({
 	challenge: input('challenge'),
 	coordinate: $('#coordinate').checked,
 	difficulty: input('difficulty') / 100,
-	extra_zones: $('#extra_zones').checked,
 	fragments: input('fragments'),
+	hze: input('hze'),
 	import_chance: input('imports') * 0.03,
 	ok_spread: input('ok_spread'),
 	overkill: input('overkill') * 0.005,
 	plaguebringer: input('plaguebringer') * 0.01,
 	range: input('range') - 1,
 	reducer: $('#reducer').checked,
-	scry: $('#scry').checked,
 	size: input('size'),
 	speed: input('speed'),
 	titimp: $('#titimp').checked,
@@ -362,7 +360,7 @@ function map_cost(mods: number, level: number) {
 // Return a list of efficiency stats for all sensible zones
 function stats(g: any) {
 	let stats = [];
-	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
+	let stances = (g.zone < 70 ? 'X' : 'D') + (g.hze >= 181 && g.zone >= 60 ? 'S' : '');
 
 	// handle megacrits
 	g.attack *= g.cc >= 1 ? g.cd * pow(5, floor(g.cc) - 1) : pow(5, floor(g.cc));
@@ -370,7 +368,7 @@ function stats(g: any) {
 	g.cc -= floor(g.cc);
 
 	let extra = 0;
-	if (g.extra_zones)
+	if (g.hze >= 210)
 		while (extra < 10 && g.fragments > map_cost(53.98 + 10 * extra, g.zone))
 			++extra;
 	extra = extra || -g.reducer;

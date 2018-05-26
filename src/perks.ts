@@ -32,10 +32,6 @@ function validate_fixed() {
 	}
 }
 
-function toggle_fluffy() {
-	(<any> $('#weight-xp').parentNode).style.display = localStorage.fluffy ? '' : 'none';
-}
-
 let presets: {[key: string]: string[]} = {
 	early:      [  '5',  '4',  '3'],
 	broken:     [  '7',  '3',  '1'],
@@ -130,10 +126,6 @@ function read_save() {
 	if (!localStorage.zone)
 		$('#zone').value = game.stats.highestVoidMap.valueTotal || game.global.highestLevelCleared;
 	let zone = input('zone');
-
-	if (game.global.spiresCompleted >= 2)
-		localStorage.fluffy = 'yay';
-	toggle_fluffy();
 
 	if (!localStorage.preset) {
 		$$('#preset > *').forEach(function (option: HTMLOptionElement) {
@@ -302,7 +294,6 @@ function display(results: any) {
 }
 
 document.addEventListener("DOMContentLoaded", validate_fixed, false);
-document.addEventListener("DOMContentLoaded", toggle_fluffy, false);
 document.addEventListener("DOMContentLoaded", auto_preset, false);
 
 function main() {
