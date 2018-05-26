@@ -365,8 +365,8 @@ function stats(g: any) {
 	let stances = (g.zone < 70 ? 'X' : 'D') + (g.scry && g.zone >= 60 ? 'S' : '');
 
 	// handle megacrits
-	g.attack *= g.cc >= 1 ? g.cd * pow(4, floor(g.cc) - 1) : pow(4, floor(g.cc));
-	g.cd = floor(g.cc) ? 4 : g.cd;
+	g.attack *= g.cc >= 1 ? g.cd * pow(5, floor(g.cc) - 1) : pow(5, floor(g.cc));
+	g.cd = floor(g.cc) ? 5 : g.cd;
 	g.cc -= floor(g.cc);
 
 	let extra = 0;
