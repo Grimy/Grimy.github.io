@@ -28,23 +28,12 @@ function show_alert(style: string, message: string) {
 		</p>`;
 }
 
-///
-// Creating/loading share links
-///
-
 function create_share(callback: (url: string) => void) {
 	let share_string = localStorage.notation + ':';
 	share_string += $$('input,select').map((field: HTMLInputElement) => field.value.replace(':', '')).join(':');
 	let long_url = location.href.replace(/[#?].*/, '');
-	long_url += '?' + LZString.compressToBase64(share_string);
-	let url = 'https://api-ssl.bitly.com/v3/shorten?longUrl=' + encodeURIComponent(long_url);
-	url += '&login=grimy&apiKey=R_7ea82c1cec394d1ca5cf4da2a7f7ddd9';
-
-	callback = callback || ((url: string) => show_alert('ok', `Your share link is <a href=${url}>${url}`));
-	let request = new XMLHttpRequest();
-	request.open('GET', url, true);
-	request.onload = () => callback(JSON.parse(request.responseText).data.url || long_url);
-	request.send();
+	long_url += '?' + LZString.compressToEncodedURIComponent(share_string);
+	callback(long_url);
 }
 
 function exit_share() {
@@ -54,14 +43,14 @@ function exit_share() {
 }
 
 function load_share(str: string) {
-	let values = LZString.decompressFromBase64(str).split(':');
+	let values = LZString.decompressFromEncodedURIComponent(str).split(':');
 	let notation = localStorage.notation;
 	localStorage.notation = values.shift();
 
 	$$('input,select').forEach((field: HTMLInputElement) => field.value = values.shift()!);
 	$('textarea').addEventListener('click', exit_share);
+	(<any> $('form')).submit();
 
-	// try_main();
 	localStorage.notation = notation || 1;
 }
 
@@ -130,12 +119,15 @@ window.addEventListener('error', (ev) => {
 		return;
 	}
 
+	if (ev.message == 'Script error.')
+		return;
+
 	create_share((url: string) => show_alert('ko',
 	`Oops! It’s not your fault, but something went wrong. You can go pester the dev on
 	<a href=https://github.com/Grimy/Grimy.github.io/issues/new>GitHub</a> or
 	<a href=https://www.reddit.com/message/compose/?to=Grimy_>Reddit</a>, he’ll fix it.
-	If you do, please include the following message:<br>
-	<tt>${url} ${ev.filename} l${ev.lineno || 0}c${ev.colno || 0} ${ev.message}</tt>.`));
+	If you do, please include the following data:<br>
+	<tt>${url}<br>${ev.filename} l${ev.lineno || 0}c${ev.colno || 0} ${ev.message}</tt>.`));
 });
 
 ///

@@ -41,28 +41,28 @@ block content
           input#titimp(type='checkbox' checked='')
           | Unlocked titimp?
         label(title='Enemy health multiplier in maps')
-          input#challenge(type='text' oninput='check_input(this)' value='1')
+          input#challenge(type='text' oninput='check_input(this)' value='1' pattern='(?!0$)[0-9.]+')
           | Challenge health
         label(title='Check if you’re running Coordinate or Coordinate²')
           input#coordinate(type='checkbox')
           | Coordinate
         label(title='Attack speed, in ticks per attack')
-          input#speed(type='text' value='3.585' pattern='[0-9.]+')
+          input#speed(type='text' value='3.585' pattern='(?!0$)[0-9.]+')
           | Attack speed
         label(title='Your max attack, divided by your min attack (usually 1.2, but can vary due to challenges)')
-          input#range(type='text' value='1.2')
+          input#range(type='text' value='1.2' pattern='[1-9][0-9.]*')
           | Attack range (max/min)
         label(title='Critical hit chance, as displayed in the damage breakdown')
           input#cc(type='text' value='50' pattern='[-0-9.]+')
           | Crit chance
         label(title='Bonus critical damage, as displayed in the damage breakdown')
-          input#cd(type='text' value='400')
+          input#cd(type='text' value='400' pattern='\\d{3,}')
           | Crit damage%
         label(title='Average size of the maps you create')
           input#size(type='text' value='27' pattern='\\d\\d')
           | Map size
         label(title='Average difficulty of the maps you create')
-          input#difficulty(type='text' value='80' pattern='\\d+')
+          input#difficulty(type='text' value='80' pattern='[1-9][0-9]*')
           | Map difficulty%
         label(title='Level of your Overkill perk (max 30)' data-hide=170)
           input#overkill(type='text' value='0' pattern='[12]?\\d|30')
