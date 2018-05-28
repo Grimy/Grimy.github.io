@@ -631,6 +631,9 @@ function optimize(params: any) {
 			ratio = Capable.level <= floor(potential) ? 0.25 : 0.01;
 		}
 	}
+
+	if (zone <= 300 || potential >= Capable.level)
+		weight.xp = 0;
 	
 	for (let name in perks) {
 		let perk = perks[name];
