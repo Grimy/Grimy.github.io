@@ -134,6 +134,13 @@ function read_save() {
 		auto_preset();
 	}
 
+	// let xp_ratio = 1 + game.global.bestFluffyExp / game.global.fluffyExp;
+	// let he_ratio = 1 + game.global.bestHelium / game.global.totalHeliumEarned;
+	// xp_ratio = log(xp_ratio) * input('weight-atk');
+	// he_ratio = log(sqrt(he_ratio)) * (input('weight-atk') + input('weight-he')) +
+		// log(he_ratio) / log(1.3) * log((1 + 0.25 / (1 + 0.25 * game.portal.Cunning.level)) * (1 + 0.6 / (1 + 0.6 * game.portal.Curious.level))) * input('weight-xp');
+	// console.log("suggested XP weight:", input('weight-he') * xp_ratio / he_ratio);
+
 	// He / unlocks
 	let helium = game.global.heliumLeftover;
 	for (let perk in game.portal)
