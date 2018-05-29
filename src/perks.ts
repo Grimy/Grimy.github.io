@@ -3,23 +3,53 @@
 class Perk {
 	locked = true;
 	level = 0;
-	pack = 1;
-	must = 0;
-	spent = 0;
+	min_level = 0;
+	cost = 0;
+	gain = 0;
+	bonus = 1;
 
 	constructor(
 		private base_cost: number,
-		private increment: number,
-		public cap: number,
-		public free: number,
-		private scaling: number = 30,
-	) {}
+		public cost_increment: number,
+		private scaling: (level: number) => number,
+		public max_level: number = Infinity,
+		private cost_exponent: number = 1.3,
+	) {
+		this.cost = this.base_cost;
+	}
 
-	// Compute the current cost of a perk, based on its current level.
-	cost() {
-		return this.increment ? 
-			this.pack * (this.base_cost + this.increment * (this.level + (this.pack - 1) / 2)) :
-			ceil(this.level / 2 + this.base_cost * mult(this, this.scaling));
+	levellable(he_left: number): boolean {
+		return !this.locked &&
+			this.level < this.max_level &&
+			this.cost * max(1, floor(this.level / 1e12)) <= he_left;
+	}
+
+	level_up(amount: number): number {
+		this.level += amount;
+		this.bonus = this.scaling(this.level);
+		if (this.cost_increment) {
+			let spent = amount * (this.cost + this.cost_increment * (amount - 1) / 2);
+			this.cost += amount * this.cost_increment;
+			return spent;
+		} else {
+			let spent = this.cost;
+			this.cost = ceil(this.level / 2 + this.base_cost * pow(this.cost_exponent, this.level));
+			return spent;
+		}
+	}
+
+	spent(log: boolean = false) {
+		if (this.cost_increment)
+			return this.level * (this.base_cost + this.cost - this.cost_increment) / 2;
+		let total = 0;
+		for (let x = 0; x < this.level; ++x)
+			total += ceil(x / 2 + this.base_cost * pow(this.cost_exponent, x));
+		return total;
+	}
+
+	log_ratio(): number {
+		return this.cost_increment ? (this.scaling(1) - this.scaling(0)) / this.bonus
+		                           : log(this.scaling(this.level + 1) / this.bonus);
 	}
 }
 
@@ -231,13 +261,13 @@ function parse_inputs() {
 	if (preset == 'trapper') {
 		result.mod.soldiers = game.resources.trimps.owned;
 		result.mod.prod = 0;
-		result.perks.Pheromones.cap = 0;
-		result.perks.Anticipation.cap = 0;
+		result.perks.Pheromones.max_level = 0;
+		result.perks.Anticipation.max_level = 0;
 	}
 
 	if (preset == 'spire') {
 		result.mod.prod = result.mod.loot = 0;
-		result.perks.Overkill.cap = 0;
+		result.perks.Overkill.max_level = 0;
 		if (game)
 			result.zone = game.global.world;
 	}
@@ -254,10 +284,10 @@ function parse_inputs() {
 		result.mod.soldiers = 1;
 
 	if (preset == 'nerfed')
-		result.perks.Overkill.cap = 1;
+		result.perks.Overkill.max_level = 1;
 	
 	if (preset == 'scientist')
-		result.perks.Coordinated.cap = 0;
+		result.perks.Coordinated.max_level = 0;
 
 	let max_zone = game ? game.global.highestLevelCleared : 999;
 
@@ -281,17 +311,17 @@ function display(results: any) {
 	$('#info').innerText = localStorage.more ? 'Less info' : 'More info';
 	$('#he-left').innerHTML = prettify(he_left) + ' Helium Left Over';
 	$('#perks').innerHTML = Object.keys(perks).filter(name => !perks[name].locked).map(name => {
-		let {level, cap, spent} = perks[name];
+		let {level, max_level} = perks[name];
 		let diff = game ? level - game.portal[name].level : 0;
 		let diff_text = diff ? ` (${diff > 0 ? '+' : '-'}${prettify(abs(diff))})` : '';
-		let style = diff > 0 ? 'adding' : diff < 0 ? 'remove' : level >= cap ? 'capped' : '';
+		let style = diff > 0 ? 'adding' : diff < 0 ? 'remove' : level >= max_level ? 'capped' : '';
 		style += [' large', ' small', ' tiny'][perk_size];
 
 		return `<div class='perk ${style} ${localStorage.more}'>`
 			+ `<b>${name.replace('_', ' ')}</b><br>`
 			+ `${level_text}<b>${prettify(level)}${diff_text}</b><br><span class=more>`
-			+ `Price: ${level >= cap ? '∞' : prettify(perks[name].cost())}<br>`
-			+ `Spent: ${prettify(spent)}</span></div>`;
+			+ `Price: ${level >= max_level ? '∞' : prettify(perks[name].cost)}<br>`
+			+ `Spent: ${prettify(perks[name].spent())}</span></div>`;
 	}).join('');
 
 	for (let name in perks)
@@ -313,42 +343,39 @@ function toggle_info() {
 	$('#info').innerText = localStorage.more ? 'Less info' : 'More info';
 }
 
-// Total bonus from an additive perk. `x` is the percentage from each level.
-const add = (perk: Perk, x: number) => 1 + perk.level * x / 100;
-
-// Total bonus from a compounding perk. `x` is the percentage from each level.
-const mult = (perk: Perk, x: number) => pow(1 + x / 100, perk.level);
-
 function parse_perks(fixed: string, unlocks: string) {
+	const add = (x: number) => (level: number) => 1 + x * 0.01 * level;
+	const mult = (x: number) => (level: number) => pow(1 + x * 0.01, level);
+
 	let perks: {[key: string]: Perk} = {
-		Looting_II:     new Perk(100e3, 10e3, Infinity, 1e3),
-		Carpentry_II:   new Perk(100e3, 10e3, Infinity, 1e3),
-		Motivation_II:  new Perk(50e3,  1e3,  Infinity, 1e3),
-		Power_II:       new Perk(20e3,  500,  Infinity, 1e3),
-		Toughness_II:   new Perk(20e3,  500,  Infinity, 1e6),
-		Capable:        new Perk(1e8,   0,    10,       1e6, 900),
-		Cunning:        new Perk(1e11,  0,    Infinity, 1e6),
-		Curious:        new Perk(1e14,  0,    Infinity, 1e6),
-		Overkill:       new Perk(1e6,   0,    30,       1e6),
-		Resourceful:    new Perk(50e3,  0,    Infinity, 1e9),
-		Coordinated:    new Perk(150e3, 0,    Infinity, 1e6),
-		Siphonology:    new Perk(100e3, 0,    3,        1e6),
-		Anticipation:   new Perk(1000,  0,    10,       1e6),
-		Resilience:     new Perk(100,   0,    Infinity, 1e6),
-		Meditation:     new Perk(75,    0,    7,        1e6),
-		Relentlessness: new Perk(75,    0,    10,       1e6),
-		Carpentry:      new Perk(25,    0,    Infinity, 1e6),
-		Artisanistry:   new Perk(15,    0,    Infinity, 1e6),
-		Range:          new Perk(1,     0,    10,       1e6),
-		Agility:        new Perk(4,     0,    20,       1e6),
-		Bait:           new Perk(4,     0,    Infinity, 1e9),
-		Trumps:         new Perk(3,     0,    Infinity, 1e9),
-		Pheromones:     new Perk(3,     0,    Infinity, 1e6),
-		Packrat:        new Perk(3,     0,    Infinity, 1e9),
-		Motivation:     new Perk(2,     0,    Infinity, 1e6),
-		Power:          new Perk(1,     0,    Infinity, 1e6),
-		Toughness:      new Perk(1,     0,    Infinity, 1e6),
-		Looting:        new Perk(1,     0,    Infinity, 1e6),
+		Looting_II:     new Perk(100e3, 10e3, add(0.25)),
+		Carpentry_II:   new Perk(100e3, 10e3, add(0.25)),
+		Motivation_II:  new Perk(50e3,  1e3,  add(1)),
+		Power_II:       new Perk(20e3,  500,  add(1)),
+		Toughness_II:   new Perk(20e3,  500,  add(1)),
+		Capable:        new Perk(1e8,   0,    level => 1,    10,   10),
+		Cunning:        new Perk(1e11,  0,    add(25)),
+		Curious:        new Perk(1e14,  0,    add(60)),
+		Overkill:       new Perk(1e6,   0,    add(500),  30),
+		Resourceful:    new Perk(50e3,  0,    mult(-5)),
+		Coordinated:    new Perk(150e3, 0,    mult(-2)),
+		Siphonology:    new Perk(100e3, 0,    l => pow(1 + l, 0.1), 3),
+		Anticipation:   new Perk(1000,  0,    add(6),    10),
+		Resilience:     new Perk(100,   0,    mult(10)),
+		Meditation:     new Perk(75,    0,    add(1),    7),
+		Relentlessness: new Perk(75,    0,    l => 1 + 0.05 * l * (1 + 0.3 * l), 10),
+		Carpentry:      new Perk(25,    0,    mult(10)),
+		Artisanistry:   new Perk(15,    0,    mult(-5)),
+		Range:          new Perk(1,     0,    add(1),    10),
+		Agility:        new Perk(4,     0,    mult(-5),  20),
+		Bait:           new Perk(4,     0,    add(100)),
+		Trumps:         new Perk(3,     0,    add(20)),
+		Pheromones:     new Perk(3,     0,    add(10)),
+		Packrat:        new Perk(3,     0,    add(20)),
+		Motivation:     new Perk(2,     0,    add(5)),
+		Power:          new Perk(1,     0,    add(5)),
+		Toughness:      new Perk(1,     0,    add(5)),
+		Looting:        new Perk(1,     0,    add(5)),
 	};
 
 	if (!unlocks.match(/>/))
@@ -375,9 +402,9 @@ function parse_perks(fixed: string, unlocks: string) {
 
 		perks[matches[0]].locked = false;
 		if (m[2] != '>')
-			perks[matches[0]].cap = level;
+			perks[matches[0]].max_level = level;
 		if (m[2] != '<')
-			perks[matches[0]].must = level;
+			perks[matches[0]].min_level = level;
 	}
 
 	return perks;
@@ -423,34 +450,34 @@ function optimize(params: any) {
 
 	// Number of ticks it takes to one-shot an enemy.
 	function ticks() {
-		return 1 + +(Agility.level < 3) + ceil(10 * mult(Agility, -5));
+		return 1 + +(Agility.bonus > 0.9) + ceil(10 * Agility.bonus);
 	}
 
-	const moti = () => add(Motivation, 5) * add(Motivation_II, 1);
-	const looting = () => add(Looting, 5) * add(Looting_II, 0.25);
+	const moti = () => Motivation.bonus * Motivation_II.bonus;
+	const looting = () => Looting.bonus * Looting_II.bonus;
 
 	function income(ignore_prod?: boolean) {
-		let storage = mod.storage * mult(Resourceful, -5) / add(Packrat, 20);
+		let storage = mod.storage * Resourceful.bonus / Packrat.bonus;
 		let loot = looting() * mod.magn / ticks();
-		let prod = ignore_prod ? 0 : moti() * add(Meditation, 1) * mod.prod;
+		let prod = ignore_prod ? 0 : moti() * Meditation.bonus * mod.prod;
 		let chronojest = mod.chronojest * 0.1 * prod * loot;
 		return base_income * (prod + loot * mod.loot + chronojest) * (1 - storage);
 	}
 
 	// Max population
 	const trimps = mod.tent_city ? () => {
-		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
-		let territory = add(Trumps, 20);
+		let carp = Carpentry.bonus * Carpentry_II.bonus;
+		let territory = Trumps.bonus;
 		return 10 * (mod.taunt + territory * (mod.taunt - 1) * 111) * carp;
 	} : () => {
-		let carp = mult(Carpentry, 10) * add(Carpentry_II, 0.25);
-		let bonus = 3 + max(log(income() / base_income * carp / mult(Resourceful, -5)), 0);
-		let territory = add(Trumps, 20) * zone;
+		let carp = Carpentry.bonus * Carpentry_II.bonus;
+		let bonus = 3 + max(log(income() / base_income * carp / Resourceful.bonus), 0);
+		let territory = Trumps.bonus * zone;
 		return 10 * (base_housing * bonus + territory) * carp * mod.taunt + mod.dg * carp;
 	};
 
 	function equip(stat: "attack" | "health" | "block") {
-		let cost = equip_cost[stat] * mult(Artisanistry, -5);
+		let cost = equip_cost[stat] * Artisanistry.bonus;
 		let levels = 1.136;
 		let tiers = log(1 + income() * trimps() / cost) / log(exponents.cost);
 
@@ -465,7 +492,7 @@ function optimize(params: any) {
 	// cost: base cost of the buildings
 	// exp: cost increase for each new level of the building
 	function building(cost: number, exp: number) {
-		cost *= 4 * mult(Resourceful, -5);
+		cost *= 4 * Resourceful.bonus;
 		return log(1 + income(true) * trimps() * (exp - 1) / cost) / log(exp);
 	}
 
@@ -484,7 +511,7 @@ function optimize(params: any) {
 	function breed() {
 		let nurseries = building(2e6, 1.06) / (1 + 0.1 * min(magma(), 20));
 		let potency = 0.0085 * (zone >= 60 ? 0.1 : 1) * pow(1.1, floor(zone / 5));
-		return potency * pow(1.01, nurseries) * add(Pheromones, 10) * mod.ven;
+		return potency * pow(1.01, nurseries) * Pheromones.bonus * mod.ven;
 	}
 
 	// Number of Trimps sent at a time, pre-gators
@@ -501,10 +528,10 @@ function optimize(params: any) {
 
 	// Strength multiplier from coordinations
 	function soldiers() {
-		let ratio = 1 + 0.25 * mult(Coordinated, -2);
+		let ratio = 1 + 0.25 * Coordinated.bonus;
 		let pop = (mod.soldiers || trimps()) / 3;
 		if (mod.soldiers > 1)
-			pop += 36000 * add(Bait, 100);
+			pop += 36000 * Bait.bonus;
 		let unbought_coords = max(0, log(group_size[Coordinated.level] / pop) / log(ratio));
 		return group_size[0] * pow(1.25, -unbought_coords);
 	}
@@ -521,10 +548,8 @@ function optimize(params: any) {
 	// Total attack
 	function attack() {
 		let attack = (0.15 + equip('attack')) * pow(0.8, magma());
-		attack *= add(Power, 5) * add(Power_II, 1);
-		attack *= add(Relentlessness, 5 * add(Relentlessness, 30));
-		attack *= pow(1 + Siphonology.level, 0.1) * add(Range, 1);
-		attack *= add(Anticipation, 6);
+		attack *= Power.bonus * Power_II.bonus * Relentlessness.bonus;
+		attack *= Siphonology.bonus * Range.bonus * Anticipation.bonus;
 		attack *= fluffy.attack[Capable.level];
 		attack *= 1 + 0.5 * gators();
 		return soldiers() * attack;
@@ -533,7 +558,7 @@ function optimize(params: any) {
 	// Total survivability (accounts for health and block)
 	function health() {
 		let health = (0.6 + equip('health')) * pow(0.8, magma());
-		health *= add(Toughness, 5) * add(Toughness_II, 1) * mult(Resilience, 10);
+		health *= Toughness.bonus * Toughness_II.bonus * Resilience.bonus;
 
 		// block
 		let gyms = building(400, 1.185);
@@ -545,7 +570,7 @@ function optimize(params: any) {
 
 		if (zone < 70) { // no geneticists
 			// number of ticks needed to repopulate an army
-			let timer = log(1 + soldiers() * breed() / add(Bait, 100)) / log(1 + breed());
+			let timer = log(1 + soldiers() * breed() / Bait.bonus) / log(1 + breed());
 			attacks = timer / ticks();
 		}
 
@@ -568,10 +593,10 @@ function optimize(params: any) {
 		return soldiers() * (block + health);
 	}
 
-	const xp = () => add(Cunning, 25) * add(Curious, 60);
-	const agility = () => 1 / mult(Agility, -5);
+	const xp = () => Cunning.bonus * Curious.bonus;
+	const agility = () => 1 / Agility.bonus;
 	const helium = () => base_helium * looting() + 45;
-	const overkill = () => max(0.2, Overkill.level);
+	const overkill = () => Overkill.bonus;
 
 	const stats: {[key: string]: () => number} = { agility, helium, xp, attack, health, overkill, trimps };
 
@@ -589,36 +614,51 @@ function optimize(params: any) {
 		return result;
 	}
 
-	function best_perk(): Perk {
-		let best;
-		let max = 0;
+	function recompute_marginal_efficiencies() {
 		let baseline = score();
 
 		for (let name in perks) {
 			let perk = perks[name];
-			if (perk.locked || perk.level >= perk.cap || perk.cost() > he_left)
+			if (perk.cost_increment || !perk.levellable(he_left))
 				continue;
-
-			perk.level += perk.pack;
-			let gain = score() - baseline;
-			perk.level -= perk.pack;
-
-			let efficiency = gain / perk.cost();
-			if (efficiency >= max) {
-				max = efficiency;
-				best = perk;
-			}
+			perk.level_up(1);
+			perk.gain = score() - baseline;
+			perk.level_up(-1);
 		}
 
-		return best;
+		for (let name of ['Looting', 'Carpentry', 'Motivation', 'Power', 'Toughness'])
+			perks[name + '_II'].gain = perks[name].gain * perks[name + '_II'].log_ratio() / perks[name].log_ratio();
+	}
+
+	function solve_quadratic_equation(a: number, b: number, c: number): number {
+		let delta = b * b - 4 * a * c;
+		return (-b + sqrt(delta)) / (2 * a);
+	}
+
+	function spend_he(perk: Perk, budget: number) {
+		perk.gain /= perk.log_ratio();
+
+		if (perk.cost_increment) {
+			let ratio = (1 + perk.level) / (1 + Looting_II.level + Carpentry_II.level + Motivation_II.level + Power_II.level + Toughness_II.level);
+			budget *= 0.5 * ratio ** 2;
+			let x = solve_quadratic_equation(perk.cost_increment / 2, perk.cost - perk.cost_increment / 2, -budget);
+			he_left -= perk.level_up(floor(max(min(x, perk.max_level - perk.level), 1, perk.level / 1e12)));
+		}
+		else {
+			budget **= 0.5;
+			do he_left -= perk.level_up(1);
+				while (perk.cost < budget && perk.level < perk.max_level)
+		}
+
+		perk.gain *= perk.log_ratio();
 	}
 
 	mod.loot *= 20.8; // TODO: check that this is correct
 	weight.agility = (weight.helium + weight.attack) / 2;
 	weight.overkill = 0.25 * weight.attack * (2 - pow(0.9, weight.helium / weight.attack));
 
-	if (zone > 90 && mod.soldiers <= 1 && Bait.must == 0)
-		Bait.cap = 0;
+	if (zone > 90 && mod.soldiers <= 1 && Bait.min_level == 0)
+		Bait.max_level = 0;
 
 	// Fluffy
 	fluffy.attack = [];
@@ -631,10 +671,8 @@ function optimize(params: any) {
 
 	if (zone > 300 && weight.xp > 0) {
 		let ratio = 0.25;
-		while (Capable.level < Capable.cap && Capable.cost() < he_left * ratio) {
-			he_left -= Capable.cost();
-			Capable.spent += Capable.cost();
-			Capable.level++;
+		while (Capable.level < Capable.max_level && Capable.cost < he_left * ratio) {
+			he_left -= Capable.level_up(1);
 			ratio = Capable.level <= floor(potential) ? 0.25 : 0.01;
 		}
 	}
@@ -642,14 +680,13 @@ function optimize(params: any) {
 	if (zone <= 300 || potential >= Capable.level)
 		weight.xp = 0;
 	
+	// Minimum levels on perks
 	for (let name in perks) {
 		let perk = perks[name];
-		while (perk.level < perk.must) {
-			let cost = perk.cost();
-			he_left -= cost;
-			perk.spent += cost;
-			perk.level += perk.pack;
-		}
+		if (perk.cost_increment)
+			he_left -= perk.level_up(perk.min_level);
+		else while (perk.level < perk.min_level)
+			he_left -= perk.level_up(1);
 	}
 
 	if (he_left < 0)
@@ -658,20 +695,26 @@ function optimize(params: any) {
 			"You don’t have a respec available.";
 
 	// Main loop
-	for (let best; (best = best_perk()); ) {
-		let spent = 0;
-		while (best.level < best.cap && (best.level < best.must || spent < he_left / best.free)) {
-			he_left -= best.cost();
-			spent += best.cost();
-			best.level += best.pack;
-			if (best.level == 1000 * best.pack)
-				best.pack *= 10;
-		}
-		best.spent += spent;
-	}
+	let sorted_perks: Perk[] = Object.keys(perks).map(name => perks[name]).filter(perk => perk.levellable(he_left));
 
-	for (let perk in perks)
-		console.log(perk, '=', perks[perk].level);
+	for (let x = 0.999; x; x *= x) {
+		let he_target = he_left * x;
+		recompute_marginal_efficiencies();
+		sorted_perks.sort((a, b) => b.gain / b.cost - a.gain / a.cost);
+
+		while (he_left > he_target && sorted_perks.length) {
+			let best = sorted_perks.shift()!;
+			if (!best.levellable(he_left))
+				continue;
+
+			spend_he(best, he_left - he_target);
+
+			let i = 0;
+			while (sorted_perks[i] && sorted_perks[i].gain / sorted_perks[i].cost > best.gain / best.cost)
+				i++;
+			sorted_perks.splice(i, 0, best);
+		}
+	}
 
 	return [he_left, perks];
 }
