@@ -81,6 +81,7 @@ let presets: {[key: string]: string[]} = {
 	trimp:      [  '0', '99',  '1'],
 	metal:      [  '0',  '7',  '1'],
 	c2:         [  '0',  '7',  '1'],
+	income:     [  '0',  '0',  '0'],
 }
 
 function select_preset(name: string, manually: boolean = true) {
@@ -231,6 +232,7 @@ function parse_inputs() {
 			health: input('weight-hp'),
 			xp: input('weight-xp'),
 			trimps: 0,
+			income: 0,
 		},
 		fluffy: {
 			xp: game ? game.global.fluffyExp : 0,
@@ -288,6 +290,9 @@ function parse_inputs() {
 	
 	if (preset == 'scientist')
 		result.perks.Coordinated.max_level = 0;
+
+	if (preset == 'income')
+		result.weight = { income: 3, trimps: 3, attack: 1, helium: 0, health: 0, xp: 0 };
 
 	let max_zone = game ? game.global.highestLevelCleared : 999;
 
@@ -598,7 +603,7 @@ function optimize(params: any) {
 	const helium = () => base_helium * looting() + 45;
 	const overkill = () => Overkill.bonus;
 
-	const stats: {[key: string]: () => number} = { agility, helium, xp, attack, health, overkill, trimps };
+	const stats: {[key: string]: () => number} = { agility, helium, xp, attack, health, overkill, trimps, income };
 
 	function score() {
 		let result = 0;
@@ -709,6 +714,7 @@ function optimize(params: any) {
 
 			spend_he(best, he_left - he_target);
 
+			// sorted_perks.splice(sorted_perks.findIndex(p => p.gain / p.cost > best.gain / best.cost), 0, best);
 			let i = 0;
 			while (sorted_perks[i] && sorted_perks[i].gain / sorted_perks[i].cost > best.gain / best.cost)
 				i++;
