@@ -39,6 +39,9 @@ function read_save() {
 	let progress = level == cap ? 0 : (pow(4, potential - level) - 1) / 3;
 	attack *= 1 + pow(5, prestige) * 0.1 * (level / 2 + progress) * (level + 1);
 
+	if (level + prestige >= 14)
+		cc += 50;
+
 	if (game.global.sugarRush > 0)
 		attack *= floor(zone / 100);
 
