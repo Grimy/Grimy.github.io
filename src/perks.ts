@@ -682,9 +682,6 @@ function optimize(params: any) {
 		}
 	}
 
-	if (zone <= 300 || potential >= Capable.level)
-		weight.xp = 0;
-	
 	// Minimum levels on perks
 	for (let name in perks) {
 		let perk = perks[name];
@@ -693,6 +690,9 @@ function optimize(params: any) {
 		else while (perk.level < perk.min_level)
 			he_left -= perk.level_up(1);
 	}
+
+	if (zone <= 300 || potential >= Capable.level)
+		weight.xp = 0;
 
 	if (he_left < 0)
 		throw (game && game.global.canRespecPerks) ?
