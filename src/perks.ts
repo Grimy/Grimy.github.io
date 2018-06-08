@@ -674,14 +674,6 @@ function optimize(params: any) {
 		fluffy.attack[cap] = 1 + pow(5, fluffy.prestige) * 0.1 * (level / 2 + progress) * (level + 1);
 	}
 
-	if (zone > 300 && weight.xp > 0) {
-		let ratio = 0.25;
-		while (Capable.levellable(he_left * ratio)) {
-			he_left -= Capable.level_up(1);
-			ratio = Capable.level <= floor(potential) ? 0.25 : 0.01;
-		}
-	}
-
 	// Minimum levels on perks
 	for (let name in perks) {
 		let perk = perks[name];
@@ -689,6 +681,14 @@ function optimize(params: any) {
 			he_left -= perk.level_up(perk.min_level);
 		else while (perk.level < perk.min_level)
 			he_left -= perk.level_up(1);
+	}
+
+	if (zone > 300 && weight.xp > 0) {
+		let ratio = 0.25;
+		while (Capable.levellable(he_left * ratio)) {
+			he_left -= Capable.level_up(1);
+			ratio = Capable.level <= floor(potential) ? 0.25 : 0.01;
+		}
 	}
 
 	if (zone <= 300 || potential >= Capable.level)
