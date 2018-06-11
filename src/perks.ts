@@ -702,7 +702,7 @@ function optimize(params: any) {
 	// Main loop
 	let sorted_perks: Perk[] = Object.keys(perks).map(name => perks[name]).filter(perk => perk.levellable(he_left));
 
-	for (let x = 0.999; x; x *= x) {
+	for (let x = 0.999; x > 1e-12; x *= x) {
 		let he_target = he_left * x;
 		recompute_marginal_efficiencies();
 		sorted_perks.sort((a, b) => b.gain / b.cost - a.gain / a.cost);
