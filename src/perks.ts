@@ -435,7 +435,7 @@ function optimize(params: any) {
 
 	const books = pow(1.25, zone) * pow(zone > 100 ? 1.28 : 1.2, max(zone - 59, 0));
 	const gigas = max(0, min(zone - 60, zone/2 - 25, zone/3 - 12, zone/5, zone/10 + 17, 39));
-	const base_housing = pow(1.25, min(zone / 2, 30) + gigas);
+	const base_housing = pow(1.25, 5 + min(zone / 2, 30) + gigas);
 	const mystic = zone >= 25 ? floor(min(zone / 5, 9 + zone / 25, 15)) : 0;
 	const tacular = (20 + zone - zone % 5) / 100;
 	const base_income = 600 * mod.whip * books;
