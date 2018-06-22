@@ -722,5 +722,8 @@ function optimize(params: any) {
 		}
 	}
 
+	if (he_left < Toughness_II.cost / 256 && Toughness_II.level > 0)
+		--Toughness_II.level;
+
 	return [he_left, perks];
 }
