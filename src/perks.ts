@@ -255,7 +255,7 @@ function parse_inputs() {
 	};
 
 	if (preset == 'nerfed') {
-		result.he_left = 1e8;
+		result.he_left = 99999999;
 		result.zone = 200;
 		result.mod.dg = 0;
 	}
