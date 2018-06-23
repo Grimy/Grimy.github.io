@@ -18,7 +18,7 @@ function read_save() {
 	let diplomacy = mastery('nature3') ? 5 : 0;
 	let speed = 10 * pow(0.95, game.portal.Agility.level) - mastery('hyperspeed');
 
-	if (mastery('hyperspeed2') && zone <= ceil(game.global.highestLevelCleared / 2))
+	if (mastery('hyperspeed2') && zone <= ceil(game.global.highestLevelCleared / 2) || jobless)
 		--speed;
 
 	let v48 = game.global.version >= 4.8;

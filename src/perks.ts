@@ -193,7 +193,6 @@ function read_save() {
 
 	let chronojest = 27 * game.unlocks.imps.Jestimp + 15 * game.unlocks.imps.Chronoimp;
 	let cache = zone < 60 ? 0 : zone < 85 ? 7 : zone < 160 ? 10 : zone < 185 ? 14 : 20;
-	chronojest += (mastery('mapLoot2') ? 5 : 4) * cache;
 
 	for (let mod of (game.global.StaffEquipped.mods || [])) {
 		if (mod[0] === 'MinerSpeed')
@@ -201,6 +200,11 @@ function read_save() {
 		else if (mod[0] === 'metalDrop')
 			loot *= 1 + 0.01 * mod[1];
 	}
+
+	if (jobless)
+		prod = 0;
+	else
+		chronojest += (mastery('mapLoot2') ? 5 : 4) * cache;
 
 	// Fill the fields
 	update_dg();
@@ -458,15 +462,17 @@ function optimize(params: any) {
 		return 1 + +(Agility.bonus > 0.9) + ceil(10 * Agility.bonus);
 	}
 
-	const moti = () => Motivation.bonus * Motivation_II.bonus;
+	function moti() {
+		return Motivation.bonus * Motivation_II.bonus * Meditation.bonus;
+	}
+
 	const looting = () => Looting.bonus * Looting_II.bonus;
 
-	function income(ignore_prod?: boolean) {
-		let storage = mod.storage * Resourceful.bonus / Packrat.bonus;
-		let loot = looting() * mod.magn / ticks();
-		let prod = ignore_prod ? 0 : moti() * Meditation.bonus * mod.prod;
-		let chronojest = mod.chronojest * 0.1 * prod * loot;
-		return base_income * (prod + loot * mod.loot + chronojest) * (1 - storage);
+	function gem_income() {
+		let drag = moti() * mod.whip;
+		let loot = looting() * mod.magn * 0.75 * 0.8;
+		let chronojest = mod.chronojest * drag * loot / 30;
+		return drag + loot + chronojest;
 	}
 
 	// Max population
@@ -476,15 +482,23 @@ function optimize(params: any) {
 		return 10 * (mod.taunt + territory * (mod.taunt - 1) * 111) * carp;
 	} : () => {
 		let carp = Carpentry.bonus * Carpentry_II.bonus;
-		let bonus = 3 + max(log(income() / base_income * carp / Resourceful.bonus), 0);
+		let bonus = 3 + log(gem_income() / Resourceful.bonus) / log(1.4);
 		let territory = Trumps.bonus * zone;
 		return 10 * (base_housing * bonus + territory) * carp * mod.taunt + mod.dg * carp;
 	};
 
+	function income(ignore_prod?: boolean) {
+		let storage = mod.storage * Resourceful.bonus / Packrat.bonus;
+		let loot = looting() * mod.magn / ticks();
+		let prod = ignore_prod ? 0 : moti() * mod.prod;
+		let chronojest = mod.chronojest * 0.1 * prod * loot;
+		return base_income * (prod + loot * mod.loot + chronojest) * (1 - storage) * trimps();
+	}
+
 	function equip(stat: "attack" | "health" | "block") {
 		let cost = equip_cost[stat] * Artisanistry.bonus;
 		let levels = 1.136;
-		let tiers = log(1 + income() * trimps() / cost) / log(exponents.cost);
+		let tiers = log(1 + income() / cost) / log(exponents.cost);
 
 		if (tiers > max_tiers + 0.45) {
 			levels = log(1 + pow(exponents.cost, tiers - max_tiers) * 0.2) / log(1.2);
@@ -498,7 +512,7 @@ function optimize(params: any) {
 	// exp: cost increase for each new level of the building
 	function building(cost: number, exp: number) {
 		cost *= 4 * Resourceful.bonus;
-		return log(1 + income(true) * trimps() * (exp - 1) / cost) / log(exp);
+		return log(1 + income(true) * (exp - 1) / cost) / log(exp);
 	}
 
 	// Number of zones spent in the Magma
@@ -543,7 +557,7 @@ function optimize(params: any) {
 
 	// Fracional number of Amalgamators expected
 	function gators() {
-		if ((game && game.global.version < 4.8) || zone < 230 || mod.soldiers > 1)
+		if ((game && game.global.version < 4.8) || zone < 230 || mod.soldiers > 1 || jobless)
 			return 0;
 
 		let ooms = log(trimps() / group_size[Coordinated.level]) / log(10);
@@ -567,13 +581,13 @@ function optimize(params: any) {
 
 		// block
 		let gyms = building(400, 1.185);
-		let trainers = (gyms * log(1.185) - log(1 + gyms)) / log(1.1) + 25 - mystic;
+		let trainers = jobless ? 0 : (gyms * log(1.185) - log(1 + gyms)) / log(1.1) + 25 - mystic;
 		let block = 0.04 * gyms * pow(1 + mystic / 100, gyms) * (1 + tacular * trainers);
 
 		// target number of attacks to survive
 		let attacks = 60;
 
-		if (zone < 70) { // no geneticists
+		if (zone < 70 || jobless) { // no geneticists
 			// number of ticks needed to repopulate an army
 			let timer = log(1 + soldiers() * breed() / Bait.bonus) / log(1 + breed());
 			attacks = timer / ticks();
@@ -724,6 +738,6 @@ function optimize(params: any) {
 
 	if (he_left < Toughness_II.cost / 256 && Toughness_II.level > 0)
 		--Toughness_II.level;
-
+	
 	return [he_left, perks];
 }
