@@ -227,7 +227,7 @@ function parse_inputs() {
 		throw 'This preset requires a save currently running Trapper². Start a new run using “Trapper² (initial)”, export, and try again.';
 
 	let result = {
-		he_left: input('helium'),
+		total_he: input('helium'),
 		zone: parseInt($('#zone').value),
 		perks: parse_perks($('#fixed').value, $('#unlocks').value),
 		weight: {
@@ -259,7 +259,7 @@ function parse_inputs() {
 	};
 
 	if (preset == 'nerfed') {
-		result.he_left = 99999999;
+		result.total_he = 99999999;
 		result.zone = 200;
 		result.mod.dg = 0;
 	}
@@ -420,7 +420,8 @@ function parse_perks(fixed: string, unlocks: string) {
 }
 
 function optimize(params: any) {
-	let {he_left, zone, fluffy, perks, weight, mod} = params;
+	let {total_he, zone, fluffy, perks, weight, mod} = params;
+	let he_left = total_he;
 	let {
 		Looting_II, Carpentry_II, Motivation_II, Power_II, Toughness_II,
 		Capable, Cunning, Curious,
@@ -429,10 +430,6 @@ function optimize(params: any) {
 		Range, Agility, Bait, Trumps, Pheromones,
 		Packrat, Motivation, Power, Toughness, Looting
 	} = perks;
-
-	for (let name in perks)
-		if ((<any> name).endsWith('_II'))
-			perks[name].pack = pow(10, max(0, floor(log(he_left) / log(100) - 4.2)));
 
 	for (let name of ['whip', 'magn', 'taunt', 'ven'])
 		mod[name] = pow(1.003, zone * 99 * 0.03 * mod[name]);
@@ -736,8 +733,10 @@ function optimize(params: any) {
 		}
 	}
 
-	if (he_left < Toughness_II.cost / 256 && Toughness_II.level > 0)
+	if (he_left + 1 < total_he / 1e12 && Toughness_II.level > 0) {
 		--Toughness_II.level;
+		he_left += Toughness_II.cost();
+	}
 	
 	return [he_left, perks];
 }
