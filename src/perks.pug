@@ -11,7 +11,7 @@ block content
       legend Inputs
       label(title='Export your Trimps save and paste it here.')
         textarea#save(onfocus='this.value = ""' onpaste='handle_paste(event, read_save, main)')
-        | Import save
+        | Import save (<a onclick='get_paste_back()'>get it back</a>)
       label(title='Check this when respeccing from the View Perks screen.')
         input#respec(type='checkbox' onchange='handle_respec(this.checked)')
         | Mid-run respec

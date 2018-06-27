@@ -735,7 +735,7 @@ function optimize(params: any) {
 
 	if (he_left + 1 < total_he / 1e12 && Toughness_II.level > 0) {
 		--Toughness_II.level;
-		he_left += Toughness_II.cost();
+		he_left += Toughness_II.cost;
 	}
 	
 	return [he_left, perks];

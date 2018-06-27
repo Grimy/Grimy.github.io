@@ -95,6 +95,11 @@ function read_save() {
 		enemyHealth *= pow(10, 12 + floor(zone / 10));
 	}
 
+	// Handle megacrits
+	attack *= cc >= 100 ? (1 + cd / 100) * pow(5, floor(cc / 100) - 1) : pow(5, floor(cc / 100));
+	cd = cc >= 100 ? 400 : cd;
+	cc %= 100;
+
 	$('#attack').value = prettify(attack * minFluct);
 	$('#cc').value = cc;
 	$('#cd').value = cd;
@@ -140,6 +145,11 @@ const parse_inputs = () => ({
 	zone: input('zone'),
 	poison: 0, wind: 0, ice: 0,
 	[['poison', 'wind', 'ice'][ceil(input('zone') / 5) % 3]]: input('nature') / 100,
+
+	max_hp: 1e300,
+	breed_timer: 300,
+	weakness: 0,
+	plague: 0,
 });
 
 // Return info about the best zone for each stance
@@ -241,13 +251,47 @@ const max_ticks = 864000; // One day
 
 let test: number[] = [1, 2];
 
-const biomes: {[key: string]: number[]} = {
-	all: [0.7, 1.3, 1.3, 1, 0.7, 0.8, 1.1],
-	gardens: [0.95, 0.95, 1, 0.8, 1.3, 1.1, 1.4],
-	sea: [0.9, 1.1, 1.1],
-	mountain: [2, 1.4, 1.4, 0.85],
-	forest: [1.2, 1.5],
-	depths: [1, 0.7, 1.4, 0.8],
+const biomes: {[key: string]: [number, number, boolean][]} = {
+	all: [
+		[0.8,  0.7,  true],
+		[0.9,  1.3,  false],
+		[0.9,  1.3,  false],
+		[1,    1,    false],
+		[1.1,  0.7,  false],
+		[1.05, 0.8,  true],
+		[0.9,  1.1,  true],
+	],
+	gardens: [
+		[1.3,  0.95, false],
+		[0.95, 0.95, true],
+		[0.8,  1,    false],
+		[1.05, 0.8,  false],
+		[0.6,  1.3,  true],
+		[1,    1.1,  false],
+		[0.8,  1.4,  false],
+	],
+	sea: [
+		[0.8,  0.9,  true],
+		[0.8,  1.1,  true],
+		[1.4,  1.1,  false],
+	],
+	mountain: [
+		[0.5,  2,    false],
+		[0.8,  1.4,  false],
+		[1.15, 1.4,  false],
+		[1,    0.85, true],
+	],
+	forest: [
+		[0.75, 1.2,  true],
+		[1,    0.85, true],
+		[1.1,  1.5,  false],
+	],
+	depths: [
+		[1.2,  1.4,  false],
+		[0.9,  1,    true],
+		[1.2,  0.7,  false],
+		[1,    0.8,  true],
+	],
 };
 
 let seed = 42;
@@ -268,28 +312,39 @@ function enemy_hp(g: any, zone: number, cell: number) {
 	return g.difficulty * g.challenge * amt;
 }
 
-function enemy_atk(zone: number, cell: number) {
+function enemy_atk(g: any, zone: number, cell: number) {
 	let amt = 5.5 * sqrt(zone * pow(3.27, zone)) - 1.1;
 	amt *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * pow(1.15, zone - 59);
-	// if (g.zone >= 230)
-	amt *= round(50 * pow(1.05, floor(zone / 6 - 25))) / 10;
+	if (g.zone >= 230)
+		amt *= round(15 * pow(1.05, floor(g.zone / 6 - 25))) / 10;
 	return amt;
 }
 
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
 function simulate(g: any, zone: number) {
+	let trimp_hp = g.max_hp;
+	let debuff_stacks = 0;
 	let titimp = 0;
 	let cell = 0;
 	let loot = 0;
+	let last_group_sent = 0;
+	let ticks = 0;
 	let plague_damage = 0;
 	let ok_damage = 0, ok_spread = 0;
 	let poison = 0, wind = 0, ice = 0;
 
-	for (let ticks = 0; ticks < max_ticks; ++cell) {
+	function enemy_attack(atk: number) {
+		if (jobless)
+			trimp_hp -= atk * (0.8 + 0.4 * rng());
+		++debuff_stacks;
+	}
 
+	while (ticks < max_ticks) {
 		let imp = rng();
-		let toughness = imp < g.import_chance ? 1 : g.biome[floor(imp * g.biome.length)];
-		let hp = toughness * enemy_hp(g, zone, cell % g.size);
+		let imp_stats = imp < g.import_chance ? [1, 1, false] : g.biome[floor(rng() * g.biome.length)];
+		let atk = imp_stats[0] * enemy_atk(g, zone, cell % g.size);
+		let hp = imp_stats[1] * enemy_hp(g, zone, cell % g.size);
+		let fast = imp_stats[2];
 
 		if (cell % g.size !== 0) {
 			let base_hp = hp;
@@ -302,18 +357,45 @@ function simulate(g: any, zone: number) {
 		plague_damage = 0;
 
 		let turns = 0;
-		while (hp > 0) {
+		while (hp >= 1 && ticks < max_ticks) {
 			++turns;
-			ok_spread = g.ok_spread;
-			let damage = g.atk * (1 + g.range * rng());
-			damage *= rng() < g.cc ? g.cd : 1;
-			damage *= titimp > ticks ? 2 : 1;
-			damage *= 2 - pow(0.366, ice * g.ice);
-			hp -= damage + poison * g.poison;
-			poison += damage;
-			++ice;
-			if (hp > 0)
-				plague_damage += damage * g.plaguebringer;
+
+			// Fast enemy attack
+			if (fast)
+				enemy_attack(atk);
+
+			// Trimp attack
+			if (trimp_hp >= 1) {
+				ok_spread = g.ok_spread;
+				let damage = g.atk * (1 + g.range * rng());
+				damage *= rng() < g.cc ? g.cd : 1;
+				damage *= titimp > ticks ? 2 : 1;
+				damage *= 2 - pow(0.366, ice * g.ice);
+				damage *= 1 - g.weakness * min(debuff_stacks, 9);
+				hp -= damage + poison * g.poison;
+				poison += damage;
+				++ice;
+				if (hp >= 1)
+					plague_damage += damage * g.plaguebringer;
+			}
+
+			// Bleeds
+			trimp_hp -= debuff_stacks * g.plague * g.max_hp;
+
+			// Slow enemy attack
+			if (!fast && hp >= 1 && trimp_hp >= 1)
+				enemy_attack(atk);
+
+			// Trimp death
+			if (trimp_hp < 1) {
+				ticks += ceil(turns * g.speed);
+				ticks = max(ticks, last_group_sent + g.breed_timer);
+				last_group_sent = ticks;
+				trimp_hp = g.max_hp;
+				ticks += 1;
+				turns = 1;
+				debuff_stacks = 0;
+			}
 		}
 
 		wind = min(wind + turns, 200);
@@ -326,6 +408,8 @@ function simulate(g: any, zone: number) {
 		poison = ceil(g.transfer * (poison + plague_damage)) + 1;
 		wind = ceil(g.transfer * wind) + 1 + ceil((turns - 1) * g.plaguebringer);
 		ice = ceil(g.transfer * ice) + 1 + ceil((turns - 1) * g.plaguebringer);
+
+		++cell;
 	}
 
 	return loot * 10 / max_ticks;
@@ -360,15 +444,43 @@ function map_cost(mods: number, level: number) {
 	return mods * pow(1.14, mods) * level * pow(1.03 + level / 50000, level) / 42.75;
 }
 
+function compute_breed_timer(): number {
+	let potency = game.resources.trimps.potency * 0.1;
+	potency *= 1.1 ** game.upgrades.Potency.done;
+	potency *= 1.01 ** game.buildings.Nursery.owned;
+	potency *= 0.98 ** game.jobs.Geneticist.owned;
+	potency *= 1.003 ** game.unlocks.impCount.Venimp;
+	potency *= 1 + 0.1 * game.portal.Pheromones.level;
+	if (game.global.brokenPlanet)
+		potency *= 0.1;
+	if (game.singleRunBonuses.quickTrimps.owned)
+		potency *= 2;
+
+	let army_size = 1;
+	for (let i = 0; i < game.upgrades.Coordination.done; ++i)
+		army_size = ceil(army_size * (1 + 0.25 * 0.98 ** game.portal.Coordinated.level));
+	army_size *= pow(1000, game.jobs.Amalgamator.owned);
+
+	let breeders = game.resources.trimps.max * game.resources.trimps.maxMod;
+	breeders *= 1.1 ** game.portal.Carpentry.level;
+	breeders *= 1 + 0.0025 * game.portal.Carpentry_II.level;
+	for (let job of game.jobs)
+		breeders -= game.jobs[job].owned;
+
+	return ceil(log(breeders / (breeders - army_size)) / log(1 + potency));
+}
+
 // Return a list of efficiency stats for all sensible zones
 function stats(g: any) {
 	let stats = [];
 	let stances = (g.zone < 70 ? 'X' : 'D') + (g.hze >= 181 && g.zone >= 60 ? 'S' : '');
 
-	// handle megacrits
-	g.attack *= g.cc >= 1 ? g.cd * pow(5, floor(g.cc) - 1) : pow(5, floor(g.cc));
-	g.cd = floor(g.cc) ? 5 : g.cd;
-	g.cc -= floor(g.cc);
+	if (game) {
+		g.breed_timer = compute_breed_timer();
+		g.max_hp = game.global.soldierHealthMax;
+		g.weakness = 0;
+		g.plague = 0;
+	}
 
 	let extra = 0;
 	if (g.hze >= 210)
@@ -377,7 +489,7 @@ function stats(g: any) {
 	extra = extra || -g.reducer;
 
 	for (let zone = 1; zone <= g.zone + extra; ++zone) {
-		let ratio = g.attack / (max.apply(0, g.biome) * enemy_hp(g, zone, g.size - 1));
+		let ratio = g.attack / enemy_hp(g, zone, g.size - 1);
 		if (ratio < 0.0001)
 			break;
 		if (zone >= 6 && (ratio < 1 || zone == g.zone + extra))

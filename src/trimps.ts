@@ -172,12 +172,20 @@ function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => voi
 		throw 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.';
 	}
 
+	localStorage.save = save_string;
 	localStorage.notation = game.options.menu.standardNotation.enabled;
 	jobless = game.global.ShieldEquipped.name == "Job";
 	set_hze(game.global.highestLevelCleared + 1);
 
 	read_save();
 	main();
+}
+
+function get_paste_back() {
+	$('#save').value = localStorage.save;
+	$('#save').onfocus = null;
+	$('#save').focus();
+	$('#save').select();
 }
 
 document.addEventListener("DOMContentLoaded", toggle_spoilers);

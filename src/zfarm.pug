@@ -10,7 +10,7 @@ block content
       legend Inputs
       label(title='Export your Trimps save and paste it here')
         textarea#save(onfocus='this.value = ""' onpaste='handle_paste(event, read_save, main)')
-        | Import save
+        | Import save (<a onclick='get_paste_back()'>get it back</a>)
       label(title='Biome of the maps you create')
         select#biome(data-saved='')
           option(value='gardens') Garden
@@ -88,10 +88,6 @@ block content
       legend Results
       p(style='font-size: 1.1em') #[b#result]. #[span#comment]
       table#details
-      p
-        | Warning: this calculator assumes that your trimps are alive
-        | 100% of the time. If this is not the case, you’ll want to farm slightly
-        | lower than what it suggests.
       p
         | Note: the displayed loot values don’t account for special imps, looting perks and staffs.
         | As such, your actual loot will be much higher. However, these factors affect all maps in the
