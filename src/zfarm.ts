@@ -492,7 +492,7 @@ function stats(g: any) {
 		let ratio = g.attack / enemy_hp(g, zone, g.size - 1);
 		if (ratio < 0.0001)
 			break;
-		if (zone >= 6 && (ratio < 1 || zone == g.zone + extra))
+		if (zone >= 6 && (ratio < 2 || zone == g.zone + extra))
 			stats.push(zone_stats(zone, stances, g));
 		if (g.coordinate)
 			g.challenge = ceil(1.25 * g.challenge);
