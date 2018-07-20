@@ -147,6 +147,7 @@ const parse_inputs = () => ({
 	[['poison', 'wind', 'ice'][ceil(input('zone') / 5) % 3]]: input('nature') / 100,
 
 	max_hp: 1e300,
+	block: 0,
 	breed_timer: 300,
 	weakness: 0,
 	plague: 0,
@@ -335,7 +336,7 @@ function simulate(g: any, zone: number) {
 
 	function enemy_attack(atk: number) {
 		if (jobless)
-			trimp_hp -= atk * (0.8 + 0.4 * rng());
+			trimp_hp -= max(0, atk * (0.8 + 0.4 * rng()) - g.block);
 		++debuff_stacks;
 	}
 
@@ -478,6 +479,7 @@ function stats(g: any) {
 	if (game) {
 		g.breed_timer = compute_breed_timer();
 		g.max_hp = game.global.soldierHealthMax;
+		g.block = game.global.soldierCurrentBlock;
 		g.weakness = 0;
 		g.plague = 0;
 	}

@@ -165,10 +165,10 @@ function read_save() {
 		auto_preset();
 	}
 
-	// let xp_ratio = 1 + game.global.bestFluffyExp / game.global.fluffyExp;
+	// let xp_ratio = 1 + game.stats.bestFluffyExp.valueTotal / game.global.fluffyExp;
 	// let he_ratio = 1 + game.global.bestHelium / game.global.totalHeliumEarned;
 	// xp_ratio = log(xp_ratio) * input('weight-atk');
-	// he_ratio = log(sqrt(he_ratio)) * (input('weight-atk') + input('weight-he')) +
+	// he_ratio = log(he_ratio) * 0.8 * input('weight-atk') +
 		// log(he_ratio) / log(1.3) * log((1 + 0.25 / (1 + 0.25 * game.portal.Cunning.level)) * (1 + 0.6 / (1 + 0.6 * game.portal.Curious.level))) * input('weight-xp');
 	// console.log("suggested XP weight:", input('weight-he') * xp_ratio / he_ratio);
 
@@ -479,7 +479,7 @@ function optimize(params: any) {
 		return 10 * (mod.taunt + territory * (mod.taunt - 1) * 111) * carp;
 	} : () => {
 		let carp = Carpentry.bonus * Carpentry_II.bonus;
-		let bonus = 3 + log(gem_income() / Resourceful.bonus) / log(1.4);
+		let bonus = 3 + log(base_housing * gem_income() / Resourceful.bonus) / log(1.4);
 		let territory = Trumps.bonus * zone;
 		return 10 * (base_housing * bonus + territory) * carp * mod.taunt + mod.dg * carp;
 	};
@@ -737,6 +737,6 @@ function optimize(params: any) {
 		--Toughness_II.level;
 		he_left += Toughness_II.cost;
 	}
-	
+
 	return [he_left, perks];
 }
