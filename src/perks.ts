@@ -554,7 +554,7 @@ function optimize(params: any) {
 
 	// Fracional number of Amalgamators expected
 	function gators() {
-		if ((game && game.global.version < 4.8) || zone < 230 || mod.soldiers > 1 || jobless)
+		if (zone < 230 || mod.soldiers > 1 || jobless)
 			return 0;
 
 		let ooms = log(trimps() / group_size[Coordinated.level]) / log(10);
