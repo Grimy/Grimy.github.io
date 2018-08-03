@@ -9,6 +9,7 @@ let death_stuff = {
 	weakness: 0,
 	plague: 0,
 	bleed: 0,
+	explosion: 0,
 	nom: false,
 	slow: false,
 }
@@ -41,6 +42,7 @@ function read_save() {
 		weakness: 0,
 		plague: 0,
 		bleed: 0,
+		explosion: 0,
 		nom: challenge === "Nom",
 		slow: challenge === "Slow",
 	}
@@ -120,6 +122,7 @@ function read_save() {
 		death_stuff.bleed = 0.01 * daily('bogged');
 		death_stuff.weakness = 0.01 * daily('weakness');
 		death_stuff.enemy_cd = 1 + 0.5 * daily('crits');
+		death_stuff.explosion = daily('explosive');
 	} else if (challenge === "Life") {
 		enemyHealth *= 11;
 		enemyAttack *= 6;
@@ -453,6 +456,9 @@ function simulate(g: any, zone: number) {
 					hp = min(hp + 0.05 * enemy_max_hp, enemy_max_hp);
 			}
 		}
+
+		if (g.explosion && (g.explosion <= 15 || g.block >= g.max_hp))
+			trimp_hp -= max(0, g.explosion * atk - g.block);
 
 		wind = min(wind + turns, 200);
 		loot += 1 + wind * g.wind;
