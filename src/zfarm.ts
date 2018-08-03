@@ -559,6 +559,8 @@ function stats(g: any) {
 			g.challenge_attack = coords;
 		}
 		let tmp = zone_stats(zone, stances, g);
+		if (tmp.value < 1)
+			continue;
 		if (stats.length && tmp.value < 0.804 * stats[0].value)
 			break;
 		stats.unshift(tmp);
