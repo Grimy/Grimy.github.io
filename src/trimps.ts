@@ -162,8 +162,8 @@ function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => voi
 
 	try {
 		game = JSON.parse(LZString.decompressFromBase64(save_string));
-		let min_version = 4.72;
-		let max_version = 4.81;
+		let min_version = 4.81;
+		let max_version = 4.9;
 		if (game.global.version > max_version + 0.009)
 			show_alert('warning', `This calculator only supports up to v${max_version} of Trimps, but your save is from v${game.global.version}. Results may be inaccurate.`);
 		else if (game.global.version < min_version)

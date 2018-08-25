@@ -362,9 +362,10 @@ function parse_perks(fixed: string, unlocks: string) {
 		Motivation_II:  new Perk(50e3,  1e3,  add(1)),
 		Power_II:       new Perk(20e3,  500,  add(1)),
 		Toughness_II:   new Perk(20e3,  500,  add(1)),
-		Capable:        new Perk(1e8,   0,    level => 1,    10,   10),
+		Capable:        new Perk(1e8,   0,    l => 1,    10,   10),
 		Cunning:        new Perk(1e11,  0,    add(25)),
 		Curious:        new Perk(1e14,  0,    add(60)),
+		Classy:         new Perk(1e17,  0,    mult(1.015 ** 2)),
 		Overkill:       new Perk(1e6,   0,    add(500),  30),
 		Resourceful:    new Perk(50e3,  0,    mult(-5)),
 		Coordinated:    new Perk(150e3, 0,    mult(-2)),
@@ -424,7 +425,7 @@ function optimize(params: any) {
 	let he_left = total_he;
 	let {
 		Looting_II, Carpentry_II, Motivation_II, Power_II, Toughness_II,
-		Capable, Cunning, Curious,
+		Capable, Cunning, Curious, Classy,
 		Overkill, Resourceful, Coordinated, Siphonology, Anticipation,
 		Resilience, Meditation, Relentlessness, Carpentry, Artisanistry,
 		Range, Agility, Bait, Trumps, Pheromones,
@@ -609,7 +610,7 @@ function optimize(params: any) {
 		return soldiers() * (block + health);
 	}
 
-	const xp = () => Cunning.bonus * Curious.bonus;
+	const xp = () => Cunning.bonus * Curious.bonus * Classy.bonus;
 	const agility = () => 1 / Agility.bonus;
 	const helium = () => base_helium * looting() + 45;
 	const overkill = () => Overkill.bonus;
