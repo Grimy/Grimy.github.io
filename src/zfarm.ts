@@ -20,9 +20,10 @@ function read_save() {
 		imps += game.unlocks.imps[imp];
 	let shield = game.heirlooms.Shield;
 	let challenge = game.global.challengeActive;
-	let attack = game.global.soldierCurrentAttack;
+	let attack = game.global.soldierCurrentAttack * (1 + shield.trimpAttack.currentBonus / 100);
 	let cc = 5 * game.portal.Relentlessness.level + shield.critChance.currentBonus;
 	let cd = 100 + 30 * game.portal.Relentlessness.level + shield.critDamage.currentBonus;
+	let megaCD = 5;
 	let minFluct = 0.8 + 0.02 * game.portal.Range.level;
 	let maxFluct = 1.2;
 	let enemyHealth = 1;
@@ -50,7 +51,6 @@ function read_save() {
 	if (mastery('hyperspeed2') && zone <= ceil(game.global.highestLevelCleared / 2) || jobless)
 		--speed;
 
-	attack *= 1 + 0.5 * game.jobs.Amalgamator.owned;
 	attack *= 1 + 0.02 * game.global.antiStacks * game.portal.Anticipation.level;
 	attack *= 1 + 0.01 * game.global.achievementBonus;
 	attack *= 1 + 0.2 * game.global.roboTrimpLevel;
@@ -64,10 +64,16 @@ function read_save() {
 	let potential = log(0.003 * game.global.fluffyExp / 5 ** prestige + 1) / log(4);
 	let level = min(floor(potential), cap);
 	let progress = level == cap ? 0 : (4 ** (potential - level) - 1) / 3;
+	let fluffy_ability = prestige + level + mastery('fluffyAbility');
 	attack *= 1 + 5 ** prestige * 0.1 * (level / 2 + progress) * (level + 1);
 
-	if (level + prestige >= 14)
+	let ok_spread = 1 + +(fluffy_ability >= 13) + +(fluffy_ability >= 10) + mastery('overkill');
+
+	if (fluffy_ability >= 14)
 		cc += 50;
+
+	if (fluffy_ability >= 15)
+		megaCD += 2;
 
 	if (game.global.sugarRush > 0)
 		attack *= floor(zone / 100);
@@ -90,6 +96,16 @@ function read_save() {
 		attack *= 1 + 0.15 * cells;
 	}
 
+	if (mastery('amalg'))
+		attack *= 1.5 ** game.jobs.Amalgamator.owned;
+	else
+		attack *= 1 + 0.5 * game.jobs.Amalgamator.owned;
+
+	if (mastery('crit')) {
+		megaCD += 1;
+		cc += 0.5 * shield.critChance.currentBonus;
+	}
+
 	if (challenge === "Discipline") {
 		minFluct = 0.005;
 		maxFluct = 1.995;
@@ -103,6 +119,9 @@ function read_save() {
 		death_stuff.weakness = 0.1;
 		death_stuff.plague = 0.1;
 	} else if (challenge === "Daily") {
+		if (mastery('daily'))
+			attack *= 1.5;
+
 		let daily = (mod: string) => game.global.dailyChallenge[mod] ? game.global.dailyChallenge[mod].strength : 0;
 		if (zone % 2 == 1)
 			attack *= 1 - 0.02 * daily('oddTrimpNerf');
@@ -152,8 +171,8 @@ function read_save() {
 	}
 
 	// Handle megacrits
-	attack *= cc >= 100 ? (1 + cd / 100) * 5 ** (floor(cc / 100) - 1) : 5 ** (floor(cc / 100));
-	cd = cc >= 100 ? 400 : cd;
+	attack *= cc >= 100 ? (1 + cd / 100) * megaCD ** (floor(cc / 100) - 1) : megaCD ** (floor(cc / 100));
+	cd = cc >= 100 ? (megaCD - 1) * 100 : cd;
 	cc %= 100;
 
 	$('#attack').value = prettify(attack * minFluct);
@@ -166,7 +185,7 @@ function read_save() {
 	$('#hze').value = prettify(game.global.highestLevelCleared + 1);
 	$('#imports').value = prettify(imps);
 	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
-	$('#ok_spread').value = prettify(level + prestige >= 13 ? 3 : level + prestige >= 10 ? 2 : 1);
+	$('#ok_spread').value = prettify(ok_spread);
 	$('#overkill').value = game.portal.Overkill.level;
 	$('#plaguebringer').value = shield.plaguebringer.currentBonus;
 	$('#range').value = prettify(maxFluct / minFluct);
@@ -559,7 +578,7 @@ function stats(g: any) {
 			g.challenge_attack = coords;
 		}
 		let tmp = zone_stats(zone, stances, g);
-		if (tmp.value < 1)
+		if (tmp.value < 1 && zone >= g.zone)
 			continue;
 		if (stats.length && tmp.value < 0.804 * stats[0].value)
 			break;
