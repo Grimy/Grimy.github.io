@@ -568,7 +568,7 @@ function optimize(params: any) {
 		attack *= Power.bonus * Power_II.bonus * Relentlessness.bonus;
 		attack *= Siphonology.bonus * Range.bonus * Anticipation.bonus;
 		attack *= fluffy.attack[Capable.level];
-		attack *= 1 + 0.5 * gators();
+		attack *= (game && mastery('amalg')) ? 1.5 ** gators() : 1 + 0.5 * gators();
 		return soldiers() * attack;
 	}
 

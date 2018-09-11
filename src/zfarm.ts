@@ -398,6 +398,11 @@ function simulate(g: any, zone: number) {
 		hp *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + 0.08 * cell) * 1.1 ** (zone - 59);
 		if (g.zone >= 230)
 			hp *= round(50 * 1.05 ** floor((g.zone - 150) / 6)) / 10;
+
+		// hackish implementation of BM 2, TODO a better one
+		if (game && mastery('bionic2') && zone > g.zone)
+			hp /= 1.5;
+
 		hp_array.push(g.difficulty * g.challenge_health * hp);
 
 		let atk = 5.5 * sqrt(zone * 3.27 ** zone) - 1.1;
