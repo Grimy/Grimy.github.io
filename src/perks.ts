@@ -687,6 +687,8 @@ function optimize(params: any) {
 	}
 
 	// Minimum levels on perks
+	console.time();
+
 	for (let name in perks) {
 		let perk = perks[name];
 		if (perk.cost_increment)
@@ -715,7 +717,7 @@ function optimize(params: any) {
 	let sorted_perks: Perk[] = Object.keys(perks).map(name => perks[name]).filter(perk => perk.levellable(he_left));
 
 	for (let x = 0.999; x > 1e-12; x *= x) {
-		let he_target = he_left * x;
+		let he_target = total_he * x;
 		recompute_marginal_efficiencies();
 		sorted_perks.sort((a, b) => b.gain / b.cost - a.gain / a.cost);
 
@@ -738,6 +740,8 @@ function optimize(params: any) {
 		--Toughness_II.level;
 		he_left += Toughness_II.cost;
 	}
+
+	console.timeEnd();
 
 	return [he_left, perks];
 }
