@@ -169,6 +169,8 @@ function handle_paste(ev: ClipboardEvent, read_save: () => void, main: () => voi
 		else if (game.global.version < min_version)
 			show_alert('warning', `Trimps v${min_version} is out! Your save is still on v${game.global.version}, so you should refresh the game’s page.`);
 	} catch {
+		if (game && game.Looting)
+			throw 'This is a perk string. You have to export your save (from the main screen), not your perks.'
 		throw 'Your clipboard did not contain a valid Trimps save. Open the game, click “Export” then “Copy to Clipboard”, and try again.';
 	}
 
