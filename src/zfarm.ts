@@ -491,7 +491,7 @@ function simulate(g: any, zone: number) {
 		if (g.titimp && imp < 0.03)
 			titimp = min(max(ticks, titimp) + 300, ticks + 450);
 
-		poison = ceil(g.transfer * (poison + plague_damage)) + 1;
+		poison = ceil(g.transfer * poison + plague_damage) + 1;
 		wind = ceil(g.transfer * wind) + 1 + ceil((turns - 1) * g.plaguebringer);
 		ice = ceil(g.transfer * ice) + 1 + ceil((turns - 1) * g.plaguebringer);
 
