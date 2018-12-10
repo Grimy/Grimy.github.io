@@ -396,7 +396,7 @@ function parse_perks(fixed: string, unlocks: string) {
 		if (!m)
 			throw 'Enter a list of perk levels, such as “power=42, toughness=51”.';
 
-		let tier2 = m[1].match(/2$|II$/);
+		let tier2 = m[1].match(/2$|II$/i);
 		let name = m[1].replace(/[ _]?(2|II)/i, '').replace(/^OK/i, 'O').replace(/^Looty/i, 'L');
 		let regex = new RegExp(`^${name}[a-z]*${tier2 ? '_II' : ''}$`, 'i');
 		let matches = Object.keys(perks).filter(p => p.match(regex));
