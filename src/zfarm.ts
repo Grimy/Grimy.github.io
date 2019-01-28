@@ -84,6 +84,9 @@ function read_save() {
 	if (mastery('stillRowing2'))
 		attack *= 1 + 0.06 * game.global.spireRows;
 
+	if (game.playerSpire)
+		attack *= 1 + .15 * (1 + game.playerSpire.traps.Strength.level) * game.playerSpire.traps.Strength.owned;
+
 	if (mastery('magmamancer')) {
 		let time = (new Date().getTime() - game.global.zoneStarted) / 60000;
 		let bonus = 1.2 ** min(12, floor((time + 5) / 10)) - 1;
