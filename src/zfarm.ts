@@ -12,6 +12,7 @@ let death_stuff = {
 	explosion: 0,
 	nom: false,
 	slow: false,
+	magma: false,
 }
 
 function read_save() {
@@ -31,6 +32,7 @@ function read_save() {
 	let zone = game.global.world;
 	let perfect = game.global.highestLevelCleared >= 109;
 	let nature = game.empowerments[['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3]];
+	let natureStart = 236;
 	let diplomacy = mastery('nature3') ? 5 : 0;
 	let speed = 10 * 0.95 ** game.portal.Agility.level - mastery('hyperspeed');
 
@@ -46,6 +48,7 @@ function read_save() {
 		explosion: 0,
 		nom: challenge === "Nom",
 		slow: challenge === "Slow",
+		magma: zone >= 230,
 	}
 
 	if (mastery('hyperspeed2') && zone <= ceil(game.global.highestLevelCleared / 2) || jobless)
@@ -169,8 +172,13 @@ function read_save() {
 		// Corruption scaling doesn’t apply to normal maps below Corrupted’s endpoint
 		enemyAttack *= 3;
 	} else if (challenge === "Obliterated") {
-		enemyHealth *= 10 ** (12 + floor(zone / 10));
-		enemyAttack *= 10 ** (12 + floor(zone / 10));
+		enemyHealth *= 1e12 * 10 ** floor(zone / 10);
+		enemyAttack *= 1e12 * 10 ** floor(zone / 10);
+	} else if (challenge === "Eradicated") {
+		enemyHealth *= 1e20 * 3 ** floor(zone / 2);
+		enemyAttack *= 1e20 * 3 ** floor(zone / 2);
+		natureStart = 1;
+		death_stuff.magma = true;
 	}
 
 	// Handle megacrits
@@ -187,7 +195,7 @@ function read_save() {
 	$('#fragments').value = prettify(game.resources.fragments.owned);
 	$('#hze').value = prettify(game.global.highestLevelCleared + 1);
 	$('#imports').value = prettify(imps);
-	$('#nature').value = zone >= 236 ? nature.level + diplomacy : 0;
+	$('#nature').value = zone >= natureStart ? nature.level + diplomacy : 0;
 	$('#ok_spread').value = prettify(ok_spread);
 	$('#overkill').value = game.portal.Overkill.level;
 	$('#plaguebringer').value = shield.plaguebringer.currentBonus;
@@ -399,7 +407,7 @@ function simulate(g: any, zone: number) {
 	for (let i = 0; i < g.size; ++i) {
 		let hp = 14.3 * sqrt(zone * 3.265 ** zone) - 12.1;
 		hp *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + 0.08 * cell) * 1.1 ** (zone - 59);
-		if (g.zone >= 230)
+		if (death_stuff.magma)
 			hp *= round(50 * 1.05 ** floor((g.zone - 150) / 6)) / 10;
 
 		// hackish implementation of BM 2, TODO a better one
@@ -410,7 +418,7 @@ function simulate(g: any, zone: number) {
 
 		let atk = 5.5 * sqrt(zone * 3.27 ** zone) - 1.1;
 		atk *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * 1.15 ** (zone - 59);
-		if (g.zone >= 230)
+		if (death_stuff.magma)
 			atk *= round(15 * 1.05 ** floor((g.zone - 150) / 6)) / 10;
 		atk_array.push(g.difficulty * g.challenge_attack * atk);
 	}
