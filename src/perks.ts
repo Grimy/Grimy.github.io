@@ -235,7 +235,7 @@ function parse_inputs() {
 			attack: input('weight-atk'),
 			health: input('weight-hp'),
 			xp: input('weight-xp'),
-			trimps: 0,
+			trimps: input('weight-trimps'),
 			income: 0,
 		},
 		fluffy: {
