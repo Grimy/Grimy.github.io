@@ -709,12 +709,10 @@ function optimize(params: any) {
 			he_left -= perk.level_up(1);
 	}
 
-	if (zone > 300 && weight.xp > 0) {
-		let ratio = 0.25;
-		while (Capable.levellable(he_left * ratio)) {
-			he_left -= Capable.level_up(1);
-			ratio = Capable.level <= floor(potential) ? 0.25 : 0.01;
-		}
+	let ratio = 0.25;
+	while (Capable.levellable(he_left * ratio)) {
+		he_left -= Capable.level_up(1);
+		ratio = Capable.level <= floor(potential) && zone > 300 && weight.xp > 0 ? 0.25 : 0.01;
 	}
 
 	if (zone <= 300 || potential >= Capable.level)
