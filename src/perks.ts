@@ -177,17 +177,14 @@ function read_save() {
 	// He / unlocks
 	let helium = game.global.heliumLeftover;
 	for (let perk in game.portal)
-		helium += game.portal[perk].heliumSpent;
+		helium += (game.portal[perk].heliumSpent || 0);
 
 	let unlocks = Object.keys(game.portal).filter(perk => !game.portal[perk].locked);
 	if (!game.global.canRespecPerks)
 		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
 
 	// Income
-	let tt = mastery('turkimp4') ? 1 :
-	         mastery('turkimp3') ? 0.6 :
-	         mastery('turkimp2') ? 0.4 :
-	         mastery('turkimp') ? 0.3 : 0.25;
+	let tt = mastery('turkimp2') ? 1 : mastery('turkimp') ? 0.4 : 0.25;
 	let prod = 1 + tt;
 	let loot = 1 + 0.333 * tt;
 	let spires = min(floor((zone - 101) / 100), game.global.spiresCompleted);
