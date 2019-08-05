@@ -181,7 +181,7 @@ function read_save() {
 
 	let unlocks = Object.keys(game.portal).filter(perk => !game.portal[perk].locked);
 	if (!game.global.canRespecPerks)
-		unlocks = unlocks.map(perk => perk + '>' + game.portal[perk].level);
+		unlocks = unlocks.map(perk => perk + '>' + (game.portal[perk].level || 0));
 
 	// Income
 	let tt = mastery('turkimp2') ? 1 : mastery('turkimp') ? 0.4 : 0.25;
