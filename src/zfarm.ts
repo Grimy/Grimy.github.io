@@ -405,7 +405,7 @@ function simulate(g: any, zone: number) {
 	let hp_array = [], atk_array = [];
 
 	for (let i = 0; i < g.size; ++i) {
-		let hp = 14.3 * sqrt(zone * 3.265 ** zone) - 12.1;
+		let hp = 14.3 * sqrt(zone) * 3.265 ** (zone / 2) - 12.1;
 		hp *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + 0.08 * cell) * 1.1 ** (zone - 59);
 		if (death_stuff.magma)
 			hp *= round(50 * 1.05 ** floor((g.zone - 150) / 6)) / 10;
@@ -416,7 +416,7 @@ function simulate(g: any, zone: number) {
 
 		hp_array.push(g.difficulty * g.challenge_health * hp);
 
-		let atk = 5.5 * sqrt(zone * 3.27 ** zone) - 1.1;
+		let atk = 5.5 * sqrt(zone) * 3.27 ** (zone / 2) - 1.1;
 		atk *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * 1.15 ** (zone - 59);
 		if (death_stuff.magma)
 			atk *= round(15 * 1.05 ** floor((g.zone - 150) / 6)) / 10;
