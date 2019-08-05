@@ -33,7 +33,7 @@ function read_save() {
 	let perfect = game.global.highestLevelCleared >= 109;
 	let nature = game.empowerments[['Poison', 'Wind', 'Ice'][ceil(zone / 5) % 3]];
 	let natureStart = 236;
-	let diplomacy = mastery('nature3') ? 5 : 0;
+	let diplomacy = mastery('nature2') ? 5 : 0;
 	let speed = 10 * 0.95 ** game.portal.Agility.level - mastery('hyperspeed');
 
 	death_stuff = {
