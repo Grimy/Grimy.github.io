@@ -345,7 +345,7 @@ function display(results: any) {
 	for (let name in perks)
 		perks[name] = perks[name].level;
 
-	$('#perkstring').innerText = LZString.compressToBase64(JSON.stringify(perks));
+	$('#perkstring').value = LZString.compressToBase64(JSON.stringify(perks));
 }
 
 document.addEventListener("DOMContentLoaded", validate_fixed, false);
