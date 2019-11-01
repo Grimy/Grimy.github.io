@@ -59,7 +59,7 @@ function read_save() {
 	attack *= 1 + 0.2 * game.global.roboTrimpLevel;
 	attack *= 1 + game.goldenUpgrades.Battle.currentBonus;
 	attack *= 1 + 0.01 * game.global.totalSquaredReward;
-	attack /= [1, 0.5, 4, 0.5, 0.5][game.global.formation];
+	attack /= [1, 0.5, 4, 0.5, 0.5, 1][game.global.formation];
 
 	// Fluffy
 	let cap = game.portal.Capable.level;
