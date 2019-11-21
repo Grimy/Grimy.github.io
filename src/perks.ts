@@ -366,6 +366,7 @@ function parse_perks(fixed: string, unlocks: string) {
 	const mult = (x: number) => (level: number) => pow(1 + x * 0.01, level);
 
 	let perks: {[key: string]: Perk} = {
+		Greed: 			new Perk(1e308, 0,    add(0)),
 		Tenacity:       new Perk(1e308, 0,    add(0)),
 		Criticality:    new Perk(1e308, 0,    add(0)),
 		Equality:       new Perk(1e308, 0,    add(0)),
@@ -431,6 +432,7 @@ function parse_perks(fixed: string, unlocks: string) {
 			perks[matches[0]].min_level = level;
 	}
 
+	perks.Greed.locked = true;
 	perks.Tenacity.locked = true;
 	perks.Criticality.locked = true;
 	perks.Equality.locked = true;
