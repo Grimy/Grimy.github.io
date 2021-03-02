@@ -1,0 +1,378 @@
+doctype html
+meta(charset='UTF-8')
+link(href='blue.css' rel='stylesheet')
+link(href='dark.css' rel='stylesheet' id='dark')
+link(href='ace.css' rel='stylesheet' id='dark')
+script(src='quartz.js')
+script(src='ace/ace.js')
+style
+  | .highlighted { box-shadow: inset 0 0 3px 3px #3b1; }
+  | .error { box-shadow: inset 0 0 3px 3px #d33; }
+
+title QuartZ
+
+table#io-table(style='margin: 1em 1ex; width: 90%')
+  tr#inputs
+    th IN 0
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+  tr#outputs
+    th OUT 0
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+    td
+
+div#left-panel(style='display: inline-block; width: 24em; height: 64ex')
+  div#source(style='width: 100%; height: 100%')
+  button#reset Reset ↩ 
+  button#step Step ▶
+  button#fast Fast ➠
+
+div#right-panel(style='float: right; padding-right: 1ex')
+  table#registers
+    tr
+      th A
+      th B
+      th Q
+      th I
+    tr
+      td
+      td
+      td
+      td
+
+  table#memory
+    tr
+      th
+      th 00
+      th 01
+      th 02
+      th 03
+      th 10
+      th 11
+      th 12
+      th 13
+      th 20
+      th 21
+      th 22
+      th 23
+      th 30
+      th 31
+      th 32
+      th 33
+    tr
+      th 00
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 01
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 02
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 03
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 10
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 11
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 12
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 13
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 20
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 21
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 22
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 23
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 30
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 31
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 32
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+    tr
+      th 33
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+      td
+
