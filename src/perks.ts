@@ -373,7 +373,7 @@ function parse_perks(fixed: string, unlocks: string) {
 		Toughness_II:   new Perk(20e3,  500,  add(1)),
 		Capable:        new Perk(1e8,   0,    l => 1,       10,   10),
 		Cunning:        new Perk(1e11,  0,    add(25)),
-		Curious:        new Perk(1e14,  0,    add(120)),
+		Curious:        new Perk(1e14,  0,    add(160)),
 		Classy:         new Perk(1e17,  0,    mult(4.5678375), 75),
 		Overkill:       new Perk(1e6,   0,    add(500),     30),
 		Resourceful:    new Perk(50e3,  0,    mult(-5)),
