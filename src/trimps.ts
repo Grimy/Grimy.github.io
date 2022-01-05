@@ -128,7 +128,7 @@ window.addEventListener('error', (ev) => {
 	create_share((url: string) => show_alert('ko',
 	`Oops! It’s not your fault, but something went wrong. You can go pester the dev on
 	<a href=https://github.com/Grimy/Grimy.github.io/issues/new>GitHub</a> or
-	<a href=https://www.reddit.com/message/compose/?to=Grimy_>Reddit</a>, he’ll fix it.
+	<a href=https://www.reddit.com/message/compose/?to=Grimy_>Reddit</a>, they’ll fix it.
 	If you do, please include the following data:<br>
 	<tt>${url}<br>${ev.filename} l${ev.lineno || 0}c${ev.colno || 0} ${ev.message}</tt>.`));
 });
