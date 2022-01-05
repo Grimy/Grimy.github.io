@@ -397,6 +397,8 @@ function parse_perks(fixed: string, unlocks: string) {
 		Looting:        new Perk(1,     0,    add(5)),
 	};
 
+	if (unlocks == '*')
+		unlocks = Object.keys(perks).join(',');
 	if (!unlocks.match(/>/))
 		unlocks = unlocks.replace(/(?=,|$)/g, '>0');
 
@@ -665,7 +667,7 @@ function optimize(params: any) {
 		perk.gain /= perk.log_ratio();
 
 		if (perk.cost_increment) {
-			let ratio = (1 + perk.level) / (1 + Looting_II.level + Carpentry_II.level + Motivation_II.level + Power_II.level + Toughness_II.level);
+			let ratio = (1 + perk.level) / (1000 + Looting_II.level + Carpentry_II.level + Motivation_II.level + Power_II.level + Toughness_II.level);
 			budget *= 0.5 * ratio ** 2;
 			let x = solve_quadratic_equation(perk.cost_increment / 2, perk.cost - perk.cost_increment / 2, -budget);
 			he_left -= perk.level_up(floor(max(min(x, perk.max_level - perk.level), 1, perk.level / 1e12)));
