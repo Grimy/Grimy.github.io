@@ -1,0 +1,19 @@
+<!DOCTYPE html><meta charset="UTF-8"><link href="blue.css" rel="stylesheet"><link href="dark.css" rel="stylesheet" id="dark">
+<title>13chars</title>
+<body>
+<ul></ul>
+<script>
+let chars = ["Cadence", "Melody", "Aria", "Dorian", "Eli", "Monk", "Dove", "Bolt", "Bard", "Nocturna", "Diamond", "Mary", "Tempo"];
+for (let i = 12; i >= 1; i--) {
+	let j = Math.floor(Math.random() * i);
+	let tmp = chars[j];
+	chars[j] = chars[i];
+	chars[i] = tmp;
+}
+let ul = document.getElementsByTagName("ul")[0];
+ul.innerHTML = "";
+for (let i = 0; i <= 12; i++) {
+	ul.innerHTML += "<li>" + chars[i] + "</li>";
+}
+</script>
+</body>
