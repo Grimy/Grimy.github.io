@@ -61,6 +61,14 @@ function read_save() {
 	attack *= 1 + 0.01 * game.global.totalSquaredReward;
 	attack /= [1, 0.5, 4, 0.5, 0.5, 1][game.global.formation];
 
+	death_stuff.max_hp /= [1, 4, 0.5, 0.5, 0.5, 1][game.global.formation];
+	death_stuff.block /= [1, 0.5, 0.5, 4, 0.5, 1][game.global.formation];
+
+	if (zone >= 60 && game.global.highestLevelCleared >= 70) {
+		death_stuff.max_hp *= 0.5;
+		death_stuff.block *= 0.5;
+	}
+
 	// Fluffy
 	let cap = game.portal.Capable.level;
 	let prestige = game.global.fluffyPrestige;
