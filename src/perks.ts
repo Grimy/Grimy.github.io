@@ -129,7 +129,7 @@ function update_dg() {
 
 	function tick(mult: number) {
 		housing += mult * eff * sqrt(min(capa, fuel));
-		fuel -= burn;
+		fuel = max(0, fuel - burn);
 	}
 
 	for (let zone = 230; zone <= max_zone; ++zone) {
