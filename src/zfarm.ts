@@ -3,6 +3,8 @@
 let death_stuff = {
 	max_hp: 1e300,
 	block: 0,
+	gammaMult: 0,
+	gammaCharges: Infinity,
 	challenge_attack: 1,
 	enemy_cd: 1,
 	breed_timer: 300,
@@ -10,17 +12,29 @@ let death_stuff = {
 	plague: 0,
 	bleed: 0,
 	explosion: 0,
+	angelic: false,
 	nom: false,
 	slow: false,
+	devastation: false,
+	domination: false,
+	frgid: false,
 	magma: false,
+
+}
+
+function challengeActive(what) {
+	if (game.global.multiChallenge[what]) return true;
+	else if (game.global.challengeActive == what) return true;
+	else return false;
 }
 
 function read_save() {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
+	//Randimp
+	if (game.talents.magimp.purchased) imps++;
 	let shield = game.heirlooms.Shield;
-	let challenge = game.global.challengeActive;
 	let attack = game.global.soldierCurrentAttack * (1 + shield.trimpAttack.currentBonus / 100);
 	let cc = 5 * game.portal.Relentlessness.level + shield.critChance.currentBonus;
 	let cd = 100 + 30 * game.portal.Relentlessness.level + shield.critDamage.currentBonus;
@@ -35,10 +49,13 @@ function read_save() {
 	let natureStart = 236;
 	let diplomacy = mastery('nature2') ? 5 : 0;
 	let speed = 10 * 0.95 ** game.portal.Agility.level - mastery('hyperspeed');
+	let gammaCharges = game.global.autoBattleData.oneTimers.hasOwnProperty("Burstier") ? 4 : 5;
 
 	death_stuff = {
 		max_hp: game.global.soldierHealthMax,
 		block: game.global.soldierCurrentBlock,
+		gammaMult: game.global.gammaMult,
+		gammaCharges: gammaCharges,
 		challenge_attack: 1,
 		enemy_cd: 1,
 		breed_timer: compute_breed_timer(),
@@ -46,8 +63,12 @@ function read_save() {
 		plague: 0,
 		bleed: 0,
 		explosion: 0,
-		nom: challenge === "Nom",
-		slow: challenge === "Slow",
+		angelic: mastery('angelic'),
+		nom: challengeActive("Nom"),
+		slow: challengeActive("Slow"),
+		devastation: challengeActive("Devastation"),
+		domination: challengeActive("Domination"),
+		frgid: challengeActive("Frigid"),
 		magma: zone >= 230,
 	}
 
@@ -59,6 +80,10 @@ function read_save() {
 	attack *= 1 + 0.2 * game.global.roboTrimpLevel;
 	attack *= 1 + game.goldenUpgrades.Battle.currentBonus;
 	attack *= 1 + 0.01 * game.global.totalSquaredReward;
+	attack *= 1 + (((game.global.frigidCompletions / 2) * (game.global.frigidCompletions + 1)) / 40);
+	attack *= 1 + (((game.global.mayhemCompletions / 2) * (game.global.mayhemCompletions + 1)) / 10);
+	attack *= 1 + (((game.global.pandCompletions / 2) * (game.global.pandCompletions + 1)) / 10);
+	attack *= 1 + (((game.global.desoCompletions / 2) * (game.global.desoCompletions + 1)) / 10);
 	attack /= [1, 0.5, 4, 0.5, 0.5, 1][game.global.formation];
 
 	death_stuff.max_hp /= [1, 4, 0.5, 0.5, 0.5, 1][game.global.formation];
@@ -120,19 +145,31 @@ function read_save() {
 		cc += 0.5 * shield.critChance.currentBonus;
 	}
 
-	if (challenge === "Discipline") {
+	if (mastery('kerfluffle')) {
+		attack *= pow(1.1, (prestige + 1));
+	}
+
+	if (mastery('herbalist')) {
+		attack *= 1 + ((log(game.resources.food.owned) / Math.LN10) / 83.3);
+	}
+
+	if (challengeActive("Discipline")) {
 		minFluct = 0.005;
 		maxFluct = 1.995;
-	} else if (challenge === "Balance") {
+	}
+	if (challengeActive("Balance")) {
 		enemyHealth *= 2;
 		enemyAttack *= 2.35;
-	} else if (challenge === "Meditate") {
+	}
+	if (challengeActive("Meditate")) {
 		enemyHealth *= 2;
 		enemyAttack *= 1.5;
-	} else if (challenge === "Electricity") {
+	}
+	if (challengeActive("Electricity")) {
 		death_stuff.weakness = 0.1;
 		death_stuff.plague = 0.1;
-	} else if (challenge === "Daily") {
+	}
+	if (challengeActive("Daily")) {
 		if (mastery('daily'))
 			attack *= 1.5;
 
@@ -156,37 +193,57 @@ function read_save() {
 		death_stuff.weakness = 0.01 * daily('weakness');
 		death_stuff.enemy_cd = 1 + 0.5 * daily('crits');
 		death_stuff.explosion = daily('explosive');
-	} else if (challenge === "Life") {
+	}
+	if (challengeActive("Life")) {
 		enemyHealth *= 11;
 		enemyAttack *= 6;
 		attack *= 1 + 0.1 * game.challenges.Life.stacks;
 		death_stuff.max_hp *= 1 + 0.1 * game.challenges.Life.stacks;
-	} else if (challenge === "Crushed") {
+	}
+	if (challengeActive("Crushed")) {
 		death_stuff.enemy_cd = 5;
-	} else if (challenge === "Nom") {
+	}
+	if (challengeActive("Nom")) {
 		death_stuff.bleed = 0.05;
-	} else if (challenge === "Toxicity") {
+	}
+	if (challengeActive("Toxicity")) {
 		enemyHealth *= 2;
 		enemyAttack *= 5;
 		death_stuff.bleed = 0.05;
-	} else if (challenge === "Lead") {
+	}
+	if (challengeActive('Watch')) {
+		enemyAttack *= 1.25;
+	}
+	if (challengeActive("Lead")) {
 		if (zone % 2 == 1)
 			attack *= 1.5;
 		else
 			show_alert('warning', 'Are you <b>sure</b> you want to farm on an even Lead zone?');
 		enemyHealth *= 1 + 0.04 * game.challenges.Lead.stacks;
 		enemyAttack *= 1 + 0.04 * game.challenges.Lead.stacks;
-	} else if (challenge === "Corrupted") {
+	}
+	if (challengeActive("Corrupted")) {
 		// Corruption scaling doesn’t apply to normal maps below Corrupted’s endpoint
 		enemyAttack *= 3;
-	} else if (challenge === "Obliterated") {
+	}
+	if (challengeActive("Obliterated")) {
 		enemyHealth *= 1e12 * 10 ** floor(zone / 10);
 		enemyAttack *= 1e12 * 10 ** floor(zone / 10);
-	} else if (challenge === "Eradicated") {
+	}
+	if (challengeActive("Eradicated")) {
 		enemyHealth *= 1e20 * 3 ** floor(zone / 2);
 		enemyAttack *= 1e20 * 3 ** floor(zone / 2);
 		natureStart = 1;
 		death_stuff.magma = true;
+	}
+	if (challengeActive('Frigid')) {
+		enemyHealth *= pow(10, game.global.frigidCompletions);
+		enemyAttack *= pow(10, game.global.frigidCompletions);
+		cc = 0;
+	}
+	if (challengeActive('Experience')) {
+		enemyHealth *= pow(1.15, game.challenges.Experience.wonders);
+		enemyAttack *= pow(1.15, game.challenges.Experience.wonders);
 	}
 
 	// Handle megacrits
@@ -198,8 +255,8 @@ function read_save() {
 	$('#cc').value = cc;
 	$('#cd').value = cd;
 	$('#challenge').value = prettify(enemyHealth);
-	$('#coordinate').checked = challenge === "Coordinate";
-	$('#difficulty').value = prettify((perfect ? 75 : 80) + (challenge === "Mapocalypse" ? 300 : 0));
+	$('#coordinate').checked = challengeActive("Coordinate");
+	$('#difficulty').value = prettify((perfect ? 75 : 80) + (challengeActive("Mapocalypse") ? 300 : 0));
 	$('#fragments').value = prettify(game.resources.fragments.owned);
 	$('#hze').value = prettify(game.global.highestLevelCleared + 1);
 	$('#imports').value = prettify(imps);
@@ -220,6 +277,7 @@ function read_save() {
 
 const parse_inputs = () => ({
 	attack: input('attack'),
+	trimpShield: 0,
 	biome: biomes.all.concat(biomes[$('#biome').value]),
 	cc: input('cc') / 100,
 	cd: 1 + input('cd') / 100,
@@ -241,6 +299,7 @@ const parse_inputs = () => ({
 	zone: input('zone'),
 	poison: 0, wind: 0, ice: 0,
 	[['poison', 'wind', 'ice'][ceil(input('zone') / 5) % 3]]: input('nature') / 100,
+	fluctuation: game.global.universe === 2 ? 1.5 : 1.2,
 
 	...death_stuff
 });
@@ -329,7 +388,7 @@ function display(results: any[]) {
 
 	$('#comment').textContent = percentage < 2 ? `They’re equally efficient.` :
 		percentage < 4 ? `But ${best.second} is almost as good.` :
-		`It’s ${percentage.toFixed(1)}% more efficient than ${best.second}.`;
+			`It’s ${percentage.toFixed(1)}% more efficient than ${best.second}.`;
 }
 
 function main() {
@@ -344,46 +403,46 @@ const max_ticks = 864000; // One day
 
 let test: number[] = [1, 2];
 
-const biomes: {[key: string]: [number, number, boolean][]} = {
+const biomes: { [key: string]: [number, number, boolean][] } = {
 	all: [
-		[0.8,  0.7,  true],
-		[0.9,  1.3,  false],
-		[0.9,  1.3,  false],
-		[1,    1,    false],
-		[1.1,  0.7,  false],
-		[1.05, 0.8,  true],
-		[0.9,  1.1,  true],
+		[0.8, 0.7, true],
+		[0.9, 1.3, false],
+		[0.9, 1.3, false],
+		[1, 1, false],
+		[1.1, 0.7, false],
+		[1.05, 0.8, true],
+		[0.9, 1.1, true],
 	],
 	gardens: [
-		[1.3,  0.95, false],
+		[1.3, 0.95, false],
 		[0.95, 0.95, true],
-		[0.8,  1,    false],
-		[1.05, 0.8,  false],
-		[0.6,  1.3,  true],
-		[1,    1.1,  false],
-		[0.8,  1.4,  false],
+		[0.8, 1, false],
+		[1.05, 0.8, false],
+		[0.6, 1.3, true],
+		[1, 1.1, false],
+		[0.8, 1.4, false],
 	],
 	sea: [
-		[0.8,  0.9,  true],
-		[0.8,  1.1,  true],
-		[1.4,  1.1,  false],
+		[0.8, 0.9, true],
+		[0.8, 1.1, true],
+		[1.4, 1.1, false],
 	],
 	mountain: [
-		[0.5,  2,    false],
-		[0.8,  1.4,  false],
-		[1.15, 1.4,  false],
-		[1,    0.85, true],
+		[0.5, 2, false],
+		[0.8, 1.4, false],
+		[1.15, 1.4, false],
+		[1, 0.85, true],
 	],
 	forest: [
-		[0.75, 1.2,  true],
-		[1,    0.85, true],
-		[1.1,  1.5,  false],
+		[0.75, 1.2, true],
+		[1, 0.85, true],
+		[1.1, 1.5, false],
 	],
 	depths: [
-		[1.2,  1.4,  false],
-		[0.9,  1,    true],
-		[1.2,  0.7,  false],
-		[1,    0.8,  true],
+		[1.2, 1.4, false],
+		[0.9, 1, true],
+		[1.2, 0.7, false],
+		[1, 0.8, true],
 	],
 };
 
@@ -396,7 +455,6 @@ function rng() {
 	return seed * rand_mult;
 }
 
-
 // Simulate farming at the given zone for a fixed time, and return the number cells cleared.
 function simulate(g: any, zone: number) {
 	let trimp_hp = g.max_hp;
@@ -407,8 +465,11 @@ function simulate(g: any, zone: number) {
 	let last_group_sent = 0;
 	let ticks = 0;
 	let plague_damage = 0;
+	var gammaStacks = 0;
+	var burstDamage = 0;
 	let ok_damage = 0, ok_spread = 0;
 	let poison = 0, wind = 0, ice = 0;
+	if (g.frigid) g.cc = 0;
 
 	let hp_array = [], atk_array = [];
 
@@ -422,23 +483,47 @@ function simulate(g: any, zone: number) {
 		if (game && mastery('bionic2') && zone > g.zone)
 			hp /= 1.5;
 
-		hp_array.push(g.difficulty * g.challenge_health * hp);
 
 		let atk = 5.5 * sqrt(zone) * 3.27 ** (zone / 2) - 1.1;
 		atk *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * 1.15 ** (zone - 59);
 		if (death_stuff.magma)
 			atk *= round(15 * 1.05 ** floor((g.zone - 150) / 6)) / 10;
+
+		cell++;
+		if (g.domination) {
+			if (cell === g.size) {
+				atk *= 2.5;
+				hp *= 7.5;
+			} else {
+				atk *= 0.1;
+				hp *= 0.1;
+			}
+		}
+		hp_array.push(g.difficulty * g.challenge_health * hp);
 		atk_array.push(g.difficulty * g.challenge_attack * atk);
 	}
 
+	function reduceTrimpHealth(amt) {
+		if (game.global.universe === 1)
+			amt -= g.block;
+		//Frigid shattered
+		if (g.frigid && amt >= (g.max_hp / 5))
+			amt = g.max_hp;
+
+		trimp_hp -= Math.max(0, amt);
+	}
+
 	function enemy_hit(atk: number) {
-		let damage = atk * (0.8 + 0.4 * rng());
+		let damage = atk * (g.fluctuation * rng());
 		damage *= rng() < 0.25 ? g.enemy_cd : 1;
 		damage *= 0.366 ** (ice * g.ice);
-		trimp_hp -= max(0, damage - g.block);
+		//Safety precaution for infinite Ice stacks
+		damage = Math.max(0, damage);
+		reduceTrimpHealth(damage);
 		++debuff_stacks;
 	}
 
+	cell = 0;
 	while (ticks < max_ticks) {
 		let imp = rng();
 		let imp_stats = imp < g.import_chance ? [1, 1, false] : g.biome[floor(rng() * g.biome.length)];
@@ -446,6 +531,8 @@ function simulate(g: any, zone: number) {
 		let hp = imp_stats[1] * hp_array[cell];
 		let enemy_max_hp = hp;
 		let fast = g.slow || (imp_stats[2] && !g.nom);
+		var trimpOverkill = 0;
+		var trimp_atk = 0;
 
 		if (ok_spread !== 0) {
 			hp -= ok_damage;
@@ -458,6 +545,12 @@ function simulate(g: any, zone: number) {
 		while (hp >= 1 && ticks < max_ticks) {
 			++turns;
 
+			//Angelic talent heal
+			if (g.angelic) {
+				trimp_hp += (g.max_hp / 2);
+				if (trimp_hp > g.max_hp) trimp_hp = g.max_hp;
+			}
+
 			// Fast enemy attack
 			if (fast)
 				enemy_hit(atk);
@@ -465,16 +558,16 @@ function simulate(g: any, zone: number) {
 			// Trimp attack
 			if (trimp_hp >= 1) {
 				ok_spread = g.ok_spread;
-				let damage = g.atk * (1 + g.range * rng());
-				damage *= rng() < g.cc ? g.cd : 1;
-				damage *= titimp > ticks ? 2 : 1;
-				damage *= 2 - 0.366 ** (ice * g.ice);
-				damage *= 1 - g.weakness * min(debuff_stacks, 9);
-				hp -= damage + poison * g.poison;
-				poison += damage;
+				trimp_atk = g.atk * (1 + g.range * rng());
+				trimp_atk *= rng() < g.cc ? g.cd : 1;
+				trimp_atk *= titimp > ticks ? 2 : 1;
+				trimp_atk *= 2 - 0.366 ** (ice * g.ice);
+				trimp_atk *= 1 - g.weakness * min(debuff_stacks, 9);
+				hp -= trimp_atk + poison * g.poison;
+				poison += trimp_atk;
 				++ice;
 				if (hp >= 1)
-					plague_damage += damage * g.plaguebringer;
+					plague_damage += trimp_atk * g.plaguebringer;
 			}
 
 			// Bleeds
@@ -485,15 +578,31 @@ function simulate(g: any, zone: number) {
 			if (!fast && hp >= 1 && trimp_hp >= 1)
 				enemy_hit(atk);
 
+			if (hp >= 1) {
+				if (trimp_hp >= 1 && g.gammaMult > 1) {
+					gammaStacks++;
+					if (gammaStacks >= g.gammaCharges) {
+						gammaStacks = 0;
+						burstDamage = trimp_atk * g.gammaMult;
+						hp -= burstDamage;
+						if (g.plaguebringer && hp >= 1)
+							plague_damage += (burstDamage * g.plaguebringer);
+					}
+				}
+			}
+
 			// Trimp death
 			if (trimp_hp < 1) {
 				ticks += ceil(turns * g.speed);
 				ticks = max(ticks, last_group_sent + g.breed_timer);
 				last_group_sent = ticks;
+				trimpOverkill = Math.abs(trimp_hp);
 				trimp_hp = g.max_hp;
+				if (g.devastation) reduceTrimpHealth(trimpOverkill * 7.5);
 				ticks += 1;
 				turns = 1;
 				debuff_stacks = 0;
+				gammaStacks = 0;
 
 				if (g.nom)
 					hp = min(hp + 0.05 * enemy_max_hp, enemy_max_hp);
