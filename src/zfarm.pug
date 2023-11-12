@@ -35,7 +35,7 @@ block content
           input#hze(type='text' value='42' pattern='[0-9]+' onchange='set_hze(this.value)')
           | HZE
         label(title='Total number of map imp-orts you have unlocked')
-          input#imports(type='text' value='5' pattern='[0-5]')
+          input#imports(type='text' value='5' pattern='[0-6]')
           | Map imp-orts
         label(title='Check if you have unlocked the Titimp imp-ort')
           input#titimp(type='checkbox' checked='')
@@ -53,7 +53,7 @@ block content
           input#range(type='text' value='1.2' pattern='[1-9][0-9.]*')
           | Attack range (max/min)
         label(title='Critical hit chance, as displayed in the damage breakdown')
-          input#cc(type='text' value='50' pattern='[-0-9.]+')
+          input#cc(type='text' value='50' pattern='[0-9.\\-]+')
           | Crit chance
         label(title='Bonus critical damage, as displayed in the damage breakdown')
           input#cd(type='text' value='400' pattern='\\d{3,}')

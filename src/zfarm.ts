@@ -17,23 +17,23 @@ let death_stuff = {
 	slow: false,
 	devastation: false,
 	domination: false,
-	frgid: false,
+	frigid: false,
 	magma: false,
-
+	fluctuation: 0.2,
 }
 
-function challengeActive(what) {
-	if (game.global.multiChallenge[what]) return true;
-	else if (game.global.challengeActive == what) return true;
-	else return false;
+function challengeActive(name: string) {
+	return game.global.multiChallenge[name] || game.global.challengeActive == name;
 }
 
 function read_save() {
 	let imps = 0;
 	for (let imp of ['Chronoimp', 'Jestimp', 'Titimp', 'Flutimp', 'Goblimp'])
 		imps += game.unlocks.imps[imp];
-	//Randimp
-	if (game.talents.magimp.purchased) imps++;
+	// Randimp
+	if (game.talents.magimp.purchased)
+		imps++;
+	let u2 = game.global.universe === 2;
 	let shield = game.heirlooms.Shield;
 	let attack = game.global.soldierCurrentAttack * (1 + shield.trimpAttack.currentBonus / 100);
 	let cc = 5 * game.portal.Relentlessness.level + shield.critChance.currentBonus;
@@ -53,7 +53,7 @@ function read_save() {
 
 	death_stuff = {
 		max_hp: game.global.soldierHealthMax,
-		block: game.global.soldierCurrentBlock,
+		block: u2 ? 0 : game.global.soldierCurrentBlock,
 		gammaMult: game.global.gammaMult,
 		gammaCharges: gammaCharges,
 		challenge_attack: 1,
@@ -68,8 +68,9 @@ function read_save() {
 		slow: challengeActive("Slow"),
 		devastation: challengeActive("Devastation"),
 		domination: challengeActive("Domination"),
-		frgid: challengeActive("Frigid"),
+		frigid: challengeActive("Frigid"),
 		magma: zone >= 230,
+		fluctuation: u2 ? 0.5 : 0.2,
 	}
 
 	if (mastery('hyperspeed2') && zone <= ceil(game.global.highestLevelCleared / 2) || jobless)
@@ -299,7 +300,6 @@ const parse_inputs = () => ({
 	zone: input('zone'),
 	poison: 0, wind: 0, ice: 0,
 	[['poison', 'wind', 'ice'][ceil(input('zone') / 5) % 3]]: input('nature') / 100,
-	fluctuation: game.global.universe === 2 ? 1.5 : 1.2,
 
 	...death_stuff
 });
@@ -405,44 +405,44 @@ let test: number[] = [1, 2];
 
 const biomes: { [key: string]: [number, number, boolean][] } = {
 	all: [
-		[0.8, 0.7, true],
-		[0.9, 1.3, false],
-		[0.9, 1.3, false],
-		[1, 1, false],
-		[1.1, 0.7, false],
-		[1.05, 0.8, true],
-		[0.9, 1.1, true],
+		[0.8,  0.7,  true],
+		[0.9,  1.3,  false],
+		[0.9,  1.3,  false],
+		[1,    1,    false],
+		[1.1,  0.7,  false],
+		[1.05, 0.8,  true],
+		[0.9,  1.1,  true],
 	],
 	gardens: [
-		[1.3, 0.95, false],
+		[1.3,  0.95, false],
 		[0.95, 0.95, true],
-		[0.8, 1, false],
-		[1.05, 0.8, false],
-		[0.6, 1.3, true],
-		[1, 1.1, false],
-		[0.8, 1.4, false],
+		[0.8,  1,    false],
+		[1.05, 0.8,  false],
+		[0.6,  1.3,  true],
+		[1,    1.1,  false],
+		[0.8,  1.4,  false],
 	],
 	sea: [
-		[0.8, 0.9, true],
-		[0.8, 1.1, true],
-		[1.4, 1.1, false],
+		[0.8,  0.9,  true],
+		[0.8,  1.1,  true],
+		[1.4,  1.1,  false],
 	],
 	mountain: [
-		[0.5, 2, false],
-		[0.8, 1.4, false],
-		[1.15, 1.4, false],
-		[1, 0.85, true],
+		[0.5,  2,    false],
+		[0.8,  1.4,  false],
+		[1.15, 1.4,  false],
+		[1,    0.85, true],
 	],
 	forest: [
-		[0.75, 1.2, true],
-		[1, 0.85, true],
-		[1.1, 1.5, false],
+		[0.75, 1.2,  true],
+		[1,    0.85, true],
+		[1.1,  1.5,  false],
 	],
 	depths: [
-		[1.2, 1.4, false],
-		[0.9, 1, true],
-		[1.2, 0.7, false],
-		[1, 0.8, true],
+		[1.2,  1.4,  false],
+		[0.9,  1,    true],
+		[1.2,  0.7,  false],
+		[1,    0.8,  true],
 	],
 };
 
@@ -473,7 +473,7 @@ function simulate(g: any, zone: number) {
 
 	let hp_array = [], atk_array = [];
 
-	for (let i = 0; i < g.size; ++i) {
+	for (let cell = 0; cell < g.size; ++cell) {
 		let hp = 14.3 * sqrt(zone) * 3.265 ** (zone / 2) - 12.1;
 		hp *= zone < 60 ? (3 + (3 / 110) * cell) : (5 + 0.08 * cell) * 1.1 ** (zone - 59);
 		if (death_stuff.magma)
@@ -483,15 +483,13 @@ function simulate(g: any, zone: number) {
 		if (game && mastery('bionic2') && zone > g.zone)
 			hp /= 1.5;
 
-
 		let atk = 5.5 * sqrt(zone) * 3.27 ** (zone / 2) - 1.1;
 		atk *= zone < 60 ? (3.1875 + 0.0595 * cell) : (4 + 0.09 * cell) * 1.15 ** (zone - 59);
 		if (death_stuff.magma)
 			atk *= round(15 * 1.05 ** floor((g.zone - 150) / 6)) / 10;
 
-		cell++;
 		if (g.domination) {
-			if (cell === g.size) {
+			if (cell === g.size - 1) {
 				atk *= 2.5;
 				hp *= 7.5;
 			} else {
@@ -503,27 +501,22 @@ function simulate(g: any, zone: number) {
 		atk_array.push(g.difficulty * g.challenge_attack * atk);
 	}
 
-	function reduceTrimpHealth(amt) {
-		if (game.global.universe === 1)
-			amt -= g.block;
-		//Frigid shattered
-		if (g.frigid && amt >= (g.max_hp / 5))
+	function reduce_trimp_health(amt: number) {
+		// Frigid shattered
+		if (g.frigid && amt >= g.max_hp / 5)
 			amt = g.max_hp;
-
-		trimp_hp -= Math.max(0, amt);
+		trimp_hp -= amt;
 	}
 
 	function enemy_hit(atk: number) {
-		let damage = atk * (g.fluctuation * rng());
+		let damage = atk * (1 + g.fluctuation * (2 * rng() - 1));
 		damage *= rng() < 0.25 ? g.enemy_cd : 1;
 		damage *= 0.366 ** (ice * g.ice);
-		//Safety precaution for infinite Ice stacks
-		damage = Math.max(0, damage);
-		reduceTrimpHealth(damage);
+		damage = max(0, damage - g.block);
+		reduce_trimp_health(damage);
 		++debuff_stacks;
 	}
 
-	cell = 0;
 	while (ticks < max_ticks) {
 		let imp = rng();
 		let imp_stats = imp < g.import_chance ? [1, 1, false] : g.biome[floor(rng() * g.biome.length)];
@@ -531,7 +524,6 @@ function simulate(g: any, zone: number) {
 		let hp = imp_stats[1] * hp_array[cell];
 		let enemy_max_hp = hp;
 		let fast = g.slow || (imp_stats[2] && !g.nom);
-		var trimpOverkill = 0;
 		var trimp_atk = 0;
 
 		if (ok_spread !== 0) {
@@ -545,7 +537,7 @@ function simulate(g: any, zone: number) {
 		while (hp >= 1 && ticks < max_ticks) {
 			++turns;
 
-			//Angelic talent heal
+			// Angelic talent heal
 			if (g.angelic) {
 				trimp_hp += (g.max_hp / 2);
 				if (trimp_hp > g.max_hp) trimp_hp = g.max_hp;
@@ -596,9 +588,10 @@ function simulate(g: any, zone: number) {
 				ticks += ceil(turns * g.speed);
 				ticks = max(ticks, last_group_sent + g.breed_timer);
 				last_group_sent = ticks;
-				trimpOverkill = Math.abs(trimp_hp);
+				let trimp_overkill = max(-trimp_hp, 0);
 				trimp_hp = g.max_hp;
-				if (g.devastation) reduceTrimpHealth(trimpOverkill * 7.5);
+				if (g.devastation)
+					reduce_trimp_health(trimp_overkill * 7.5);
 				ticks += 1;
 				turns = 1;
 				debuff_stacks = 0;
