@@ -71,6 +71,9 @@ let presets: {[key: string]: string[]} = {
 	z280:        [ '42',  '6',  '1'],
 	z400:        [ '88', '10',  '1'],
 	z450:        ['500', '50',  '1'],
+	z500_helium: ['500', '50',  '1', '500'],
+	z500_battle: [  '0',  '7',  '1', '1'],
+	z500_fluffy: [  '1', '50',  '1', '500'],
 	spire:       [  '0',  '1',  '1'],
 	nerfed:      [  '0',  '4',  '3'],
 	tent:        [  '5',  '4',  '3'],
@@ -92,7 +95,12 @@ function select_preset(name: string, manually: boolean = true) {
 	delete localStorage['weight-hp'];
 	delete localStorage['weight-xp'];
 	[$('#weight-he').value, $('#weight-atk').value, $('#weight-hp').value] = presets[name];
-	$('#weight-xp').value = floor((+presets[name][0] + +presets[name][1] + +presets[name][2]) / 5).toString();
+	if (presets[name].length == 4) {
+		// some presets have specific opinions about fluffy's weight
+		$('#weight-xp').value = presets[name][3];
+	} else {
+		$('#weight-xp').value = floor((+presets[name][0] + +presets[name][1] + +presets[name][2]) / 5).toString();
+	}
 }
 
 function auto_preset() {
